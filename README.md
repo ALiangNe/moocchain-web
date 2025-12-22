@@ -28,7 +28,7 @@ npm install
 npm run dev
 ```
 
-App runs on `http://localhost:5173` with hot module replacement (HMR).
+App runs on `http://localhost:6600` with hot module replacement (HMR).
 
 ### Build
 
