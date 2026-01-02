@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, message } from 'antd';
-import { login } from '../../api';
-import type { ResponseType } from '../../types/responseType';
+import { useAuthStore } from '../../stores/authStore';
 import type { UserInfo } from '../../types/userType';
+import type { ResponseType } from '../../types/responseType';
+import { login } from '../../api/baseApi';
 
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const onFinish = async (values: { username: string; password: string }) => {
     setLoading(true);
@@ -19,17 +21,17 @@ export default function Login() {
       setLoading(false);
       return;
     }
-    setLoading(false);
+      setLoading(false);
 
     if (response.code !== 0) {
       message.error(response.message || '登录失败');
       return;
     }
 
-    if (response.token) {
-      localStorage.setItem('authToken', response.token);
-    }
-    localStorage.setItem('authUser', JSON.stringify(response.data || {}));
+    // 存储 accessToken 到 Zustand（内存）
+    // refreshToken 已由后端设置在 HttpOnly Cookie 中，前端无需处理
+    setAuth(response.accessToken || null, response.data || null);
+
     message.success('登录成功');
     navigate('/home', { replace: true });
   };
