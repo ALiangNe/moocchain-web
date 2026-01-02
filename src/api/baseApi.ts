@@ -1,5 +1,6 @@
 import type { UserInfo } from '../types/userType';
 import type { ResponseType } from '../types/responseType';
+// import { fetchWithAuth } from './authApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -9,6 +10,7 @@ export async function login(data: { username: string; password: string }): Promi
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
   });
   return response.json();
 }

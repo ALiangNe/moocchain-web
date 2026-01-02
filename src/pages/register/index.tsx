@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, message } from 'antd';
-import { register } from '../../api';
+import { register } from '../../api/baseApi';
 import type { ResponseType } from '../../types/responseType';
 import type { UserInfo } from '../../types/userType';
 
@@ -19,7 +19,7 @@ export default function Register() {
       setLoading(false);
       return;
     }
-    setLoading(false);
+      setLoading(false);
 
     if (response.code !== 0) {
       message.error(response.message || '注册失败');
