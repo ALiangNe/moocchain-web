@@ -17,7 +17,8 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
   
-  if (!headers.has('Content-Type')) {
+  // 如果是 FormData，不设置 Content-Type，让浏览器自动设置（包括 boundary）
+  if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 

@@ -7,6 +7,7 @@ import Home from '../pages/home';
 import Courses from '../pages/courses';
 import Resources from '../pages/resources';
 import Users from '../pages/users';
+import Profile from '../pages/profile';
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { path: '/courses', element: <Courses /> },
       { path: '/resources', element: <Resources /> },
       { path: '/users', element: <Users /> },
+      { path: '/profile', element: <Profile /> },
     ],
   },
 ]);

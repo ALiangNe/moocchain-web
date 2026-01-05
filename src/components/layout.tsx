@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { Layout as AntLayout } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Header from './header';
-import { refreshToken } from '../api/authApi';
-import { useAuthStore } from '../stores/authStore';
+import Header from './header.tsx';
+import Message from './message.tsx';
+import { refreshToken } from '../api/authApi.ts';
+import { useAuthStore } from '../stores/authStore.ts';
 
 const { Content } = AntLayout;
 
@@ -26,6 +27,7 @@ export default function Layout() {
 
   return (
     <AntLayout className="min-h-screen bg-gray-50">
+      <Message />
       <Header />
       <Content className="flex-1 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

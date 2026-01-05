@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Button, Dropdown, message } from 'antd';
 import type { MenuProps } from 'antd';
-import { DownOutlined, LogoutOutlined } from '@ant-design/icons';
+import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { UserRole, RoleName, type UserRoleType } from '../constants/role';
 import { useAuthStore } from '../stores/authStore';
 import { logout } from '../api/authApi';
@@ -43,7 +43,8 @@ export default function Header() {
 
   // 用户下拉菜单
   const userMenuItems: MenuProps['items'] = [
-    { key: 'logout', label: '退出登录', icon: <LogoutOutlined />, onClick: handleLogout, },
+    { key: 'profile', label: '个人资料', icon: <UserOutlined />, onClick: () => navigate('/profile') },
+    { key: 'logout', label: '退出登录', icon: <LogoutOutlined />, onClick: handleLogout },
   ];
 
   return (
