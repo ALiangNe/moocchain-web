@@ -103,7 +103,31 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
   const currentState = useAuthStore.getState();
   currentState.setAuth(result.accessToken, currentState.user);
 
+  // 调用 getUser API 获取完整的用户信息
+  try {
+    const userResult = await getCurrentUser();
+    
+    if (userResult.code === 0 && userResult.data) {
+      // 更新完整的用户信息到 Zustand
+      currentState.setAuth(result.accessToken, userResult.data);
+    }
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    // 即使获取用户信息失败，也返回刷新成功的结果（至少 accessToken 已更新）
+  }
+
   return result;
+}
+
+/**
+ * 获取当前用户信息
+ * 需要认证，使用 fetchAuth 自动处理 token
+ */
+export async function getCurrentUser(): Promise<ResponseType<UserInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/user/me`, {
+    method: 'GET',
+  });
+  return response.json();
 }
 
 /**
