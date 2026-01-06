@@ -4,6 +4,10 @@ import { useAuthStore } from '../stores/authStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// 防重复刷新 Token 的锁
+let isRefreshing = false;
+let refreshPromise: Promise<ResponseType<UserInfo> | null> | null = null;
+
 /**
  * 创建带认证头的 fetch 请求
  * 自动添加 Authorization header（如果存在 accessToken）
@@ -36,7 +40,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 
   console.log('Access Token 过期，尝试刷新...');
 
-  // 刷新 Token
+  // 刷新 Token（使用防重复机制）
   const refreshResult = await refreshToken();
 
   // 刷新成功，使用新的 Access Token 重试请求
@@ -77,47 +81,77 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
  * 刷新 Access Token
  * refreshToken 存储在 HttpOnly Cookie 中，浏览器会自动发送
  * 前端无法读取 HttpOnly Cookie，不需要手动获取
+ * 使用防重复机制，确保同时只有一个刷新请求
  */
 export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
-  let response: Response;
-  try {
-    // 浏览器会自动发送 HttpOnly Cookie（refresh_token）
-    response = await fetch(`${API_BASE_URL}/user/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
-      // 不再需要 body，refreshToken 在 Cookie 中
-    });
-  } catch (error) {
-    console.error('Refresh token error:', error);
-    return null;
+  // 如果正在刷新，返回同一个 Promise
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
   }
 
-  const result: ResponseType<UserInfo> = await response.json();
-
-  if (result.code !== 0 || !result.accessToken) {
-    return result;
-  }
-
-  // 更新 accessToken 到 Zustand
-  // refreshToken 已由后端自动更新到 HttpOnly Cookie 中，前端无需处理
-  const currentState = useAuthStore.getState();
-  currentState.setAuth(result.accessToken, currentState.user);
-
-  // 调用 getUser API 获取完整的用户信息
-  try {
-    const userResult = await getCurrentUser();
-    
-    if (userResult.code === 0 && userResult.data) {
-      // 更新完整的用户信息到 Zustand
-      currentState.setAuth(result.accessToken, userResult.data);
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    let response: Response;
+    try {
+      // 浏览器会自动发送 HttpOnly Cookie（refresh_token）
+      response = await fetch(`${API_BASE_URL}/user/refreshToken`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
+        // 不再需要 body，refreshToken 在 Cookie 中
+      });
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      isRefreshing = false;
+      refreshPromise = null;
+      return null;
     }
-  } catch (error) {
-    console.error('获取用户信息失败:', error);
-    // 即使获取用户信息失败，也返回刷新成功的结果（至少 accessToken 已更新）
-  }
 
-  return result;
+    const result: ResponseType<UserInfo> = await response.json();
+
+    if (result.code !== 0 || !result.accessToken) {
+      isRefreshing = false;
+      refreshPromise = null;
+      return result;
+    }
+
+    // 更新 accessToken 到 Zustand
+    // refreshToken 已由后端自动更新到 HttpOnly Cookie 中，前端无需处理
+    const currentState = useAuthStore.getState();
+    currentState.setAuth(result.accessToken, currentState.user);
+
+    // 调用 getUser API 获取完整的用户信息（不使用 fetchWithAuth，避免循环）
+    let userResponse: Response;
+    try {
+      userResponse = await fetch(`${API_BASE_URL}/user/getCurrentUser`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${result.accessToken}`,
+        },
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      // 即使获取用户信息失败，也返回刷新成功的结果（至少 accessToken 已更新）
+      isRefreshing = false;
+      refreshPromise = null;
+      return result;
+    }
+
+    if (userResponse.ok) {
+      const userResult: ResponseType<UserInfo> = await userResponse.json();
+      if (userResult.code === 0 && userResult.data) {
+        // 更新完整的用户信息到 Zustand
+        currentState.setAuth(result.accessToken, userResult.data);
+      }
+    }
+
+    isRefreshing = false;
+    refreshPromise = null;
+    return result;
+  })();
+
+  return refreshPromise;
 }
 
 /**
@@ -125,7 +159,7 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
  * 需要认证，使用 fetchAuth 自动处理 token
  */
 export async function getCurrentUser(): Promise<ResponseType<UserInfo>> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/me`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/user/getCurrentUser`, {
     method: 'GET',
   });
   return response.json();

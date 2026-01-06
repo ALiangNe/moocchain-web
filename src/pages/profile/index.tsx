@@ -15,8 +15,17 @@ export default function Profile() {
   const handleUpdateProfile = async (values: Partial<UserInfo>) => {
     setLoading(true);
     
+    let result;
     try {
-      const result = await updateUser(values);
+      result = await updateUser(values);
+    } catch (error) {
+      console.error('Update profile error:', error);
+      message.error('更新失败，请重试');
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(false);
       
       if (result.code !== 0) {
         message.error(result.message || '更新失败');
@@ -30,12 +39,6 @@ export default function Profile() {
       
       setAuth(accessToken, result.data);
       message.success('个人信息更新成功');
-    } catch (error) {
-      console.error('Update profile error:', error);
-      message.error('更新失败，请重试');
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (!user) {
