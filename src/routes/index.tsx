@@ -8,6 +8,8 @@ import Courses from '../pages/courses';
 import Resources from '../pages/resources';
 import Users from '../pages/users';
 import Profile from '../pages/profile';
+import TeacherApply from '../pages/teacherApply';
+import Audit from '../pages/audit';
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +23,8 @@ export const router = createBrowserRouter([
       { path: '/resources', element: <Resources /> },
       { path: '/users', element: <Users /> },
       { path: '/profile', element: <Profile /> },
+      { path: '/teacherApply', element: <TeacherApply /> },
+      { path: '/audit', element: <Audit /> },
     ],
   },
 ]);
