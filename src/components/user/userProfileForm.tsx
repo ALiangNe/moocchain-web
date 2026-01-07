@@ -68,49 +68,21 @@ export default function UserProfileForm({ user, onSubmit, loading }: UserProfile
 
         <Form.Item>
           {!isEditing ? (
-            <Button type="default" size="large" onClick={handleEdit} className="profile-edit-btn w-full bg-white border border-[#d2d2d7] text-[#1d1d1f] hover:bg-[#e3f2fd] hover:border-[#007aff] hover:text-[#007aff] transition-all">
+            <Button type="default" size="large" onClick={handleEdit} block>
               编辑
             </Button>
           ) : (
             <div className="flex gap-3">
-              <Button type="default" size="large" onClick={handleCancel} className="profile-edit-btn flex-1 bg-white border border-[#d2d2d7] text-[#1d1d1f] hover:bg-[#e3f2fd] hover:border-[#007aff] hover:text-[#007aff] transition-all">
+              <Button type="default" size="large" onClick={handleCancel} className="flex-1">
                 取消
               </Button>
-              <Button type="primary" htmlType="submit" size="large" loading={loading} className="profile-save-btn flex-1 bg-[#1d1d1f] border-[#1d1d1f] hover:bg-[#424245] hover:border-white hover:shadow-[0_0_0_2px_white] transition-all">
+              <Button type="primary" htmlType="submit" size="large" loading={loading} className="flex-1">
                 保存
               </Button>
             </div>
           )}
         </Form.Item>
       </Form>
-      {/* 样式 */}
-      <style>{`
-        .profile-edit-btn:focus,
-        .profile-edit-btn:active,
-        .profile-edit-btn.ant-btn:focus,
-        .profile-edit-btn.ant-btn:active {
-          background-color: #e3f2fd !important;
-          border-color: #007aff !important;
-          color: #007aff !important;
-          outline: none !important;
-          box-shadow: none !important;
-        }
-        .profile-edit-btn:focus-visible {
-          outline: none !important;
-        }
-        .profile-save-btn:focus,
-        .profile-save-btn:active,
-        .profile-save-btn.ant-btn:focus,
-        .profile-save-btn.ant-btn:active {
-          background-color: #424245 !important;
-          border-color: white !important;
-          box-shadow: 0 0 0 2px white !important;
-          outline: none !important;
-        }
-        .profile-save-btn:focus-visible {
-          outline: none !important;
-        }
-      `}</style>
     </>
   );
 }

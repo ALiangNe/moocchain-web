@@ -1,13 +1,15 @@
 import { Layout as AntLayout } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Header from './header.tsx';
-import Message from './message.tsx';
+import Header from './Header.tsx';
+import Message from './Message.tsx';
+import Loading from './Loading.tsx';
 
 const { Content } = AntLayout;
 
 export default function Layout() {
   return (
     <AntLayout className="min-h-screen bg-gray-50">
+      <Loading />
       <Message />
       <Header />
       <Content className="flex-1 w-full">

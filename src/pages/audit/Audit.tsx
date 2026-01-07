@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Modal, message } from 'antd';
+import { Card, Drawer, message } from 'antd';
 import { getAuditRecordList, approveTeacherApplication } from '../../api/baseApi';
 import type { AuditRecordInfo } from '../../types/auditRecordType';
 import AuditRecordDetail from '../../components/auditRecord/AuditRecordDetail';
@@ -153,9 +153,9 @@ export default function Audit() {
           <AuditRecordTable data={data.records} loading={loading} page={page} pageSize={pageSize} total={data.total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onViewDetail={handleViewDetail} onApprove={handleApprove} />
         </Card>
 
-        <Modal title="审核详情" open={detailVisible} onCancel={() => setDetailVisible(false)} footer={null} width={800}>
+        <Drawer title="审核详情" open={detailVisible} onClose={() => setDetailVisible(false)} width={800} placement="right">
           {selectedRecord && <AuditRecordDetail record={selectedRecord} />}
-        </Modal>
+        </Drawer>
 
         <AuditApproveModal visible={approveVisible} auditStatus={auditStatus} loading={approving} record={approveRecord} onConfirm={handleConfirmApprove} onCancel={() => { setApproveVisible(false); setCurrentAuditId(null); setAuditStatus(null); setApproveRecord(null); }} />
       </div>

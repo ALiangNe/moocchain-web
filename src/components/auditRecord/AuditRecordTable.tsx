@@ -73,15 +73,15 @@ export default function AuditRecordTable({ data, loading, page, pageSize, total,
       key: 'action',
       render: (_: unknown, record: AuditRecordInfo) => (
         <Space>
-          <Button type="link" icon={<EyeOutlined />} onClick={() => onViewDetail(record)}>
+          <Button type="link" icon={<EyeOutlined />} onClick={() => onViewDetail(record)} className="focus:outline-none focus:shadow-none">
             查看详情
           </Button>
           {record.auditStatus === 0 && (
             <>
-              <Button type="link" danger icon={<CloseOutlined />} onClick={() => onApprove(record, 2)}>
+              <Button type="link" danger icon={<CloseOutlined />} onClick={() => onApprove(record, 2)} className="focus:outline-none focus:shadow-none">
                 拒绝
               </Button>
-              <Button type="link" icon={<CheckOutlined />} onClick={() => onApprove(record, 1)}>
+              <Button type="link" icon={<CheckOutlined />} onClick={() => onApprove(record, 1)} className="focus:outline-none focus:shadow-none">
                 通过
               </Button>
             </>

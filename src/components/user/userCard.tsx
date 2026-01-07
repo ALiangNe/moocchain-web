@@ -1,6 +1,6 @@
 import type { UserInfo } from '../../types/userType';
 import { useAuthStore } from '../../stores/authStore';
-import UserAvatar from './userAvatar';
+import UserAvatar from './UserAvatar.tsx';
 
 interface UserCardProps {
   user?: UserInfo | null;
@@ -41,4 +41,3 @@ export default function UserCard({ user: userProp }: UserCardProps) {
     </div>
   );
 }
-

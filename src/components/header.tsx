@@ -44,10 +44,18 @@ export default function Header() {
 
   // 用户下拉菜单
   const userMenuItems: MenuProps['items'] = [
-    { key: 'profile', label: '个人资料', icon: <UserOutlined />, onClick: () => navigate('/profile') },
-    ...(user && (user.role === UserRole.STUDENT || user.role === UserRole.TEACHER) ? [{ key: 'teacherApply', label: '教师认证', icon: <SafetyCertificateOutlined />, onClick: () => navigate('/teacherApply') }] : []),
+    { key: 'profile', label: '个人资料', icon: <UserOutlined />, onClick: () => navigate('/profile'), className: location.pathname === '/profile' ? 'ant-menu-item-selected' : '', },
+    ...(user && (user.role === UserRole.STUDENT || user.role === UserRole.TEACHER) ? [{ key: 'teacherApply', label: '教师认证', icon: <SafetyCertificateOutlined />, onClick: () => navigate('/teacherApply'), className: location.pathname === '/teacherApply' ? 'ant-menu-item-selected' : '', }] : []),
     { key: 'logout', label: '退出登录', icon: <LogoutOutlined />, onClick: handleLogout },
   ];
+
+  // 获取当前选中的菜单项
+  const selectedKeys = [];
+  if (location.pathname === '/profile') {
+    selectedKeys.push('profile');
+  } else if (location.pathname === '/teacherApply') {
+    selectedKeys.push('teacherApply');
+  }
 
   return (
     <AntHeader className="bg-white shadow-sm px-0 sticky top-0 z-50 border-b border-gray-200">
@@ -63,7 +71,7 @@ export default function Header() {
           <div className="flex-1 flex justify-center">
             <nav className="flex items-center gap-8">
               {menuItems.map((item) => (
-                <Link key={item.path} to={item.path} className={`text-base font-medium no-underline transition-colors duration-200 ${location.pathname === item.path ? 'text-[#007aff] border-b-2 border-[#007aff] pb-1' : 'text-[#1d1d1f] hover:text-[#007aff]'}`}>
+                <Link key={item.path} to={item.path} className={`text-base font-medium no-underline transition-colors duration-200 ${location.pathname === item.path ? 'text-[#007aff] border-b-2 border-[#007aff] pb-1 hover:text-[#007aff]' : 'text-[#1d1d1f] hover:text-[#007aff]'}`}>
                   {item.label}
                 </Link>
               ))}
@@ -74,7 +82,7 @@ export default function Header() {
         {/* 右侧用户信息或登录/注册按钮 */}
         <div className="flex items-center gap-3 flex-shrink-0">
           {user ? (
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <Dropdown menu={{ items: userMenuItems, selectedKeys }} placement="bottomRight">
               <Button type="text" className="text-[#1d1d1f] hover:text-[#007aff] focus:outline-none focus:shadow-none flex items-center gap-2">
                 <span>{user.username}</span>
                 <span className="text-[#6e6e73] text-sm">({user.role != null && user.role in RoleName ? RoleName[user.role as UserRoleType] : '未知角色'})</span>
@@ -89,7 +97,7 @@ export default function Header() {
                 </Button>
               </Link>
               <Link to="/register" className="no-underline">
-                <Button type="primary" style={{ background: '#007aff', border: 'none', outline: 'none', boxShadow: 'none' }} className="focus:outline-none focus:shadow-none">
+                <Button type="primary" className="focus:outline-none focus:shadow-none">
                   注册
                 </Button>
               </Link>

@@ -1,4 +1,4 @@
-import { Modal, Input, Descriptions, Divider } from 'antd';
+import { Drawer, Input, Descriptions, Divider, Button, Space } from 'antd';
 import { useState, useEffect } from 'react';
 import type { AuditRecordInfo } from '../../types/auditRecordType';
 import { formatDateTime } from '../../utils/timeUtils';
@@ -36,7 +36,19 @@ export default function AuditApproveModal({ visible, auditStatus, loading, recor
   };
 
   return (
-    <Modal title={auditStatus === 1 ? '审批通过' : '审批拒绝'} open={visible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading} okText="确认" cancelText="取消" width={700}>
+    <Drawer 
+      title={auditStatus === 1 ? '审批通过' : '审批拒绝'} 
+      open={visible} 
+      onClose={handleCancel} 
+      width={700} 
+      placement="right"
+      extra={
+        <Space>
+          <Button onClick={handleCancel}>取消</Button>
+          <Button type="primary" loading={loading} onClick={handleOk}>确认</Button>
+        </Space>
+      }
+    >
       <div className="space-y-6">
         {/* 申请人信息模块 */}
         {record?.targetUser && (
@@ -81,6 +93,6 @@ export default function AuditApproveModal({ visible, auditStatus, loading, recor
           <TextArea rows={4} placeholder="请输入审核意见（选填）" value={auditComment} onChange={(e) => setAuditComment(e.target.value)} />
         </div>
       </div>
-    </Modal>
+    </Drawer>
   );
 }

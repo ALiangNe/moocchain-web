@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input, AutoComplete, message } from 'antd';
 import { register } from '../../api/baseApi';
 import type { ResponseType } from '../../types/responseType';
 import type { UserInfo } from '../../types/userType';
 
+// 常见邮箱后缀
+const EMAIL_SUFFIXES = ['@gmail.com', '@qq.com', '@163.com', '@126.com', '@sina.com', '@outlook.com', '@tom.com', '@icloud.com'];
+
 export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [emailOptions, setEmailOptions] = useState<{ value: string; label: string }[]>([]);
 
   const onFinish = async (values: { username: string; password: string; email: string }) => {
     setLoading(true);
@@ -30,6 +34,40 @@ export default function Register() {
     navigate('/login', { replace: true });
   };
 
+  // 处理邮箱输入搜索，生成补全选项
+  const handleEmailSearch = (value: string) => {
+    if (!value) {
+      setEmailOptions([]);
+      return;
+    }
+
+    if (!value.includes('@')) {
+      // 如果没有 @ 符号，且有输入内容，显示所有常见后缀（假设用户输入的是前缀）
+      const options = EMAIL_SUFFIXES.map((suffix) => ({
+        value: value + suffix,
+        label: value + suffix,
+      }));
+      setEmailOptions(options);
+      return;
+    }
+
+    const [prefix, suffix] = value.split('@');
+    if (!prefix) {
+      // 如果只有 @ 符号，不显示选项
+      setEmailOptions([]);
+      return;
+    }
+
+    // 根据已输入的后缀进行过滤匹配
+    const matchedSuffixes = EMAIL_SUFFIXES.filter((emailSuffix) => emailSuffix.toLowerCase().startsWith('@' + (suffix || '').toLowerCase()));
+
+    const options = matchedSuffixes.map((emailSuffix) => ({
+      value: prefix + emailSuffix,
+      label: prefix + emailSuffix,
+    }));
+    setEmailOptions(options);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12">
       <div className="w-full max-w-md px-4">
@@ -46,7 +84,7 @@ export default function Register() {
             </Form.Item>
 
             <Form.Item label="邮箱" name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '请输入有效的邮箱地址' }]}>
-              <Input placeholder="请输入邮箱" />
+              <AutoComplete placeholder="请输入邮箱" options={emailOptions} onSearch={handleEmailSearch} />
             </Form.Item>
 
             <Form.Item>

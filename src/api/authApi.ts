@@ -91,34 +91,34 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
 
   isRefreshing = true;
   refreshPromise = (async () => {
-    let response: Response;
-    try {
-      // 浏览器会自动发送 HttpOnly Cookie（refresh_token）
+  let response: Response;
+  try {
+    // 浏览器会自动发送 HttpOnly Cookie（refresh_token）
       response = await fetch(`${API_BASE_URL}/user/refreshToken`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
-        // 不再需要 body，refreshToken 在 Cookie 中
-      });
-    } catch (error) {
-      console.error('Refresh token error:', error);
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
+      // 不再需要 body，refreshToken 在 Cookie 中
+    });
+  } catch (error) {
+    console.error('Refresh token error:', error);
       isRefreshing = false;
       refreshPromise = null;
-      return null;
-    }
+    return null;
+  }
 
-    const result: ResponseType<UserInfo> = await response.json();
+  const result: ResponseType<UserInfo> = await response.json();
 
-    if (result.code !== 0 || !result.accessToken) {
+  if (result.code !== 0 || !result.accessToken) {
       isRefreshing = false;
       refreshPromise = null;
-      return result;
-    }
+    return result;
+  }
 
-    // 更新 accessToken 到 Zustand
-    // refreshToken 已由后端自动更新到 HttpOnly Cookie 中，前端无需处理
-    const currentState = useAuthStore.getState();
-    currentState.setAuth(result.accessToken, currentState.user);
+  // 更新 accessToken 到 Zustand
+  // refreshToken 已由后端自动更新到 HttpOnly Cookie 中，前端无需处理
+  const currentState = useAuthStore.getState();
+  currentState.setAuth(result.accessToken, currentState.user);
 
     // 调用 getUser API 获取完整的用户信息（不使用 fetchWithAuth，避免循环）
     let userResponse: Response;
@@ -140,15 +140,15 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
 
     if (userResponse.ok) {
       const userResult: ResponseType<UserInfo> = await userResponse.json();
-      if (userResult.code === 0 && userResult.data) {
-        // 更新完整的用户信息到 Zustand
-        currentState.setAuth(result.accessToken, userResult.data);
-      }
+    if (userResult.code === 0 && userResult.data) {
+      // 更新完整的用户信息到 Zustand
+      currentState.setAuth(result.accessToken, userResult.data);
     }
+  }
 
     isRefreshing = false;
     refreshPromise = null;
-    return result;
+  return result;
   })();
 
   return refreshPromise;

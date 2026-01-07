@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Card, Spin, message } from 'antd';
 import { useAuthStore } from '../../stores/authStore';
-import UserCard from '../../components/user/userCard';
-import UserProfileForm from '../../components/user/userProfileForm';
+import UserCard from '../../components/user/UserCard';
+import UserProfileForm from '../../components/user/UserProfileForm';
 import { updateUser } from '../../api/baseApi';
 import type { UserInfo } from '../../types/userType';
 

@@ -1,15 +1,15 @@
 import { createBrowserRouter } from 'react-router-dom';
-import Layout from '../components/layout';
-import Explore from '../pages/explore';
-import Login from '../pages/login';
-import Register from '../pages/register';
-import Home from '../pages/home';
-import Courses from '../pages/courses';
-import Resources from '../pages/resources';
-import Users from '../pages/users';
-import Profile from '../pages/profile';
-import TeacherApply from '../pages/teacherApply';
-import Audit from '../pages/audit';
+import Layout from '../components/Layout';
+import Explore from '../pages/explore/Explore';
+import Login from '../pages/login/Login';
+import Register from '../pages/register/Register';
+import Home from '../pages/home/Home';
+import Courses from '../pages/courses/Courses';
+import Resources from '../pages/resources/Resources';
+import Users from '../pages/users/Users';
+import Profile from '../pages/profile/Profile';
+import TeacherApply from '../pages/teacherApply/TeacherApply';
+import Audit from '../pages/audit/Audit';
 
 export const router = createBrowserRouter([
   {
