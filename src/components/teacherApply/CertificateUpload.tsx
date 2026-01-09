@@ -2,14 +2,14 @@ import { Upload, Button, message } from 'antd';
 import { UploadOutlined, FileTextOutlined } from '@ant-design/icons';
 import type { UserInfo } from '../../types/userType';
 
-interface MaterialUploaderProps {
+interface CertificateUploadProps {
   user: UserInfo | null;
   onUpload: (file: File) => Promise<void>;
   loading?: boolean;
   showReuploadButton?: boolean;
 }
 
-export default function MaterialUploader({ user, onUpload, loading, showReuploadButton = true }: MaterialUploaderProps) {
+export default function CertificateUpload({ user, onUpload, loading, showReuploadButton = true }: CertificateUploadProps) {
   const handleUpload = async (file: File) => {
     const isPdf = file.type === 'application/pdf';
     const isImage = file.type.startsWith('image/');
@@ -61,4 +61,3 @@ export default function MaterialUploader({ user, onUpload, loading, showReupload
     </div>
   );
 }
-

@@ -2,13 +2,13 @@ import { Form, Input, Select, Button } from 'antd';
 import { useState, useEffect } from 'react';
 import type { UserInfo } from '../../types/userType';
 
-interface UserProfileFormProps {
+interface ProfileFormProps {
   user: UserInfo | null;
   onSubmit: (values: Partial<UserInfo>) => Promise<void>;
   loading?: boolean;
 }
 
-export default function UserProfileForm({ user, onSubmit, loading }: UserProfileFormProps) {
+export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProps) {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
 

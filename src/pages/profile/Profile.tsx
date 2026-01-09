@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Card, Spin, message } from 'antd';
 import { useAuthStore } from '../../stores/authStore';
-import UserCard from '../../components/user/UserCard';
-import UserProfileForm from '../../components/user/UserProfileForm';
+import ProfileCard from '../../components/profile/ProfileCard';
+import ProfileForm from '../../components/profile/ProfileForm';
 import { updateUser } from '../../api/baseApi';
 import type { UserInfo } from '../../types/userType';
 
@@ -52,19 +52,19 @@ export default function Profile() {
   return (
     <div className="py-12">
       <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-[#1d1d1f]">个人资料</h1>
+        <h1 className="text-lg font-semibold mb-8 text-[#1d1d1f]">个人资料</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             <Card className="shadow-sm">
-              <UserCard user={user} />
+              <ProfileCard user={user} />
             </Card>
           </div>
 
           <div className="lg:col-span-2">
             <Card className="shadow-sm">
-              <h2 className="text-xl font-semibold mb-6 text-[#1d1d1f]">编辑资料</h2>
-              <UserProfileForm user={user} onSubmit={handleUpdateProfile} loading={loading} />
+              <h2 className="text-lg font-semibold mb-6 text-[#1d1d1f]">编辑资料</h2>
+              <ProfileForm user={user} onSubmit={handleUpdateProfile} loading={loading} />
             </Card>
           </div>
         </div>

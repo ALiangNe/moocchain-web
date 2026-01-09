@@ -40,7 +40,7 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12">
       <div className="w-full max-w-md px-4">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-8 text-[#1d1d1f]">登录</h1>
+          <h1 className="text-lg font-semibold text-center mb-8 text-[#1d1d1f]">登录</h1>
 
           <Form name="login" onFinish={onFinish} layout="vertical" size="large" autoComplete="off">
             <Form.Item label="用户名" name="username" rules={[{ required: true, message: '请输入用户名' }]}>

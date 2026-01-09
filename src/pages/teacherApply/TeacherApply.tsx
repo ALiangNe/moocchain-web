@@ -4,9 +4,9 @@ import { useAuthStore } from '../../stores/authStore';
 import { createTeacherApplication, getAuditRecordList, uploadCertificate } from '../../api/baseApi';
 import type { AuditRecordInfo } from '../../types/auditRecordType';
 import { UserRole, RoleName, type UserRoleType } from '../../constants/role';
-import ApplicationStatusCard from '../../components/auditRecord/ApplicationStatusCard';
-import MaterialUploader from '../../components/auditRecord/MaterialUploader';
-import { formatDateTime } from '../../utils/timeUtils';
+import ApplyStatusCard from '../../components/teacherApply/ApplyStatusCard';
+import CertificateUpload from '../../components/teacherApply/CertificateUpload';
+import { formatDateTime } from '../../utils/formatTime';
 
 export default function TeacherApply() {
   const user = useAuthStore((state) => state.user);
@@ -157,10 +157,10 @@ export default function TeacherApply() {
   return (
     <div className="py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-[#1d1d1f]">教师认证</h1>
+        <h1 className="text-lg font-semibold mb-8 text-[#1d1d1f]">教师认证</h1>
 
         <Card className="shadow-sm mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-[#1d1d1f]">当前身份</h2>
+          <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">当前身份</h2>
           <div className="flex items-center gap-4">
             <Tag color="default" className="text-base px-4 py-2 bg-gray-100 text-gray-700 border-gray-200 rounded-lg">{user.username}</Tag>
             <Tag color="default" className="text-base px-4 py-2 bg-gray-100 text-gray-700 border-gray-200 rounded-lg">
@@ -171,7 +171,7 @@ export default function TeacherApply() {
 
         {auditRecord ? (
           <Card className="shadow-sm mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-[#1d1d1f]">审核信息</h2>
+            <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">审核信息</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-4 flex-wrap">
                 {(() => {
@@ -202,19 +202,19 @@ export default function TeacherApply() {
                   <p className="text-gray-600">{auditRecord.auditComment}</p>
                 </div>
               )}
-              <ApplicationStatusCard auditRecord={auditRecord} />
+              <ApplyStatusCard auditRecord={auditRecord} />
             </div>
           </Card>
         ) : (
           <Card className="shadow-sm mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-[#1d1d1f]">审核信息</h2>
-            <ApplicationStatusCard auditRecord={auditRecord} />
+            <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">审核信息</h2>
+            <ApplyStatusCard auditRecord={auditRecord} />
           </Card>
         )}
 
         <Card className="shadow-sm mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-[#1d1d1f]">上传认证材料</h2>
-          <MaterialUploader user={user} onUpload={handleUploadMaterial} loading={loading} showReuploadButton={showReuploadButton} />
+          <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">上传认证材料</h2>
+          <CertificateUpload user={user} onUpload={handleUploadMaterial} loading={loading} showReuploadButton={showReuploadButton} />
         </Card>
 
         {canSubmit && (

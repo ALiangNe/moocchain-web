@@ -1,18 +1,18 @@
-import type { UserInfo } from '../../types/userType';
-import { useAuthStore } from '../../stores/authStore';
-import UserAvatar from './UserAvatar.tsx';
+import type { UserInfo } from '../../types/userType.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
+import AvatarUpload from './AvatarUpload.tsx';
 
-interface UserCardProps {
+interface ProfileCardProps {
   user?: UserInfo | null;
 }
 
-export default function UserCard({ user: userProp }: UserCardProps) {
+export default function ProfileCard({ user: userProp }: ProfileCardProps) {
   const storeUser = useAuthStore((state) => state.user);
   const user = userProp ?? storeUser;
 
   return (
     <div className="flex flex-col items-center">
-      <UserAvatar user={user} />
+      <AvatarUpload user={user} />
       <div className="mt-4 text-center">
         <h2 className="text-2xl font-bold text-[#1d1d1f]">{user?.username || '未知用户'}</h2>
         <p className="text-[#6e6e73] mt-1">{user?.email || '未设置邮箱'}</p>

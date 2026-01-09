@@ -94,7 +94,7 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
   let response: Response;
   try {
     // 浏览器会自动发送 HttpOnly Cookie（refresh_token）
-      response = await fetch(`${API_BASE_URL}/user/refreshToken`, {
+      response = await fetch(`${API_BASE_URL}/refreshToken`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
@@ -123,7 +123,7 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
     // 调用 getUser API 获取完整的用户信息（不使用 fetchWithAuth，避免循环）
     let userResponse: Response;
     try {
-      userResponse = await fetch(`${API_BASE_URL}/user/getCurrentUser`, {
+      userResponse = await fetch(`${API_BASE_URL}/getCurrentUser`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${result.accessToken}`,
@@ -159,7 +159,7 @@ export async function refreshToken(): Promise<ResponseType<UserInfo> | null> {
  * 需要认证，使用 fetchAuth 自动处理 token
  */
 export async function getCurrentUser(): Promise<ResponseType<UserInfo>> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/getCurrentUser`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCurrentUser`, {
     method: 'GET',
   });
   return response.json();
@@ -171,7 +171,7 @@ export async function getCurrentUser(): Promise<ResponseType<UserInfo>> {
  */
 export async function logout(): Promise<void> {
   try {
-    await fetch(`${API_BASE_URL}/user/logout`, {
+    await fetch(`${API_BASE_URL}/logout`, {
       method: 'POST',
       credentials: 'include', // 允许发送 Cookie
     });

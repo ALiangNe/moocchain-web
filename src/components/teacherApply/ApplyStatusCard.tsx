@@ -2,11 +2,11 @@ import { Steps, type StepsProps } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import type { AuditRecordInfo } from '../../types/auditRecordType';
 
-interface ApplicationStatusCardProps {
+interface ApplyStatusCardProps {
   auditRecord: AuditRecordInfo | null;
 }
 
-export default function ApplicationStatusCard({ auditRecord }: ApplicationStatusCardProps) {
+export default function ApplyStatusCard({ auditRecord }: ApplyStatusCardProps) {
   if (!auditRecord) {
     return (
       <div>

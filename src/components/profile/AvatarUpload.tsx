@@ -4,12 +4,12 @@ import type { UserInfo } from '../../types/userType';
 import { uploadAvatar } from '../../api/baseApi';
 import { useAuthStore } from '../../stores/authStore';
 
-interface UserAvatarProps {
+interface AvatarUploadProps {
   user: UserInfo | null;
   size?: number;
 }
 
-export default function UserAvatar({ user, size = 120 }: UserAvatarProps) {
+export default function AvatarUpload({ user, size = 120 }: AvatarUploadProps) {
   const setAuth = useAuthStore((state) => state.setAuth);
   const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -65,4 +65,3 @@ export default function UserAvatar({ user, size = 120 }: UserAvatarProps) {
     </div>
   );
 }
-
