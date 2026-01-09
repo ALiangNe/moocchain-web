@@ -20,9 +20,9 @@ export function formatDateTime(date: Date | string | null | undefined): string {
 }
 
 /**
- * 格式化日期为中文格式：YYYY年MM月DD日
+ * 格式化日期为 YYYY-MM-DD 格式
  * @param date 日期对象或日期字符串
- * @returns 格式化后的日期字符串
+ * @returns 格式化后的日期字符串，格式：YYYY-MM-DD
  */
 export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return '-';
@@ -34,5 +34,5 @@ export function formatDate(date: Date | string | null | undefined): string {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   
-  return `${year}:${month}:${day}`;
+  return `${year}-${month}-${day}`;
 }

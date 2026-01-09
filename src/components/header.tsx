@@ -18,15 +18,15 @@ export default function Header() {
   const getMenuItems = (role?: number) => {
     const baseItems = [
       { path: '/home', label: '首页' },
-      { path: '/courses', label: '全部课程' },
+      { path: '/courselearn', label: '课程学习' },
     ];
 
     if (role === UserRole.TEACHER || role === UserRole.ADMIN) {
-      baseItems.push({ path: '/resources', label: '资源管理' });
+      baseItems.push({ path: '/coursemgmt', label: '课程管理' });
     }
 
     if (role === UserRole.ADMIN) {
-      baseItems.push({ path: '/users', label: '用户管理' });
+      baseItems.push({ path: '/user', label: '用户管理' });
       baseItems.push({ path: '/audit', label: '审核管理' });
     }
 

@@ -1,84 +1,127 @@
 import type { UserInfo } from '../types/userType';
 import type { ResponseType } from '../types/responseType';
 import type { AuditRecordInfo } from '../types/auditRecordType';
+import type { CourseInfo } from '../types/courseType';
+import type { ResourceInfo } from '../types/resourceType';
 import { fetchWithAuth } from './authApi';
-import { buildGetAuditRecordListQuery } from '../utils/buildQueryParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildFormData } from '../utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // User API
 export async function login(data: { username: string; password: string }): Promise<ResponseType<UserInfo>> {
-  const response = await fetch(`${API_BASE_URL}/user/login`, {
+  const response = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
     credentials: 'include', // 允许发送和接收 Cookie（包括 HttpOnly Cookie）
-  });
-  return response.json();
+  }); return response.json();
 }
-
 export async function register(data: { username: string; password: string; email: string }): Promise<ResponseType<UserInfo>> {
-  const response = await fetch(`${API_BASE_URL}/user/register`, {
+  const response = await fetch(`${API_BASE_URL}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  });
-  return response.json();
+  }); return response.json();
 }
-
 export async function updateUser(data: Partial<UserInfo>): Promise<ResponseType<UserInfo>> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/updateUser`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateUser`, {
     method: 'PUT',
     body: JSON.stringify(data),
-  });
-  return response.json();
+  }); return response.json();
 }
-
 export async function uploadAvatar(file: File): Promise<ResponseType<UserInfo>> {
   const formData = new FormData();
   formData.append('avatar', file);
-  
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/uploadAvatar`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/uploadAvatar`, {
     method: 'POST',
     body: formData,
-  });
-  return response.json();
+  }); return response.json();
 }
 
 // AuditRecord API
 export async function createTeacherApplication(params: { auditComment?: string }): Promise<ResponseType<AuditRecordInfo>> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/createTeacherApplication`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/createTeacherApplication`, {
     method: 'POST',
     body: JSON.stringify(params),
-  });
-  return response.json();
+  }); return response.json();
 }
-
 export async function approveTeacherApplication(params: { auditId: number; auditStatus: number; auditComment?: string }): Promise<ResponseType<{ auditRecord: AuditRecordInfo; user?: UserInfo }>> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/approveTeacherApplication`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/approveTeacherApplication`, {
     method: 'POST',
     body: JSON.stringify(params),
-  });
-  return response.json();
+  }); return response.json();
 }
-
+export async function approveResourceApplication(params: { auditId: number; auditStatus: number; auditComment?: string }): Promise<ResponseType<{ auditRecord: AuditRecordInfo; resource?: ResourceInfo }>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/approveResourceApplication`, {
+    method: 'POST',
+    body: JSON.stringify(params),
+  }); return response.json();
+}
 export async function getAuditRecordList(params: { targetId?: number; targetType?: number; auditType?: number; auditStatus?: number; auditorId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: AuditRecordInfo[]; total: number }>> {
   const queryString = buildGetAuditRecordListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getAuditRecordList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function uploadCertificate(file: File): Promise<ResponseType<UserInfo>> {
+  const formData = new FormData();
+  formData.append('certificate', file);
+  const response = await fetchWithAuth(`${API_BASE_URL}/uploadCertificate`, {
+    method: 'POST',
+    body: formData,
+  }); return response.json();
+}
 
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/getAuditRecordList?${queryString}`, {
+// Course API
+export async function createCourse(data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
+  const formData = buildFormData(data, coverImage ? { coverImage } : undefined, ['coverImage']);
+  const response = await fetchWithAuth(`${API_BASE_URL}/createCourse`, {
+    method: 'POST',
+    body: formData,
+  }); return response.json();
+}
+export async function updateCourse(courseId: number, data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
+  const formData = buildFormData(data, coverImage ? { coverImage } : undefined, ['coverImage']);
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateCourse/${courseId}`, {
+    method: 'PUT',
+    body: formData,
+  }); return response.json();
+}
+export async function getCourseList(params: { teacherId?: number; status?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CourseInfo[]; total: number }>> {
+  const queryString = buildGetCourseListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCourseList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getCourse(courseId: number): Promise<ResponseType<CourseInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCourse/${courseId}`, {
     method: 'GET',
   });
   return response.json();
 }
 
-export async function uploadCertificate(file: File): Promise<ResponseType<UserInfo>> {
-  const formData = new FormData();
-  formData.append('certificate', file);
-
-  const response = await fetchWithAuth(`${API_BASE_URL}/user/uploadCertificate`, {
+// Resource API
+export async function createResource(formData: FormData): Promise<ResponseType<ResourceInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/createResource`, {
     method: 'POST',
     body: formData,
-  });
-  return response.json();
+  }); return response.json();
 }
-
+export async function updateResource(resourceId: number, data: Partial<ResourceInfo>): Promise<ResponseType<ResourceInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateResource/${resourceId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function getResourceList(params: { courseId?: number; ownerId?: number; resourceType?: number; status?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceInfo[]; total: number }>> {
+  const queryString = buildGetResourceListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getResourceList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getResource(resourceId: number): Promise<ResponseType<ResourceInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getResource/${resourceId}`, {
+    method: 'GET',
+  }); return response.json();
+}

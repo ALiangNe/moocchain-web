@@ -4,12 +4,15 @@ import Explore from '../pages/explore/Explore';
 import Login from '../pages/login/Login';
 import Register from '../pages/register/Register';
 import Home from '../pages/home/Home';
-import Courses from '../pages/courses/Courses';
-import Resources from '../pages/resources/Resources';
-import Users from '../pages/users/Users';
+import CourseLearn from '../pages/courselearn/CourseLearn';
+import CourseMgmt from '../pages/courseMgmt/CourseMgmt';
+import CourseMgmtId from '../pages/courseMgmt/CourseMgmtId';
+import CourseMgmtResourceId from '../pages/courseMgmt/CourseMgmtResourceId';
+import User from '../pages/user/User';
 import Profile from '../pages/profile/Profile';
 import TeacherApply from '../pages/teacherApply/TeacherApply';
 import Audit from '../pages/audit/Audit';
+import NotFound from '../pages/notfound/NotFound';
 
 export const router = createBrowserRouter([
   {
@@ -19,12 +22,15 @@ export const router = createBrowserRouter([
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
       { path: '/home', element: <Home /> },
-      { path: '/courses', element: <Courses /> },
-      { path: '/resources', element: <Resources /> },
-      { path: '/users', element: <Users /> },
+      { path: '/courselearn', element: <CourseLearn /> },
+      { path: '/coursemgmt', element: <CourseMgmt /> },
+      { path: '/coursemgmt/:courseId', element: <CourseMgmtId /> },
+      { path: '/coursemgmt/:courseId/resource/:resourceId', element: <CourseMgmtResourceId /> },
+      { path: '/user', element: <User /> },
       { path: '/profile', element: <Profile /> },
       { path: '/teacherApply', element: <TeacherApply /> },
       { path: '/audit', element: <Audit /> },
+      { path: '*', element: <NotFound /> },
     ],
   },
 ]);
