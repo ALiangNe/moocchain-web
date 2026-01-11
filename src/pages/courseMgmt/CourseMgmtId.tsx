@@ -30,6 +30,7 @@ export default function CourseDetail() {
   const courseRequestIdRef = useRef(0);
   const resourceRequestIdRef = useRef(0);
 
+  // 加载课程详情数据
   const loadCourse = useCallback(async () => {
     if (!courseId) return;
     if (courseLoadingRef.current) return;
@@ -71,6 +72,7 @@ export default function CourseDetail() {
     setCourse(result.data);
   }, [courseId]);
 
+  // 加载课程资源列表数据
   const loadResources = useCallback(async () => {
     if (!courseId) return;
     if (resourceLoadingRef.current) return;
@@ -133,6 +135,7 @@ export default function CourseDetail() {
     };
   }, [loadResources]);
 
+  // 创建新资源
   const handleCreateResource = async (values: Partial<ResourceInfo> & { file?: File }) => {
     const resourceCourseId = values.courseId || courseId;
     if (!resourceCourseId) {
@@ -174,6 +177,7 @@ export default function CourseDetail() {
     loadResources();
   };
 
+  // 编辑资源信息
   const handleEditResource = async (values: Partial<ResourceInfo>) => {
     if (!editingResource || !editingResource.resourceId) {
       message.error('资源信息不存在');
@@ -205,10 +209,12 @@ export default function CourseDetail() {
     loadResources();
   };
 
+  // 处理编辑资源点击事件
   const handleEditClick = (resource: ResourceInfo) => {
     setEditingResource(resource);
   };
 
+  // 处理资源点击，跳转到资源详情页
   const handleResourceClick = (resource: ResourceInfo) => {
     if (resource.resourceId && courseId) {
       navigate(`/coursemgmt/${courseId}/resource/${resource.resourceId}`);

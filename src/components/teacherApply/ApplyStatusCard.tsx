@@ -18,6 +18,7 @@ export default function ApplyStatusCard({ auditRecord }: ApplyStatusCardProps) {
 
   const status = auditRecord.auditStatus;
 
+  // 根据审核状态获取步骤配置
   const getSteps = (): StepsProps['items'] => {
     if (status === 0) {
       return [

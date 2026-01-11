@@ -14,6 +14,7 @@ interface AuditRecordTableProps {
 }
 
 export default function AuditRecordTable({ data, loading, page, pageSize, total, onPageChange, onViewDetail }: AuditRecordTableProps) {
+  // 获取用户头像地址
   const getAvatarUrl = (avatar?: string) => {
     if (!avatar) return undefined;
     if (avatar.startsWith('http')) return avatar;

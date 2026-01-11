@@ -13,6 +13,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [emailOptions, setEmailOptions] = useState<{ value: string; label: string }[]>([]);
 
+  // 处理注册表单提交
   const onFinish = async (values: { username: string; password: string; email: string }) => {
     setLoading(true);
     let response: ResponseType<UserInfo>;
@@ -23,7 +24,7 @@ export default function Register() {
       setLoading(false);
       return;
     }
-      setLoading(false);
+    setLoading(false);
 
     if (response.code !== 0) {
       message.error(response.message || '注册失败');
@@ -96,8 +97,8 @@ export default function Register() {
 
           <div className="text-center mt-6">
             <Link to="/login" className="text-[#007aff] hover:text-[#0051d5] no-underline">已有账号？立即登录</Link>
-              </div>
           </div>
+        </div>
       </div>
     </div>
   );

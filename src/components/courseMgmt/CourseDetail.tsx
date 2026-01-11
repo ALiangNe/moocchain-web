@@ -7,6 +7,7 @@ interface CourseDetailProps {
 }
 
 export default function CourseDetail({ course }: CourseDetailProps) {
+  // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
     if (!coverImage) return undefined;
     if (coverImage.startsWith('http')) return coverImage;

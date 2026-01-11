@@ -31,7 +31,7 @@ export default function Audit() {
   const requestIdRef = useRef(0);
   const resourceRequestIdRef = useRef(0);
 
-  // 加载数据的函数，供外部调用
+  // 加载教师认证审核数据列表
   const loadData = useCallback(async () => {
     if (loadingRef.current) {
       return;
@@ -100,12 +100,14 @@ export default function Audit() {
     };
   }, [loadData]);
 
+  // 查看教师认证审核详情
   const handleViewDetail = (record: AuditRecordInfo) => {
     // 直接使用列表返回的数据，无需再次请求详情接口
     setSelectedRecord(record);
     setDetailVisible(true);
   };
 
+  // 处理教师认证审批操作
   const handleApprove = (status: number) => {
     if (!selectedRecord || !selectedRecord.auditId) return;
     if (selectedRecord.auditStatus !== 0) {
@@ -119,6 +121,7 @@ export default function Audit() {
     setApproveVisible(true);
   };
 
+  // 加载资源合规审核数据列表
   const loadResourceData = useCallback(async () => {
     if (resourceLoadingRef.current) return;
 
@@ -171,6 +174,7 @@ export default function Audit() {
     };
   }, [loadResourceData]);
 
+  // 处理资源合规审批操作
   const handleApproveResource = (status: number) => {
     if (!selectedRecord || !selectedRecord.auditId) return;
     if (selectedRecord.auditStatus !== 0) {
@@ -184,6 +188,7 @@ export default function Audit() {
     setApproveVisible(true);
   };
 
+  // 确认审批操作，提交审批结果
   const handleConfirmApprove = async (comment: string) => {
     if (!currentAuditId || auditStatus === null) return;
 
@@ -236,6 +241,7 @@ export default function Audit() {
     loadResourceData();
   };
 
+  // 查看资源合规审核详情
   const handleViewResourceDetail = (record: AuditRecordInfo) => {
     setSelectedRecord(record);
     setDetailVisible(true);

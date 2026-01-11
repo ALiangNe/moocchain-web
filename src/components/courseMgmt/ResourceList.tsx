@@ -35,6 +35,7 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
     2: '付费',
   };
 
+  // 处理资源卡片点击事件
   const handleCardClick = (resource: ResourceInfo, e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) {
       return;

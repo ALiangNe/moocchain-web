@@ -21,6 +21,7 @@ export default function Resources() {
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
 
+  // 加载课程列表数据
   const loadCourses = useCallback(async () => {
     if (!user?.userId || user.role === UserRole.STUDENT) return;
     if (loadingRef.current) return;
@@ -78,6 +79,7 @@ export default function Resources() {
     };
   }, [loadCourses]);
 
+  // 创建新课程
   const handleCreateCourse = async (values: Partial<CourseInfo>, coverImage?: File) => {
     try {
       const result = await createCourse(values, coverImage);
@@ -108,6 +110,7 @@ export default function Resources() {
     );
   }
 
+  // 处理课程点击，跳转到课程详情页
   const handleCourseClick = (course: CourseInfo) => {
     navigate(`/coursemgmt/${course.courseId}`);
   };

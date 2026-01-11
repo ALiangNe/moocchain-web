@@ -21,6 +21,7 @@ export default function ResourceAuditTable({ data, loading, page, pageSize, tota
     3: { text: '视频', color: 'purple' },
   };
 
+  // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
     if (!coverImage) return undefined;
     if (coverImage.startsWith('http')) return coverImage;

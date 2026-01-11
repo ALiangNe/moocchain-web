@@ -18,15 +18,18 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
     form.setFieldsValue({ email: user.email, realName: user.realName, phone: user.phone, idCard: user.idCard, gender: user.gender, schoolName: user.schoolName, });
   }, [user, form]);
 
+  // 进入编辑模式
   const handleEdit = () => {
     setIsEditing(true);
   };
 
+  // 提交个人信息表单
   const handleSubmit = async (values: Partial<UserInfo>) => {
     await onSubmit(values);
     setIsEditing(false);
   };
 
+  // 取消编辑，恢复原始值
   const handleCancel = () => {
     // 恢复为原始值，而不是清空
     if (user) {

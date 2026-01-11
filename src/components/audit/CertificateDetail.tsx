@@ -17,6 +17,7 @@ export default function AuditRecordDetail({ record, onApprove }: AuditRecordDeta
 
   const statusConfig = statusMap[record.auditStatus || 0] || statusMap[0];
 
+  // 获取认证材料文件地址
   const getCertificateFileUrl = (certificateFile?: string) => {
     if (!certificateFile) return undefined;
     if (certificateFile.startsWith('http')) return certificateFile;

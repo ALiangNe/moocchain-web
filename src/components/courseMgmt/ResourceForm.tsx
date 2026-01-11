@@ -18,6 +18,7 @@ export default function ResourceForm({ courseId, initialValues, onSubmit, onCanc
   const [form] = Form.useForm();
   const [file, setFile] = useState<File | null>(null);
 
+  // 处理资源表单提交
   const handleSubmit = async () => {
     let values;
     try {

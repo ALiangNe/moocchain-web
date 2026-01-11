@@ -36,10 +36,12 @@ export default function AuditApproveModal({ visible, auditStatus, loading, recor
     });
   }, [visible, auditStatus]);
 
+  // 确认审批操作
   const handleOk = () => {
     onConfirm(auditComment);
   };
 
+  // 取消审批操作
   const handleCancel = () => {
     setAuditComment('');
     onCancel();

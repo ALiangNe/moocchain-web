@@ -12,9 +12,10 @@ export default function Profile() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [loading, setLoading] = useState(false);
 
+  // 更新用户个人信息
   const handleUpdateProfile = async (values: Partial<UserInfo>) => {
     setLoading(true);
-    
+
     let result;
     try {
       result = await updateUser(values);
@@ -24,21 +25,21 @@ export default function Profile() {
       setLoading(false);
       return;
     }
-    
+
     setLoading(false);
-      
-      if (result.code !== 0) {
-        message.error(result.message || '更新失败');
-        return;
-      }
-      
-      if (!result.data) {
-        message.error('更新失败，未返回数据');
-        return;
-      }
-      
-      setAuth(accessToken, result.data);
-      message.success('个人信息更新成功');
+
+    if (result.code !== 0) {
+      message.error(result.message || '更新失败');
+      return;
+    }
+
+    if (!result.data) {
+      message.error('更新失败，未返回数据');
+      return;
+    }
+
+    setAuth(accessToken, result.data);
+    message.success('个人信息更新成功');
   };
 
   if (!user) {
@@ -53,7 +54,7 @@ export default function Profile() {
     <div className="py-12">
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-lg font-semibold mb-8 text-[#1d1d1f]">个人资料</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             <Card className="shadow-sm">

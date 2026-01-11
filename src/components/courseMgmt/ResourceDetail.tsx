@@ -9,6 +9,7 @@ interface ResourceDetailProps {
 }
 
 export default function ResourceDetail({ resource, onDownload }: ResourceDetailProps) {
+  // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
     if (ipfsHash.startsWith('http')) return ipfsHash;
@@ -16,6 +17,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
     return `${baseUrl}${ipfsHash}`;
   };
 
+  // 获取资源类型名称
   const getResourceTypeName = (type?: number) => {
     const typeMap: Record<number, string> = {
       0: '其他',
@@ -26,6 +28,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
     return typeMap[type || 0] || '其他';
   };
 
+  // 获取资源类型标签颜色
   const getResourceTypeColor = (type?: number) => {
     const colorMap: Record<number, string> = {
       0: 'default',
@@ -36,6 +39,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
     return colorMap[type || 0] || 'default';
   };
 
+  // 获取资源状态名称
   const getStatusName = (status?: number) => {
     const statusMap: Record<number, string> = {
       0: '待审核',
@@ -46,6 +50,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
     return statusMap[status || 0] || '待审核';
   };
 
+  // 获取资源状态标签颜色
   const getStatusColor = (status?: number) => {
     const colorMap: Record<number, string> = {
       0: 'processing',
@@ -56,6 +61,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
     return colorMap[status || 0] || 'processing';
   };
 
+  // 获取访问范围名称
   const getAccessScopeName = (scope?: number) => {
     const scopeMap: Record<number, string> = {
       0: '公开',

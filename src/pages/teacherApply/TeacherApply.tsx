@@ -81,9 +81,10 @@ export default function TeacherApply() {
     };
   }, [loadAuditRecord]);
 
+  // 上传教师认证材料
   const handleUploadMaterial = async (file: File) => {
     setLoading(true);
-    
+
     let result;
     try {
       result = await uploadCertificate(file);
@@ -93,33 +94,34 @@ export default function TeacherApply() {
       setLoading(false);
       return;
     }
-    
+
     setLoading(false);
-    
+
     if (result.code !== 0 || !result.data) {
       message.error(result.message || '上传失败');
       return;
     }
-    
+
     setAuth(accessToken, result.data);
     message.success('材料上传成功');
   };
 
+  // 提交教师认证申请
   const handleSubmitApplication = async () => {
     if (!user?.userId) return;
-    
+
     if (!user.certificateFile) {
       message.warning('请先上传认证材料');
       return;
     }
-    
+
     if (auditRecord?.auditStatus === 0) {
       message.warning('您已有待审核的申请，请勿重复提交');
       return;
     }
-    
+
     setSubmitting(true);
-    
+
     let result;
     try {
       result = await createTeacherApplication({});
@@ -129,14 +131,14 @@ export default function TeacherApply() {
       setSubmitting(false);
       return;
     }
-    
+
     setSubmitting(false);
-    
+
     if (result.code !== 0 || !result.data) {
       message.error(result.message || '提交失败');
       return;
     }
-    
+
     setAuditRecord(result.data);
     message.success('申请提交成功，等待管理员审核');
   };

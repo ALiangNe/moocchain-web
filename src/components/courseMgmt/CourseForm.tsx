@@ -26,6 +26,7 @@ export default function CourseForm({ initialValues, onSubmit, onCancel, loading 
       : undefined
   );
 
+  // 处理课程表单提交
   const handleSubmit = async () => {
     let values;
     try {
@@ -48,6 +49,7 @@ export default function CourseForm({ initialValues, onSubmit, onCancel, loading 
     }
   };
 
+  // 处理课程封面上传
   const handleCoverImageChange = (file: File) => {
     const isImage = file.type.startsWith('image/');
     const isLt5M = file.size / 1024 / 1024 < 5;
@@ -68,6 +70,7 @@ export default function CourseForm({ initialValues, onSubmit, onCancel, loading 
     return false;
   };
 
+  // 删除课程封面
   const handleRemoveCoverImage = () => {
     setCoverImageFile(undefined);
     setCoverImagePreview(undefined);

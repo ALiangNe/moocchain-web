@@ -20,6 +20,7 @@ export default function CourseMgmtResourceId() {
   const requestIdRef = useRef(0);
   const user = useAuthStore((state) => state.user);
 
+  // 加载资源详情数据
   const loadResource = useCallback(async () => {
     if (!resourceId) return;
     if (loadingRef.current) return;
@@ -71,6 +72,7 @@ export default function CourseMgmtResourceId() {
     };
   }, [loadResource]);
 
+  // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
     if (ipfsHash.startsWith('http')) return ipfsHash;
@@ -78,6 +80,7 @@ export default function CourseMgmtResourceId() {
     return `${baseUrl}${ipfsHash}`;
   };
 
+  // 处理资源文件下载
   const handleDownload = () => {
     const fileUrl = getResourceFileUrl(resource?.ipfsHash);
     if (fileUrl) {
@@ -85,6 +88,7 @@ export default function CourseMgmtResourceId() {
     }
   };
 
+  // 处理资源编辑提交
   const handleEditSubmit = async (values: Partial<ResourceInfo>) => {
     if (!resourceId || !resource) return;
 

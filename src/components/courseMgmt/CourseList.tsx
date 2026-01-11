@@ -14,6 +14,7 @@ interface CourseListProps {
 }
 
 export default function CourseList({ courses, loading, page, pageSize, total, onPageChange, onCourseClick }: CourseListProps) {
+  // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
     if (!coverImage) return undefined;
     if (coverImage.startsWith('http')) return coverImage;

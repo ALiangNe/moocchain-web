@@ -1,6 +1,8 @@
 import { Upload, Button, message } from 'antd';
-import { UploadOutlined, FileTextOutlined } from '@ant-design/icons';
+import { UploadOutlined, FileTextOutlined, InboxOutlined } from '@ant-design/icons';
 import type { UserInfo } from '../../types/userType';
+
+const { Dragger } = Upload;
 
 interface CertificateUploadProps {
   user: UserInfo | null;
@@ -50,13 +52,13 @@ export default function CertificateUpload({ user, onUpload, loading, showReuploa
           </div>
         </div>
       ) : (
-        <Upload {...uploadProps} style={{ display: 'block', width: '100%' }}>
-          <div className="w-full p-12 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-[#007aff] transition-colors cursor-pointer bg-gray-50 hover:bg-blue-50">
-            <UploadOutlined className="text-5xl text-gray-400 mb-4" />
-            <p className="text-lg font-semibold text-gray-700 mb-2">点击或拖拽文件到此区域上传</p>
-            <p className="text-sm text-gray-500">支持 PDF 或图片文件，文件大小不超过 10MB</p>
-          </div>
-        </Upload>
+        <Dragger {...uploadProps} className="border-2 border-dashed border-gray-300 hover:border-[#007aff] transition-colors rounded-lg">
+          <p className="ant-upload-drag-icon text-[#007aff]">
+            <InboxOutlined className="text-4xl" />
+          </p>
+          <p className="ant-upload-text text-base font-medium text-[#1d1d1f]">点击或拖拽文件到此区域上传</p>
+          <p className="ant-upload-hint text-sm text-[#6e6e73]">支持 PDF 或图片文件，文件大小不超过 10MB</p>
+        </Dragger>
       )}
     </div>
   );

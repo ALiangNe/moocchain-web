@@ -17,6 +17,7 @@ export default function ResourceAuditDetail({ record, onApprove }: ResourceAudit
 
   const statusConfig = statusMap[record.auditStatus || 0] || statusMap[0];
 
+  // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
     if (ipfsHash.startsWith('http')) return ipfsHash;
@@ -27,6 +28,7 @@ export default function ResourceAuditDetail({ record, onApprove }: ResourceAudit
   const fileUrl = getResourceFileUrl(record.targetResource?.ipfsHash);
   const resourceType = record.targetResource?.resourceType || 0;
 
+  // 处理资源文件下载
   const handleDownload = () => {
     if (fileUrl) {
       window.open(fileUrl, '_blank');

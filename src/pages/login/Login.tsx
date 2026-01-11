@@ -11,6 +11,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
+  // 处理登录表单提交
   const onFinish = async (values: { username: string; password: string }) => {
     setLoading(true);
     let response: ResponseType<UserInfo>;
@@ -21,7 +22,7 @@ export default function Login() {
       setLoading(false);
       return;
     }
-      setLoading(false);
+    setLoading(false);
 
     if (response.code !== 0) {
       message.error(response.message || '登录失败');
@@ -60,8 +61,8 @@ export default function Login() {
 
           <div className="text-center mt-6">
             <Link to="/register" className="text-[#007aff] hover:text-[#0051d5] no-underline">还没有账号？立即注册</Link>
-              </div>
           </div>
+        </div>
       </div>
     </div>
   );
