@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Spin, message, Tag, Button } from 'antd';
-import { useAuthStore } from '../../stores/authStore';
-import { createTeacherApplication, getAuditRecordList, uploadCertificate } from '../../api/baseApi';
-import type { AuditRecordInfo } from '../../types/auditRecordType';
-import { UserRole, RoleName, type UserRoleType } from '../../constants/role';
-import ApplyStatusCard from '../../components/teacherApply/ApplyStatusCard';
-import CertificateUpload from '../../components/teacherApply/CertificateUpload';
-import { formatDateTime } from '../../utils/formatTime';
+import { useAuthStore } from '@/stores/authStore';
+import { createTeacherApplication, getAuditRecordList, uploadCertificate } from '@/api/baseApi';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
+import { UserRole, RoleName, type UserRoleType } from '@/constants/role';
+import ApplyStatusCard from '@/components/teacherApply/ApplyStatusCard';
+import CertificateUpload from '@/components/teacherApply/CertificateUpload';
+import { formatDateTime } from '@/utils/formatTime';
 
 export default function TeacherApply() {
   const user = useAuthStore((state) => state.user);

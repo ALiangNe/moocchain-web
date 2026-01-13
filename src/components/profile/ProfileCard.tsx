@@ -1,5 +1,5 @@
-import type { UserInfo } from '../../types/userType.ts';
-import { useAuthStore } from '../../stores/authStore.ts';
+import type { UserInfo } from '@/types/userType.ts';
+import { useAuthStore } from '@/stores/authStore.ts';
 import AvatarUpload from './AvatarUpload.tsx';
 
 interface ProfileCardProps {

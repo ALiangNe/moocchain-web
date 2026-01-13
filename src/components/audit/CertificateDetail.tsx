@@ -1,7 +1,7 @@
 import { Descriptions, Tag, Button, Image, Card } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import type { AuditRecordInfo } from '../../types/auditRecordType';
-import { formatDateTime } from '../../utils/formatTime';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
+import { formatDateTime } from '@/utils/formatTime';
 
 interface AuditRecordDetailProps {
   record: AuditRecordInfo;

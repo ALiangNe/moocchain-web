@@ -1,6 +1,6 @@
 import { Upload, Button, message } from 'antd';
 import { UploadOutlined, FileTextOutlined, InboxOutlined } from '@ant-design/icons';
-import type { UserInfo } from '../../types/userType';
+import type { UserInfo } from '@/types/userType';
 
 const { Dragger } = Upload;
 

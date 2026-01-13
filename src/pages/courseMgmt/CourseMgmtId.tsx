@@ -2,15 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message, Spin } from 'antd';
 import { PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
-import { getCourse, getResourceList, createResource, updateResource } from '../../api/baseApi';
-import type { CourseInfo } from '../../types/courseType';
-import type { ResourceInfo } from '../../types/resourceType';
-import ResourceForm from '../../components/courseMgmt/ResourceForm';
-import ResourceList from '../../components/courseMgmt/ResourceList';
-import CourseDetailCard from '../../components/courseMgmt/CourseDetail';
-import { UserRole } from '../../constants/role';
-import { buildCreateResourceFormData } from '../../utils/buildApiParams';
+import { useAuthStore } from '@/stores/authStore';
+import { getCourse, getResourceList, createResource, updateResource } from '@/api/baseApi';
+import type { CourseInfo } from '@/types/courseType';
+import type { ResourceInfo } from '@/types/resourceType';
+import ResourceForm from '@/components/courseMgmt/ResourceForm';
+import ResourceList from '@/components/courseMgmt/ResourceList';
+import CourseDetailCard from '@/components/courseMgmt/CourseDetail';
+import { UserRole } from '@/constants/role';
+import { buildCreateResourceFormData } from '@/utils/buildApiParams';
 
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();

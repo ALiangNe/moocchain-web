@@ -1,7 +1,7 @@
 import { Card, Button, Descriptions, Tag, Popover } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
-import type { ResourceInfo } from '../../types/resourceType';
-import { formatDateTime } from '../../utils/formatTime';
+import type { ResourceInfo } from '@/types/resourceType';
+import { formatDateTime } from '@/utils/formatTime';
 
 interface ResourceDetailProps {
   resource: ResourceInfo;

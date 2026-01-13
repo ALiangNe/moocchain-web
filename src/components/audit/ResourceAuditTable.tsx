@@ -1,7 +1,7 @@
 import { Table, Button, Tag, Pagination, Image } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-import type { AuditRecordInfo } from '../../types/auditRecordType';
-import { formatDate } from '../../utils/formatTime';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
+import { formatDate } from '@/utils/formatTime';
 
 interface ResourceAuditTableProps {
   data: AuditRecordInfo[];

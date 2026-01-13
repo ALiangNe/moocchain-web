@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Drawer, Tabs, message } from 'antd';
-import { getAuditRecordList, approveTeacherApplication, approveResourceApplication } from '../../api/baseApi';
-import type { AuditRecordInfo } from '../../types/auditRecordType';
-import AuditRecordDetail from '../../components/audit/CertificateDetail';
-import AuditRecordTable from '../../components/audit/CertificateTable';
-import ResourceAuditTable from '../../components/audit/ResourceAuditTable';
-import ResourceAuditDetail from '../../components/audit/ResourceAuditDetail';
-import AuditApproveModal from '../../components/audit/AuditApplyModal';
+import { getAuditRecordList, approveTeacherApplication, approveResourceApplication } from '@/api/baseApi';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
+import AuditRecordDetail from '@/components/audit/CertificateDetail';
+import AuditRecordTable from '@/components/audit/CertificateTable';
+import ResourceAuditTable from '@/components/audit/ResourceAuditTable';
+import ResourceAuditDetail from '@/components/audit/ResourceAuditDetail';
+import AuditApproveModal from '@/components/audit/AuditApplyModal';
 
 const { TabPane } = Tabs;
 

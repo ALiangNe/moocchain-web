@@ -2,10 +2,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Button, Dropdown, message } from 'antd';
 import type { MenuProps } from 'antd';
 import { DownOutlined, LogoutOutlined, UserOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import { UserRole, RoleName, type UserRoleType } from '../constants/role';
-import { useAuthStore } from '../stores/authStore';
-import { logout } from '../api/authApi';
-import icon from '../assets/images/moocchain-icon.png';
+import { UserRole, RoleName, type UserRoleType } from '@/constants/role';
+import { useAuthStore } from '@/stores/authStore';
+import { logout } from '@/api/authApi';
+import icon from '@/assets/images/moocchain-icon.png';
 
 const { Header: AntHeader } = Layout;
 

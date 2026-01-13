@@ -1,5 +1,5 @@
 import { Form, Input, Select, InputNumber, Button } from 'antd';
-import type { ResourceInfo } from '../../types/resourceType';
+import type { ResourceInfo } from '@/types/resourceType';
 import ResourceUpload from './ResourceUpload.tsx';
 import { useState } from 'react';
 

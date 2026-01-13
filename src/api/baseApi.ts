@@ -1,10 +1,10 @@
-import type { UserInfo } from '../types/userType';
-import type { ResponseType } from '../types/responseType';
-import type { AuditRecordInfo } from '../types/auditRecordType';
-import type { CourseInfo } from '../types/courseType';
-import type { ResourceInfo } from '../types/resourceType';
-import { fetchWithAuth } from './authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildFormData } from '../utils/buildApiParams';
+import type { UserInfo } from '@/types/userType';
+import type { ResponseType } from '@/types/responseType';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
+import type { CourseInfo } from '@/types/courseType';
+import type { ResourceInfo } from '@/types/resourceType';
+import { fetchWithAuth } from '@/api/authApi';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

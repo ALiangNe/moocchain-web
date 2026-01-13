@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
-import { createCourse, getCourseList } from '../../api/baseApi';
-import type { CourseInfo } from '../../types/courseType';
-import CourseForm from '../../components/courseMgmt/CourseForm';
-import CourseList from '../../components/courseMgmt/CourseList';
-import { UserRole } from '../../constants/role';
+import { useAuthStore } from '@/stores/authStore';
+import { createCourse, getCourseList } from '@/api/baseApi';
+import type { CourseInfo } from '@/types/courseType';
+import CourseForm from '@/components/courseMgmt/CourseForm';
+import CourseList from '@/components/courseMgmt/CourseList';
+import { UserRole } from '@/constants/role';
 
 export default function Resources() {
   const navigate = useNavigate();

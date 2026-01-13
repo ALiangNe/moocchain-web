@@ -1,6 +1,6 @@
-import type { UserInfo } from '../types/userType';
-import type { ResponseType } from '../types/responseType';
-import { useAuthStore } from '../stores/authStore';
+import type { UserInfo } from '@/types/userType';
+import type { ResponseType } from '@/types/responseType';
+import { useAuthStore } from '@/stores/authStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

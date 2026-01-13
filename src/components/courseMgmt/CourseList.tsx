@@ -1,7 +1,7 @@
 import { Card, Pagination } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
-import type { CourseInfo } from '../../types/courseType';
-import { formatDate } from '../../utils/formatTime';
+import type { CourseInfo } from '@/types/courseType';
+import { formatDate } from '@/utils/formatTime';
 
 interface CourseListProps {
   courses: CourseInfo[];

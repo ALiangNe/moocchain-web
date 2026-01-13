@@ -1,6 +1,6 @@
 import { Form, Input, DatePicker, Button, Upload, message } from 'antd';
 import { InboxOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { CourseInfo } from '../../types/courseType';
+import type { CourseInfo } from '@/types/courseType';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 

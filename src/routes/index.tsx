@@ -1,18 +1,18 @@
 import { createBrowserRouter } from 'react-router-dom';
-import Layout from '../components/Layout';
-import Explore from '../pages/explore/Explore';
-import Login from '../pages/login/Login';
-import Register from '../pages/register/Register';
-import Home from '../pages/home/Home';
-import CourseLearn from '../pages/courselearn/CourseLearn';
-import CourseMgmt from '../pages/courseMgmt/CourseMgmt';
-import CourseMgmtId from '../pages/courseMgmt/CourseMgmtId';
-import CourseMgmtResourceId from '../pages/courseMgmt/CourseMgmtResourceId';
-import User from '../pages/user/User';
-import Profile from '../pages/profile/Profile';
-import TeacherApply from '../pages/teacherApply/TeacherApply';
-import Audit from '../pages/audit/Audit';
-import NotFound from '../pages/notfound/NotFound';
+import Layout from '@/components/Layout';
+import Explore from '@/pages/explore/Explore';
+import Login from '@/pages/login/Login';
+import Register from '@/pages/register/Register';
+import Home from '@/pages/home/Home';
+import CourseLearn from '@/pages/courselearn/CourseLearn';
+import CourseMgmt from '@/pages/courseMgmt/CourseMgmt';
+import CourseMgmtId from '@/pages/courseMgmt/CourseMgmtId';
+import CourseMgmtResourceId from '@/pages/courseMgmt/CourseMgmtResourceId';
+import User from '@/pages/user/User';
+import Profile from '@/pages/profile/Profile';
+import TeacherApply from '@/pages/teacherApply/TeacherApply';
+import Audit from '@/pages/audit/Audit';
+import NotFound from '@/pages/notfound/NotFound';
 
 export const router = createBrowserRouter([
   {

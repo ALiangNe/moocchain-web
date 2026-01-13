@@ -1,8 +1,8 @@
 import { Avatar, Upload, message } from 'antd';
 import { UserOutlined, CameraOutlined } from '@ant-design/icons';
-import type { UserInfo } from '../../types/userType';
-import { uploadAvatar } from '../../api/baseApi';
-import { useAuthStore } from '../../stores/authStore';
+import type { UserInfo } from '@/types/userType';
+import { uploadAvatar } from '@/api/baseApi';
+import { useAuthStore } from '@/stores/authStore';
 
 interface AvatarUploadProps {
   user: UserInfo | null;

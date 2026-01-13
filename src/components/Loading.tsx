@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import icon from '../assets/images/moocchain-icon.png';
+import icon from '@/assets/images/moocchain-icon.png';
 
 export default function Loading() {
   const [loading, setLoading] = useState(true);

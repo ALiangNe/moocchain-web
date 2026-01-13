@@ -1,6 +1,6 @@
 import { Form, Input, Select, Button } from 'antd';
 import { useState, useEffect } from 'react';
-import type { UserInfo } from '../../types/userType';
+import type { UserInfo } from '@/types/userType';
 
 interface ProfileFormProps {
   user: UserInfo | null;

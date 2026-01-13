@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, message } from 'antd';
-import { useAuthStore } from '../../stores/authStore';
-import type { UserInfo } from '../../types/userType';
-import type { ResponseType } from '../../types/responseType';
-import { login } from '../../api/baseApi';
+import { useAuthStore } from '@/stores/authStore';
+import type { UserInfo } from '@/types/userType';
+import type { ResponseType } from '@/types/responseType';
+import { login } from '@/api/baseApi';
 
 export default function Login() {
   const navigate = useNavigate();

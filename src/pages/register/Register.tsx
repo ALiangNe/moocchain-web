@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, AutoComplete, message } from 'antd';
-import { register } from '../../api/baseApi';
-import type { ResponseType } from '../../types/responseType';
-import type { UserInfo } from '../../types/userType';
+import { register } from '@/api/baseApi';
+import type { ResponseType } from '@/types/responseType';
+import type { UserInfo } from '@/types/userType';
 
 // 常见邮箱后缀
 const EMAIL_SUFFIXES = ['@gmail.com', '@qq.com', '@163.com', '@126.com', '@sina.com', '@outlook.com', '@tom.com', '@icloud.com'];

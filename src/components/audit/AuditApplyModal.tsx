@@ -1,7 +1,7 @@
 import { Drawer, Input, Descriptions, Button } from 'antd';
 import { useState, useEffect } from 'react';
-import type { AuditRecordInfo } from '../../types/auditRecordType';
-import { formatDateTime } from '../../utils/formatTime';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
+import { formatDateTime } from '@/utils/formatTime';
 
 const { TextArea } = Input;
 

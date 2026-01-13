@@ -1,6 +1,6 @@
 import { Card, Descriptions, Popover } from 'antd';
-import type { CourseInfo } from '../../types/courseType';
-import { formatDateTime } from '../../utils/formatTime';
+import type { CourseInfo } from '@/types/courseType';
+import { formatDateTime } from '@/utils/formatTime';
 
 interface CourseDetailProps {
   course: CourseInfo;

@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Spin, message, Drawer } from 'antd';
 import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResource } from '../../api/baseApi';
-import { updateResource } from '../../api/baseApi';
-import type { ResourceInfo } from '../../types/resourceType';
-import ResourceDetail from '../../components/courseMgmt/ResourceDetail';
-import ResourceForm from '../../components/courseMgmt/ResourceForm';
-import { useAuthStore } from '../../stores/authStore';
-import { UserRole } from '../../constants/role';
+import { getResource } from '@/api/baseApi';
+import { updateResource } from '@/api/baseApi';
+import type { ResourceInfo } from '@/types/resourceType';
+import ResourceDetail from '@/components/courseMgmt/ResourceDetail';
+import ResourceForm from '@/components/courseMgmt/ResourceForm';
+import { useAuthStore } from '@/stores/authStore';
+import { UserRole } from '@/constants/role';
 
 export default function CourseMgmtResourceId() {
   const { resourceId } = useParams<{ resourceId: string }>();

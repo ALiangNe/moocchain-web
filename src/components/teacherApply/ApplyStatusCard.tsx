@@ -1,6 +1,6 @@
 import { Steps, type StepsProps } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import type { AuditRecordInfo } from '../../types/auditRecordType';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
 
 interface ApplyStatusCardProps {
   auditRecord: AuditRecordInfo | null;

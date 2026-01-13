@@ -1,7 +1,7 @@
 import { Card, Tag, Button, Pagination, Spin } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
-import type { ResourceInfo } from '../../types/resourceType';
-import { formatDate } from '../../utils/formatTime';
+import type { ResourceInfo } from '@/types/resourceType';
+import { formatDate } from '@/utils/formatTime';
 
 interface ResourceListProps {
   data: ResourceInfo[];

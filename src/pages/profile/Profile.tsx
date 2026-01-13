@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Card, Spin, message } from 'antd';
-import { useAuthStore } from '../../stores/authStore';
-import ProfileCard from '../../components/profile/ProfileCard';
-import ProfileForm from '../../components/profile/ProfileForm';
-import { updateUser } from '../../api/baseApi';
-import type { UserInfo } from '../../types/userType';
+import { useAuthStore } from '@/stores/authStore';
+import ProfileCard from '@/components/profile/ProfileCard';
+import ProfileForm from '@/components/profile/ProfileForm';
+import { updateUser } from '@/api/baseApi';
+import type { UserInfo } from '@/types/userType';
 
 export default function Profile() {
   const user = useAuthStore((state) => state.user);
