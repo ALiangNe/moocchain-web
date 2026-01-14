@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card, Spin, message } from 'antd';
 import { useAuthStore } from '@/stores/authStore';
 import ProfileCard from '@/components/profile/ProfileCard';
 import ProfileForm from '@/components/profile/ProfileForm';
 import { updateUser } from '@/api/baseApi';
 import type { UserInfo } from '@/types/userType';
+import { ensureWalletConnected, restoreWallet } from '@/utils/wallet';
 
 export default function Profile() {
   const user = useAuthStore((state) => state.user);
   const setAuth = useAuthStore((state) => state.setAuth);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [loading, setLoading] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(user?.walletAddress ?? null);
+  const [walletChecking, setWalletChecking] = useState(true);
 
   // 更新用户个人信息
   const handleUpdateProfile = async (values: Partial<UserInfo>) => {
@@ -42,6 +45,21 @@ export default function Profile() {
     message.success('个人信息更新成功');
   };
 
+  const handleConnectWallet = useCallback(async () => {
+    const result = await ensureWalletConnected();
+    if (!result) return;
+    setWalletAddress(result.address);
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      const restored = await restoreWallet();
+      if (restored) setWalletAddress(restored.address);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setWalletChecking(false);
+    })();
+  }, []);
+
   if (!user) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -58,7 +76,7 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             <Card className="shadow-sm">
-              <ProfileCard user={user} />
+              <ProfileCard user={user} walletAddress={walletAddress} walletChecking={walletChecking} onConnectWallet={handleConnectWallet} />
             </Card>
           </div>
 

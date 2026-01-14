@@ -1,14 +1,19 @@
+import { Button } from 'antd';
 import type { UserInfo } from '@/types/userType.ts';
 import { useAuthStore } from '@/stores/authStore.ts';
 import AvatarUpload from './AvatarUpload.tsx';
 
 interface ProfileCardProps {
   user?: UserInfo | null;
+  walletAddress?: string | null;
+  walletChecking?: boolean;
+  onConnectWallet?: () => Promise<void> | void;
 }
 
-export default function ProfileCard({ user: userProp }: ProfileCardProps) {
+export default function ProfileCard({ user: userProp, walletAddress, walletChecking, onConnectWallet }: ProfileCardProps) {
   const storeUser = useAuthStore((state) => state.user);
   const user = userProp ?? storeUser;
+  const addressToShow = walletAddress || user?.walletAddress || null;
 
   return (
     <div className="flex flex-col items-center">
@@ -30,7 +35,17 @@ export default function ProfileCard({ user: userProp }: ProfileCardProps) {
           </div>
           <div>
             <p className="text-sm text-[#6e6e73]">钱包地址</p>
-            <p className="text-base text-[#1d1d1f] font-medium break-all">{user?.walletAddress || '未绑定'}</p>
+            <p className="text-base text-[#1d1d1f] font-medium break-all">
+              {walletChecking
+                ? '正在检测钱包连接状态...'
+                : addressToShow
+                  ? addressToShow
+                  : onConnectWallet && (
+                    <Button type="link" size="small" onClick={() => onConnectWallet()} className="p-0 h-auto">
+                      未检测到钱包地址，点击连接 MetaMask
+                    </Button>
+                    )}
+            </p>
           </div>
           <div>
             <p className="text-sm text-[#6e6e73]">代币余额</p>

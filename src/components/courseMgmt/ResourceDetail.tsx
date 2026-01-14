@@ -12,7 +12,15 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
   // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
+    // 如果是完整的 URL，直接返回
     if (ipfsHash.startsWith('http')) return ipfsHash;
+    // 如果是 IPFS Hash (CID)，使用 Pinata Gateway
+    // IPFS Hash 通常以 Qm 开头（CIDv0）或 b 开头（CIDv1），且不包含路径分隔符
+    if (!ipfsHash.startsWith('/') && (ipfsHash.startsWith('Qm') || ipfsHash.startsWith('b') || ipfsHash.length > 30)) {
+      const gatewayUrl = import.meta.env.VITE_IPFS_GATEWAY_URL || 'https://gateway.pinata.cloud/ipfs/';
+      return `${gatewayUrl}${ipfsHash}`;
+    }
+    // 否则认为是本地路径
     const baseUrl = import.meta.env.VITE_API_BASE_URL.split('/api')[0];
     return `${baseUrl}${ipfsHash}`;
   };

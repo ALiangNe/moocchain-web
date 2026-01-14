@@ -11,6 +11,8 @@ import ResourceList from '@/components/courseMgmt/ResourceList';
 import CourseDetailCard from '@/components/courseMgmt/CourseDetail';
 import { UserRole } from '@/constants/role';
 import { buildCreateResourceFormData } from '@/utils/buildApiParams';
+import { ensureWalletConnected } from '@/utils/wallet';
+import { mintResourceNft } from '@/utils/resourceNft';
 
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -148,6 +150,9 @@ export default function CourseDetail() {
       return;
     }
 
+    const wallet = await ensureWalletConnected();
+    if (!wallet) return;
+
     const formData = buildCreateResourceFormData({
       courseId: Number(resourceCourseId),
       title: values.title || '',
@@ -172,7 +177,44 @@ export default function CourseDetail() {
       return;
     }
 
-    message.success('资源创建成功，等待审核');
+    const resourceId = result.data?.resourceId;
+    const ipfsHash = result.data?.ipfsHash;
+    if (!resourceId || !ipfsHash) {
+      message.error('资源创建成功，但返回数据不完整');
+      return;
+    }
+
+    message.loading({ content: '正在铸造 NFT...', key: 'mint', duration: 0 });
+
+    const createdAt = Math.floor(Date.now() / 1000);
+
+    let tokenId: string;
+    try {
+      tokenId = await mintResourceNft({ signer: wallet.signer, ownerAddress: wallet.address, ipfsHash, createdAt });
+    } catch (error) {
+      console.error('Mint NFT error:', error);
+      message.destroy('mint');
+      message.error(error instanceof Error ? error.message : '铸造失败，请重试');
+      return;
+    }
+
+    message.destroy('mint');
+
+    let updateResult;
+    try {
+      updateResult = await updateResource(resourceId, { resourceNftId: tokenId });
+    } catch (error) {
+      console.error('Update resource nftId error:', error);
+      message.error('铸造成功，但写入数据库失败，请重试');
+      return;
+    }
+
+    if (updateResult.code !== 0) {
+      message.error(updateResult.message || '铸造成功，但写入数据库失败');
+      return;
+    }
+
+    message.success(`资源创建成功，NFT TokenId: ${tokenId}`);
     setResourceModalVisible(false);
     loadResources();
   };
