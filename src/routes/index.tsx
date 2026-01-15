@@ -5,6 +5,8 @@ import Login from '@/pages/login/Login';
 import Register from '@/pages/register/Register';
 import Home from '@/pages/home/Home';
 import CourseLearn from '@/pages/courselearn/CourseLearn';
+import CourseLearnId from '@/pages/courselearn/CourseLearnId';
+import CourseLearnResourceId from '@/pages/courselearn/CourseLearnResourceId';
 import CourseMgmt from '@/pages/courseMgmt/CourseMgmt';
 import CourseMgmtId from '@/pages/courseMgmt/CourseMgmtId';
 import CourseMgmtResourceId from '@/pages/courseMgmt/CourseMgmtResourceId';
@@ -23,6 +25,8 @@ export const router = createBrowserRouter([
       { path: '/register', element: <Register /> },
       { path: '/home', element: <Home /> },
       { path: '/courselearn', element: <CourseLearn /> },
+      { path: '/courselearn/:courseId', element: <CourseLearnId /> },
+      { path: '/courselearn/:courseId/resource/:resourceId', element: <CourseLearnResourceId /> },
       { path: '/coursemgmt', element: <CourseMgmt /> },
       { path: '/coursemgmt/:courseId', element: <CourseMgmtId /> },
       { path: '/coursemgmt/:courseId/resource/:resourceId', element: <CourseMgmtResourceId /> },
