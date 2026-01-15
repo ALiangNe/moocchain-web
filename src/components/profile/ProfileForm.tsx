@@ -1,6 +1,7 @@
 import { Form, Input, Select, Button } from 'antd';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { UserInfo } from '@/types/userType';
+import universities from '@/constants/universities.json';
 
 interface ProfileFormProps {
   user: UserInfo | null;
@@ -11,6 +12,21 @@ interface ProfileFormProps {
 export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProps) {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
+  const universityOptions = useMemo(() => {
+    const result: { label: string; value: string }[] = [];
+    if (!universities || typeof universities !== 'object') return result;
+
+    const data = universities as Record<string, Record<string, unknown>>;
+    Object.keys(data).forEach((cityKey) => {
+      const schools = data[cityKey];
+      if (!schools || typeof schools !== 'object') return;
+      Object.keys(schools).forEach((schoolName) => {
+        result.push({ label: schoolName, value: schoolName });
+      });
+    });
+
+    return result;
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -45,6 +61,10 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
           <Input placeholder="请输入邮箱" size="large" disabled={!isEditing} />
         </Form.Item>
 
+        <Form.Item label="学校名称" name="schoolName">
+          <Select showSearch allowClear placeholder="请选择学校名称" size="large" disabled={!isEditing} options={universityOptions} filterOption={(input, option) => (option?.label as string).toLowerCase().includes(input.toLowerCase())} />
+        </Form.Item>
+
         <Form.Item label="真实姓名" name="realName">
           <Input placeholder="请输入真实姓名" size="large" disabled={!isEditing} />
         </Form.Item>
@@ -63,10 +83,6 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
             <Select.Option value={1}>男</Select.Option>
             <Select.Option value={2}>女</Select.Option>
           </Select>
-        </Form.Item>
-
-        <Form.Item label="学校名称" name="schoolName">
-          <Input placeholder="请输入学校名称" size="large" disabled={!isEditing} />
         </Form.Item>
 
         <Form.Item>

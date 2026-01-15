@@ -22,7 +22,7 @@ export default function ProfileCard({ user: userProp, walletAddress, walletCheck
         <h2 className="text-2xl font-bold text-[#1d1d1f]">{user?.username || '未知用户'}</h2>
         <p className="text-[#6e6e73] mt-1">{user?.email || '未设置邮箱'}</p>
       </div>
-      
+
       <div className="mt-6 pt-6 border-t border-gray-200 w-full">
         <div className="space-y-3">
           <div>
@@ -37,14 +37,8 @@ export default function ProfileCard({ user: userProp, walletAddress, walletCheck
             <p className="text-sm text-[#6e6e73]">钱包地址</p>
             <p className="text-base text-[#1d1d1f] font-medium break-all">
               {walletChecking
-                ? '正在检测钱包连接状态...'
-                : addressToShow
-                  ? addressToShow
-                  : onConnectWallet && (
-                    <Button type="link" size="small" onClick={() => onConnectWallet()} className="p-0 h-auto">
-                      未检测到钱包地址，点击连接 MetaMask
-                    </Button>
-                    )}
+                ? '正在检测钱包连接状态...' : addressToShow
+                  ? addressToShow : onConnectWallet && (<Button type="link" size="small" onClick={() => onConnectWallet()} className="p-0 h-auto">未检测到钱包地址，点击连接 MetaMask</Button>)}
             </p>
           </div>
           <div>
