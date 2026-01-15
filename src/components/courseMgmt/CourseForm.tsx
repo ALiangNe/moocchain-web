@@ -1,4 +1,4 @@
-import { Form, Input, DatePicker, Button, Upload, message } from 'antd';
+import { Form, Input, DatePicker, Button, Upload, message, Select } from 'antd';
 import { InboxOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { CourseInfo } from '@/types/courseType';
 import dayjs from 'dayjs';
@@ -77,8 +77,23 @@ export default function CourseForm({ initialValues, onSubmit, onCancel, loading 
     form.setFieldsValue({ coverImage: undefined });
   };
 
+  // 处理表单初始值
+  // 1. status=0/1(待审核/已审核) 时设为 undefined，避免下拉框显示数字，而是显示 placeholder
+  // 2. 时间字段转换为 dayjs 格式（DatePicker 组件需要）
+  const formInitialValues = initialValues
+    ? {
+        ...initialValues,
+        status:
+          initialValues.status === 0 || initialValues.status === 1
+            ? undefined
+            : initialValues.status,
+        courseStartTime: initialValues.courseStartTime ? dayjs(initialValues.courseStartTime) : undefined,
+        courseEndTime: initialValues.courseEndTime ? dayjs(initialValues.courseEndTime) : undefined,
+      }
+    : {};
+
   return (
-    <Form form={form} layout="vertical" initialValues={initialValues ? { ...initialValues, courseStartTime: initialValues.courseStartTime ? dayjs(initialValues.courseStartTime) : undefined, courseEndTime: initialValues.courseEndTime ? dayjs(initialValues.courseEndTime) : undefined } : {}} className="space-y-4">
+    <Form form={form} layout="vertical" initialValues={formInitialValues} className="space-y-4">
       <Form.Item name="courseName" label="课程名称" rules={[{ required: true, message: '请输入课程名称' }]}>
         <Input placeholder="请输入课程名称" className="rounded-lg" />
       </Form.Item>
@@ -112,6 +127,27 @@ export default function CourseForm({ initialValues, onSubmit, onCancel, loading 
       <Form.Item name="courseEndTime" label="结课时间" rules={[{ required: true, message: '请选择结课时间' }]}>
         <DatePicker showTime className="w-full rounded-lg" placeholder="请选择结课时间" />
       </Form.Item>
+      {/* 显示课程状态：
+          - 0(待审核)：只能查看，禁用下拉框，提示“暂未通过审核，请耐心等待”
+          - 1(已审核)：可选择发布/下架，提示“已通过审核，立即发布课程”
+          - 2/3(已发布/已下架)：显示当前值，可继续调整 */}
+      {initialValues && initialValues.status !== undefined && (
+        <Form.Item name="status" label="课程状态">
+          <Select
+            className="rounded-lg"
+            options={[
+              { label: '发布课程', value: 2 },
+              { label: '下架课程', value: 3 },
+            ]}
+            disabled={initialValues.status === 0}
+            placeholder={
+              initialValues.status === 0
+                ? '课程尚在审核中，请耐心等待'
+                : '已通过审核，立即发布课程'
+            }
+          />
+        </Form.Item>
+      )}
       <Form.Item>
         <div className="flex gap-3">
           {onCancel && <Button onClick={onCancel} className="rounded-lg flex-1">取消</Button>}

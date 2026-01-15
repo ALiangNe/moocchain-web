@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message, Spin } from 'antd';
-import { PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { PlusOutlined, ArrowLeftOutlined, EditOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
-import { getCourse, getResourceList, createResource, updateResource } from '@/api/baseApi';
+import { getCourse, getResourceList, createResource, updateResource, updateCourse, reapplyCourseAudit, getAuditRecordList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
 import ResourceForm from '@/components/courseMgmt/ResourceForm';
 import ResourceList from '@/components/courseMgmt/ResourceList';
 import CourseDetailCard from '@/components/courseMgmt/CourseDetail';
+import CourseForm from '@/components/courseMgmt/CourseForm';
 import { UserRole } from '@/constants/role';
 import { buildCreateResourceFormData } from '@/utils/buildApiParams';
 import { ensureWalletConnected } from '@/utils/wallet';
@@ -20,17 +22,62 @@ export default function CourseDetail() {
   const user = useAuthStore((state) => state.user);
   const [course, setCourse] = useState<CourseInfo | null>(null);
   const [resources, setResources] = useState<ResourceInfo[]>([]);
+  const [latestAuditRecord, setLatestAuditRecord] = useState<AuditRecordInfo | null>(null);
   const [courseLoading, setCourseLoading] = useState(false);
   const [resourceLoading, setResourceLoading] = useState(false);
+  const [auditLoading, setAuditLoading] = useState(false);
   const [resourceModalVisible, setResourceModalVisible] = useState(false);
   const [editingResource, setEditingResource] = useState<ResourceInfo | null>(null);
   const [resourcePage, setResourcePage] = useState(1);
   const [resourceTotal, setResourceTotal] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [courseEditVisible, setCourseEditVisible] = useState(false);
+  const [courseEditLoading, setCourseEditLoading] = useState(false);
+  const [reapplyingAudit, setReapplyingAudit] = useState(false);
   const courseLoadingRef = useRef(false);
   const resourceLoadingRef = useRef(false);
   const courseRequestIdRef = useRef(0);
   const resourceRequestIdRef = useRef(0);
+
+  // 加载审核记录
+  const loadAuditRecord = useCallback(async (courseId: number) => {
+    setAuditLoading(true);
+
+    let result;
+    try {
+      result = await getAuditRecordList({
+        targetId: courseId,
+        targetType: 2, // 课程
+        auditType: 2, // 课程内容审核
+        page: 1,
+        pageSize: 1,
+      });
+    } catch (error) {
+      console.error('Load audit record error:', error);
+      setAuditLoading(false);
+      setLatestAuditRecord(null);
+      return;
+    }
+
+    setAuditLoading(false);
+
+    if (result.code !== 0) {
+      setLatestAuditRecord(null);
+      return;
+    }
+
+    if (!result.data) {
+      setLatestAuditRecord(null);
+      return;
+    }
+
+    if (result.data.records.length === 0) {
+      setLatestAuditRecord(null);
+      return;
+    }
+
+    setLatestAuditRecord(result.data.records[0]);
+  }, []);
 
   // 加载课程详情数据
   const loadCourse = useCallback(async () => {
@@ -72,7 +119,14 @@ export default function CourseDetail() {
     }
 
     setCourse(result.data);
-  }, [courseId]);
+
+    // 如果课程状态为待审核（0），加载审核记录
+    if (result.data.status === 0 && result.data.courseId) {
+      loadAuditRecord(result.data.courseId);
+    } else {
+      setLatestAuditRecord(null);
+    }
+  }, [courseId, loadAuditRecord]);
 
   // 加载课程资源列表数据
   const loadResources = useCallback(async () => {
@@ -226,15 +280,22 @@ export default function CourseDetail() {
       return;
     }
 
+    const payload: Partial<ResourceInfo> = {
+      title: values.title,
+      description: values.description,
+      resourceType: values.resourceType,
+      price: values.price,
+      accessScope: values.accessScope,
+    };
+
+    // 如果在表单中选择了资源状态（发布/下架），一并提交
+    if (values.status !== undefined) {
+      payload.status = values.status;
+    }
+
     let result;
     try {
-      result = await updateResource(editingResource.resourceId, {
-        title: values.title,
-        description: values.description,
-        resourceType: values.resourceType,
-        price: values.price,
-        accessScope: values.accessScope,
-      });
+      result = await updateResource(editingResource.resourceId, payload);
     } catch (error) {
       console.error('Update resource error:', error);
       message.error('更新失败，请重试');
@@ -263,6 +324,98 @@ export default function CourseDetail() {
     }
   };
 
+  // 编辑课程信息
+  const handleUpdateCourse = async (values: Partial<CourseInfo>, coverImage?: File) => {
+    if (!course || !course.courseId) {
+      message.error('课程信息不存在');
+      return;
+    }
+
+    setCourseEditLoading(true);
+    let updateResult;
+    try {
+      // try 内只放 API 请求
+      updateResult = await updateCourse(course.courseId, values, coverImage);
+    } catch (error) {
+      console.error('Update course error:', error);
+      setCourseEditLoading(false);
+      message.error('更新失败，请重试');
+      return;
+    }
+
+    if (updateResult.code !== 0) {
+      setCourseEditLoading(false);
+      message.error(updateResult.message || '更新失败');
+      return;
+    }
+
+    // updateCourse 返回的 course 不包含 teacher（join 信息），立刻拉一次详情以保持 UI 稳定
+    let refreshed;
+    try {
+      // try 内只放 API 请求
+      refreshed = await getCourse(course.courseId);
+    } catch (error) {
+      console.error('Refresh course error:', error);
+      setCourseEditLoading(false);
+      message.success('课程更新成功');
+      // 保底：至少保留原 teacher 信息，避免 UI 闪烁
+      setCourse((prev) => (prev ? { ...prev, ...updateResult.data } : prev));
+      setCourseEditVisible(false);
+      return;
+    }
+
+    setCourseEditLoading(false);
+
+    if (refreshed.code !== 0 || !refreshed.data) {
+      message.success('课程更新成功');
+      // 保底：至少保留原 teacher 信息，避免 UI 闪烁
+      setCourse((prev) => (prev ? { ...prev, ...updateResult.data } : prev));
+      setCourseEditVisible(false);
+      return;
+    }
+
+    message.success('课程更新成功');
+    setCourse(refreshed.data);
+    setCourseEditVisible(false);
+  };
+
+  // 重新提交课程审核（仅限被拒绝后的待审核课程）
+  const handleReapplyCourseAudit = async () => {
+    if (!course || !course.courseId) {
+      message.error('课程信息不存在');
+      return;
+    }
+
+    // 只有待审核状态的课程才允许重新提交审核
+    if (course.status !== 0) {
+      message.warning('只有待审核状态的课程可以重新提交审核');
+      return;
+    }
+
+    setReapplyingAudit(true);
+
+    let result;
+    try {
+      result = await reapplyCourseAudit({ courseId: course.courseId });
+    } catch (error) {
+      console.error('Reapply course audit error:', error);
+      setReapplyingAudit(false);
+      message.error('重新提交审核失败，请重试');
+      return;
+    }
+
+    setReapplyingAudit(false);
+
+    if (!result || result.code !== 0) {
+      message.error(result?.message || '重新提交审核失败');
+      return;
+    }
+
+    message.success('已重新提交审核，请等待管理员审核');
+    // 重新加载课程，会自动加载审核记录（如果状态为待审核）
+    loadCourse();
+  };
+
   if (courseLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -286,12 +439,26 @@ export default function CourseDetail() {
   return (
     <div className="py-12">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6">
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/coursemgmt')} className="mb-4">返回课程列表</Button>
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/coursemgmt')} className="mb-4">返回课程列表</Button>
+            <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
+          </div>
+          {user?.role !== UserRole.STUDENT && (
+            <div className="flex gap-3">
+              {course.status === 0 && latestAuditRecord && latestAuditRecord.auditStatus === 2 && (
+                <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyCourseAudit} className="rounded-lg">
+                  重新提交审核
+                </Button>
+              )}
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setCourseEditVisible(true)} className="rounded-lg">
+                编辑课程
+              </Button>
+            </div>
+          )}
         </div>
 
-        <CourseDetailCard course={course} />
+        <CourseDetailCard course={course} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} />
 
         <div className="mb-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
@@ -310,6 +477,12 @@ export default function CourseDetail() {
         <Drawer title="编辑资源" open={!!editingResource} onClose={() => setEditingResource(null)} width={700} placement="right">
           {editingResource && courseId && (
             <ResourceForm courseId={Number(courseId)} initialValues={editingResource} onSubmit={async (values) => { await handleEditResource(values); }} onCancel={() => setEditingResource(null)} />
+          )}
+        </Drawer>
+
+        <Drawer title="编辑课程" open={courseEditVisible} onClose={() => setCourseEditVisible(false)} width={700} placement="right">
+          {course && (
+            <CourseForm initialValues={course} onSubmit={handleUpdateCourse} onCancel={() => setCourseEditVisible(false)} loading={courseEditLoading} />
           )}
         </Drawer>
       </div>

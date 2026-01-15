@@ -1,18 +1,37 @@
 import { Card, Descriptions, Popover } from 'antd';
 import type { CourseInfo } from '@/types/courseType';
 import { formatDateTime } from '@/utils/formatTime';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
 
 interface CourseDetailProps {
   course: CourseInfo;
+  latestAuditRecord?: AuditRecordInfo | null;
+  auditLoading?: boolean;
 }
 
-export default function CourseDetail({ course }: CourseDetailProps) {
+export default function CourseDetail({ course, latestAuditRecord = null, auditLoading = false }: CourseDetailProps) {
+
   // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
     if (!coverImage) return undefined;
     if (coverImage.startsWith('http')) return coverImage;
     const baseUrl = import.meta.env.VITE_API_BASE_URL.split('/api')[0];
     return `${baseUrl}${coverImage}`;
+  };
+
+  // 获取状态显示文本
+  const getStatusText = () => {
+    if (course.status === 0) {
+      // 待审核状态，检查是否是被拒绝的
+      if (latestAuditRecord && latestAuditRecord.auditStatus === 2) {
+        return '审核未通过，请重新提交申请';
+      }
+      return '待审核';
+    }
+    if (course.status === 1) return '已审核';
+    if (course.status === 2) return '已发布';
+    if (course.status === 3) return '已下架';
+    return '-';
   };
 
   return (
@@ -45,7 +64,9 @@ export default function CourseDetail({ course }: CourseDetailProps) {
                 '-'
               )}
             </Descriptions.Item>
-            <Descriptions.Item label="状态">{course.status === 0 ? '未发布' : course.status === 1 ? '已发布' : '已结束'}</Descriptions.Item>
+            <Descriptions.Item label="状态">
+              {auditLoading ? '加载中...' : getStatusText()}
+            </Descriptions.Item>
             <Descriptions.Item label="课程评分">TODO：待实现</Descriptions.Item>
             <Descriptions.Item label="开课时间">{course.courseStartTime ? formatDateTime(course.courseStartTime) : '-'}</Descriptions.Item>
             <Descriptions.Item label="结课时间">{course.courseEndTime ? formatDateTime(course.courseEndTime) : '-'}</Descriptions.Item>

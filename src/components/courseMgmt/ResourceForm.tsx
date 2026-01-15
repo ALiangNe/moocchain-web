@@ -42,8 +42,20 @@ export default function ResourceForm({ courseId, initialValues, onSubmit, onCanc
     }
   };
 
+  // 处理表单初始值
+  // 1. status=0/1(待审核/已审核) 时设为 undefined，避免下拉框显示数字，而是显示 placeholder
+  const formInitialValues = initialValues
+    ? {
+        ...initialValues,
+        status:
+          initialValues.status === 0 || initialValues.status === 1
+            ? undefined
+            : initialValues.status,
+      }
+    : {};
+
   return (
-    <Form form={form} layout="vertical" initialValues={initialValues} className="space-y-4">
+    <Form form={form} layout="vertical" initialValues={formInitialValues} className="space-y-4">
       <Form.Item name="title" label="资源标题" rules={[{ required: true, message: '请输入资源标题' }]}>
         <Input placeholder="请输入资源标题" className="rounded-lg" />
       </Form.Item>
@@ -73,6 +85,26 @@ export default function ResourceForm({ courseId, initialValues, onSubmit, onCanc
           <Option value={2}>付费</Option>
         </Select>
       </Form.Item>
+      {/* 资源状态：
+          - 0(待审核)：只能查看，禁用下拉框，提示“暂未通过审核，请耐心等待”
+          - 1(已审核)：可选择发布/下架，提示“已通过审核，立即发布资源”
+          - 2/3(已发布/已下架)：显示当前值，可继续调整 */}
+      {initialValues && initialValues.status !== undefined && (
+        <Form.Item name="status" label="资源状态">
+          <Select
+            className="rounded-lg"
+            placeholder={
+              initialValues.status === 0
+                ? '资源尚在审核中，请耐心等待'
+                : '已通过审核，立即发布资源'
+            }
+            disabled={initialValues.status === 0}
+          >
+            <Option value={2}>发布资源</Option>
+            <Option value={3}>下架资源</Option>
+          </Select>
+        </Form.Item>
+      )}
       <Form.Item>
         <div className="flex gap-3">
           {onCancel && <Button onClick={onCancel} className="rounded-lg flex-1">取消</Button>}

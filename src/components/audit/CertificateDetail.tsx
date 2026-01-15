@@ -84,7 +84,7 @@ export default function AuditRecordDetail({ record, onApprove }: AuditRecordDeta
       {/* 卡片三：认证材料预览 */}
       {certificateFileUrl && isImageFile && (
         <Card title="认证材料预览" className="shadow-sm">
-          <div className="w-2/3 aspect-square mr-auto">
+          <div className="w-1/3 aspect-square mr-auto">
             <Image src={certificateFileUrl} alt="认证材料" preview={{ mask: '预览' }} className="w-full h-full object-cover rounded-lg" />
           </div>
         </Card>

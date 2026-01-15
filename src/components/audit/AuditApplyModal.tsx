@@ -57,7 +57,7 @@ export default function AuditApproveModal({ visible, auditStatus, loading, recor
     >
       <div className="space-y-6">
         {/* 申请人信息模块 - 仅教师认证审核显示 */}
-        {record?.targetUser && record.targetType === 1 && (
+        {record?.targetUser && record.targetType === 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-3 text-[#1d1d1f]">申请人信息</h3>
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -74,7 +74,7 @@ export default function AuditApproveModal({ visible, auditStatus, loading, recor
         )}
 
         {/* 资源信息模块 - 仅资源审核显示 */}
-        {record?.targetResource && record.targetType === 2 && (
+        {record?.targetResource && record.targetType === 1 && (
           <div>
             <h3 className="text-lg font-semibold mb-3 text-[#1d1d1f]">资源信息</h3>
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -87,6 +87,35 @@ export default function AuditApproveModal({ visible, auditStatus, loading, recor
                 <Descriptions.Item label="资源名字">{record.targetResource.title || '-'}</Descriptions.Item>
                 {record.targetResource.description && (
                   <Descriptions.Item label="资源描述" span={2}>{record.targetResource.description}</Descriptions.Item>
+                )}
+                {record.createdAt && <Descriptions.Item label="申请时间" span={2}>{formatDateTime(record.createdAt)}</Descriptions.Item>}
+              </Descriptions>
+            </div>
+          </div>
+        )}
+
+        {/* 课程信息模块 - 仅课程审核显示 */}
+        {record?.targetCourse && record.targetType === 2 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-3 text-[#1d1d1f]">课程信息</h3>
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <Descriptions column={2} size="small">
+                <Descriptions.Item label="课程名称">
+                  {record.targetCourse.courseName || '-'}
+                </Descriptions.Item>
+                <Descriptions.Item label="教师">
+                  {record.targetCourse.teacher?.realName || record.targetCourse.teacher?.username || '-'}
+                </Descriptions.Item>
+                <Descriptions.Item label="学校">{record.targetCourse.teacher?.schoolName || '-'}</Descriptions.Item>
+                <Descriptions.Item label="邮箱">{record.targetCourse.teacher?.email || '-'}</Descriptions.Item>
+                {record.targetCourse.description && (
+                  <Descriptions.Item label="课程描述" span={2}>{record.targetCourse.description}</Descriptions.Item>
+                )}
+                {record.targetCourse.courseStartTime && (
+                  <Descriptions.Item label="开课时间">{formatDateTime(record.targetCourse.courseStartTime)}</Descriptions.Item>
+                )}
+                {record.targetCourse.courseEndTime && (
+                  <Descriptions.Item label="结课时间">{formatDateTime(record.targetCourse.courseEndTime)}</Descriptions.Item>
                 )}
                 {record.createdAt && <Descriptions.Item label="申请时间" span={2}>{formatDateTime(record.createdAt)}</Descriptions.Item>}
               </Descriptions>

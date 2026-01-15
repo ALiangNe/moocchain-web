@@ -58,6 +58,24 @@ export async function approveResourceApplication(params: { auditId: number; audi
     body: JSON.stringify(params),
   }); return response.json();
 }
+export async function approveCourseApplication(params: { auditId: number; auditStatus: number; auditComment?: string }): Promise<ResponseType<{ auditRecord: AuditRecordInfo; course?: CourseInfo }>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/approveCourseApplication`, {
+    method: 'POST',
+    body: JSON.stringify(params),
+  }); return response.json();
+}
+export async function reapplyCourseAudit(params: { courseId: number }): Promise<ResponseType<AuditRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/reapplyCourseAudit`, {
+    method: 'POST',
+    body: JSON.stringify(params),
+  }); return response.json();
+}
+export async function reapplyResourceAudit(params: { resourceId: number }): Promise<ResponseType<AuditRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/reapplyResourceAudit`, {
+    method: 'POST',
+    body: JSON.stringify(params),
+  }); return response.json();
+}
 export async function getAuditRecordList(params: { targetId?: number; targetType?: number; auditType?: number; auditStatus?: number; auditorId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: AuditRecordInfo[]; total: number }>> {
   const queryString = buildGetAuditRecordListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getAuditRecordList?${queryString}`, {

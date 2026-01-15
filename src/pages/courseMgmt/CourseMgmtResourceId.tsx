@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Spin, message, Drawer } from 'antd';
-import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EditOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResource } from '@/api/baseApi';
-import { updateResource } from '@/api/baseApi';
+import { getResource, updateResource, reapplyResourceAudit } from '@/api/baseApi';
 import type { ResourceInfo } from '@/types/resourceType';
 import ResourceDetail from '@/components/courseMgmt/ResourceDetail';
 import ResourceForm from '@/components/courseMgmt/ResourceForm';
@@ -16,6 +15,7 @@ export default function CourseMgmtResourceId() {
   const [resource, setResource] = useState<ResourceInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
+  const [reapplyingAudit, setReapplyingAudit] = useState(false);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
   const user = useAuthStore((state) => state.user);
@@ -125,6 +125,42 @@ export default function CourseMgmtResourceId() {
     loadResource();
   };
 
+  // 重新提交资源审核（仅限被拒绝后的待审核资源）
+  const handleReapplyResourceAudit = async () => {
+    if (!resource || !resource.resourceId) {
+      message.error('资源信息不存在');
+      return;
+    }
+
+    // 只有待审核状态的资源才允许重新提交审核
+    if (resource.status !== 0) {
+      message.warning('只有待审核状态的资源可以重新提交审核');
+      return;
+    }
+
+    setReapplyingAudit(true);
+
+    let result;
+    try {
+      result = await reapplyResourceAudit({ resourceId: resource.resourceId });
+    } catch (error) {
+      console.error('Reapply resource audit error:', error);
+      setReapplyingAudit(false);
+      message.error('重新提交审核失败，请重试');
+      return;
+    }
+
+    setReapplyingAudit(false);
+
+    if (!result || result.code !== 0) {
+      message.error(result?.message || '重新提交审核失败');
+      return;
+    }
+
+    message.success('已重新提交审核，请等待管理员审核');
+    loadResource();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -154,9 +190,16 @@ export default function CourseMgmtResourceId() {
             <h1 className="text-lg font-semibold text-[#1d1d1f]">资源详情</h1>
           </div>
           {user?.role !== UserRole.STUDENT && (
+            <div className="flex gap-3">
+              {resource.status === 0 && (
+                <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyResourceAudit} className="rounded-lg">
+                  重新提交审核
+                </Button>
+              )}
             <Button type="primary" icon={<EditOutlined />} onClick={() => setEditVisible(true)} className="rounded-lg">
               编辑资源
             </Button>
+            </div>
           )}
         </div>
 
