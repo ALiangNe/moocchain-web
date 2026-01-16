@@ -9,7 +9,7 @@ import CourseForm from '@/components/courseMgmt/CourseForm';
 import CourseList from '@/components/courseMgmt/CourseList';
 import { UserRole } from '@/constants/role';
 
-export default function Resources() {
+export default function CourseMgmt() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [courses, setCourses] = useState<CourseInfo[]>([]);

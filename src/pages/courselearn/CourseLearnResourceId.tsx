@@ -4,7 +4,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getResource } from '@/api/baseApi';
 import type { ResourceInfo } from '@/types/resourceType';
-import ResourceDetail from '@/components/courseMgmt/ResourceDetail';
+import ResourceDetail from '@/components/courseLearn/ResourceDetail';
 
 export default function CourseLearnResourceId() {
   const { resourceId, courseId } = useParams<{ resourceId: string; courseId: string }>();

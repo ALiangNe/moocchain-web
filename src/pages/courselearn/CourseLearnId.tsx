@@ -5,10 +5,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getCourse, getResourceList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
-import ResourceList from '@/components/courseMgmt/ResourceList';
-import CourseDetailCard from '@/components/courseMgmt/CourseDetail';
+import ResourceList from '@/components/courseLearn/ResourceList';
+import CourseDetail from '@/components/courseLearn/CourseDetail';
 
-export default function CourseLearnDetail() {
+export default function CourseLearnId() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const [course, setCourse] = useState<CourseInfo | null>(null);
@@ -164,7 +164,7 @@ export default function CourseLearnDetail() {
           <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
         </div>
 
-        <CourseDetailCard course={course} />
+        <CourseDetail course={course} />
 
         <div className="mb-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>

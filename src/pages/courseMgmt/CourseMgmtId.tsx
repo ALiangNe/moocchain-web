@@ -16,7 +16,7 @@ import { buildCreateResourceFormData } from '@/utils/buildApiParams';
 import { ensureWalletConnected } from '@/utils/wallet';
 import { mintResourceNft } from '@/utils/resourceNft';
 
-export default function CourseDetail() {
+export default function CourseMgmtId() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);

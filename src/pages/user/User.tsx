@@ -1,4 +1,4 @@
-export default function Users() {
+export default function User() {
   return (
     <div className="py-12">
       <div className="max-w-4xl mx-auto px-4">

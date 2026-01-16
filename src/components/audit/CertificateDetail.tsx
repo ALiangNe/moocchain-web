@@ -3,12 +3,12 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import { formatDateTime } from '@/utils/formatTime';
 
-interface AuditRecordDetailProps {
+interface CertificateDetailProps {
   record: AuditRecordInfo;
   onApprove?: (status: number) => void;
 }
 
-export default function AuditRecordDetail({ record, onApprove }: AuditRecordDetailProps) {
+export default function CertificateDetail({ record, onApprove }: CertificateDetailProps) {
   const statusMap: Record<number, { text: string; color: string }> = {
     0: { text: '待审核', color: 'processing' },
     1: { text: '已通过', color: 'success' },

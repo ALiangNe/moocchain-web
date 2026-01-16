@@ -5,7 +5,7 @@ import { formatDateTime } from '@/utils/formatTime';
 
 const { TextArea } = Input;
 
-interface AuditApproveModalProps {
+interface AuditApplyModalProps {
   visible: boolean;
   auditStatus: number | null;
   loading: boolean;
@@ -14,7 +14,7 @@ interface AuditApproveModalProps {
   onCancel: () => void;
 }
 
-export default function AuditApproveModal({ visible, auditStatus, loading, record, onConfirm, onCancel }: AuditApproveModalProps) {
+export default function AuditApplyModal({ visible, auditStatus, loading, record, onConfirm, onCancel }: AuditApplyModalProps) {
   const [auditComment, setAuditComment] = useState('');
 
   useEffect(() => {

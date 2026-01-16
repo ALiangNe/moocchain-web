@@ -3,7 +3,7 @@ import { EyeOutlined, UserOutlined } from '@ant-design/icons';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import { formatDate } from '@/utils/formatTime';
 
-interface AuditRecordTableProps {
+interface CertificateTableProps {
   data: AuditRecordInfo[];
   loading: boolean;
   page: number;
@@ -13,7 +13,7 @@ interface AuditRecordTableProps {
   onViewDetail: (record: AuditRecordInfo) => void;
 }
 
-export default function AuditRecordTable({ data, loading, page, pageSize, total, onPageChange, onViewDetail }: AuditRecordTableProps) {
+export default function CertificateTable({ data, loading, page, pageSize, total, onPageChange, onViewDetail }: CertificateTableProps) {
   // 获取用户头像地址
   const getAvatarUrl = (avatar?: string) => {
     if (!avatar) return undefined;
