@@ -61,12 +61,12 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
   // 获取资源状态标签颜色
   const getStatusColor = (status?: number) => {
     const colorMap: Record<number, string> = {
-      0: 'processing',
-      1: 'success',
-      2: 'default',
-      3: 'error',
+      0: 'orange',  // 待审核
+      1: 'gold',    // 已审核
+      2: 'green',   // 已发布
+      3: 'default', // 已下架
     };
-    return colorMap[status || 0] || 'processing';
+    return colorMap[status || 0] || 'orange';
   };
 
   // 获取访问范围名称

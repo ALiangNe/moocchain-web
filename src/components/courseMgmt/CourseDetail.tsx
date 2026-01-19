@@ -1,15 +1,16 @@
-import { Card, Descriptions, Popover } from 'antd';
+import { Card, Descriptions, Popover, Rate, Tag } from 'antd';
 import type { CourseInfo } from '@/types/courseType';
 import { formatDateTime } from '@/utils/formatTime';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 
 interface CourseDetailProps {
   course: CourseInfo;
+  averageRating?: number | null;
   latestAuditRecord?: AuditRecordInfo | null;
   auditLoading?: boolean;
 }
 
-export default function CourseDetail({ course, latestAuditRecord = null, auditLoading = false }: CourseDetailProps) {
+export default function CourseDetail({ course, averageRating, latestAuditRecord = null, auditLoading = false }: CourseDetailProps) {
 
   // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
@@ -19,19 +20,18 @@ export default function CourseDetail({ course, latestAuditRecord = null, auditLo
     return `${baseUrl}${coverImage}`;
   };
 
-  // 获取状态显示文本
-  const getStatusText = () => {
+  // 获取状态显示文本与颜色
+  const getStatusMeta = () => {
     if (course.status === 0) {
-      // 待审核状态，检查是否是被拒绝的
       if (latestAuditRecord && latestAuditRecord.auditStatus === 2) {
-        return '审核未通过，请重新提交申请';
+        return { text: '审核未通过，请重新提交申请', color: 'red' as const };
       }
-      return '待审核';
+      return { text: '待审核', color: 'orange' as const };
     }
-    if (course.status === 1) return '已审核';
-    if (course.status === 2) return '已发布';
-    if (course.status === 3) return '已下架';
-    return '-';
+    if (course.status === 1) return { text: '已审核', color: 'gold' as const };
+    if (course.status === 2) return { text: '已发布', color: 'green' as const };
+    if (course.status === 3) return { text: '已下架', color: 'default' as const };
+    return { text: '-', color: 'default' as const };
   };
 
   return (
@@ -65,9 +65,15 @@ export default function CourseDetail({ course, latestAuditRecord = null, auditLo
               )}
             </Descriptions.Item>
             <Descriptions.Item label="状态">
-              {auditLoading ? '加载中...' : getStatusText()}
+              {auditLoading ? (
+                '加载中...'
+              ) : (
+                <Tag color={getStatusMeta().color}>{getStatusMeta().text}</Tag>
+              )}
             </Descriptions.Item>
-            <Descriptions.Item label="课程评分">TODO：待实现</Descriptions.Item>
+            <Descriptions.Item label="课程评分">
+              {averageRating !== null && averageRating !== undefined ? <Rate allowHalf disabled value={Math.max(0, Math.min(5, averageRating))} /> : '暂无评分'}
+            </Descriptions.Item>
             <Descriptions.Item label="开课时间">{course.courseStartTime ? formatDateTime(course.courseStartTime) : '-'}</Descriptions.Item>
             <Descriptions.Item label="结课时间">{course.courseEndTime ? formatDateTime(course.courseEndTime) : '-'}</Descriptions.Item>
           </Descriptions>

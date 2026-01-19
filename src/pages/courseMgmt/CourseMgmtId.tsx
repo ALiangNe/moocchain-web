@@ -3,10 +3,11 @@ import { Card, Button, Drawer, message, Spin } from 'antd';
 import { PlusOutlined, ArrowLeftOutlined, EditOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
-import { getCourse, getResourceList, createResource, updateResource, updateCourse, reapplyCourseAudit, getAuditRecordList } from '@/api/baseApi';
+import { getCourse, getResourceList, createResource, updateResource, updateCourse, reapplyCourseAudit, getAuditRecordList, getLearningRecordList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
+import type { LearningRecordInfo } from '@/types/learningRecordType';
 import ResourceForm from '@/components/courseMgmt/ResourceForm';
 import ResourceList from '@/components/courseMgmt/ResourceList';
 import CourseDetailCard from '@/components/courseMgmt/CourseDetail';
@@ -22,6 +23,8 @@ export default function CourseMgmtId() {
   const user = useAuthStore((state) => state.user);
   const [course, setCourse] = useState<CourseInfo | null>(null);
   const [resources, setResources] = useState<ResourceInfo[]>([]);
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [resourceRatings, setResourceRatings] = useState<Record<number, number>>({});
   const [latestAuditRecord, setLatestAuditRecord] = useState<AuditRecordInfo | null>(null);
   const [courseLoading, setCourseLoading] = useState(false);
   const [resourceLoading, setResourceLoading] = useState(false);
@@ -38,6 +41,7 @@ export default function CourseMgmtId() {
   const resourceLoadingRef = useRef(false);
   const courseRequestIdRef = useRef(0);
   const resourceRequestIdRef = useRef(0);
+  const ratingRequestIdRef = useRef(0);
 
   // 加载审核记录
   const loadAuditRecord = useCallback(async (courseId: number) => {
@@ -171,6 +175,90 @@ export default function CourseMgmtId() {
     setResourceTotal(result.data.total);
   }, [courseId, resourcePage, pageSize]);
 
+  // 计算资源平均评分
+  const calculateResourceRatings = useCallback(async (resourceIds: number[]) => {
+    const currentRequestId = ++ratingRequestIdRef.current;
+    const commitResourceRatings = (value: Record<number, number>) => {
+      if (ratingRequestIdRef.current === currentRequestId) {
+        queueMicrotask(() => setResourceRatings(value));
+      }
+    };
+
+    if (!resourceIds.length) {
+      commitResourceRatings({});
+      return { ratedRecords: [] as LearningRecordInfo[], requestId: currentRequestId };
+    }
+
+    let result;
+    try {
+      result = await getLearningRecordList({ page: 1, pageSize: 1000 });
+    } catch (error) {
+      console.error('Load ratings error:', error);
+      commitResourceRatings({});
+      return { ratedRecords: [] as LearningRecordInfo[], requestId: currentRequestId };
+    }
+
+    if (ratingRequestIdRef.current !== currentRequestId) {
+      return { ratedRecords: [] as LearningRecordInfo[], requestId: currentRequestId };
+    }
+
+    if (result.code !== 0 || !result.data) {
+      commitResourceRatings({});
+      return { ratedRecords: [] as LearningRecordInfo[], requestId: currentRequestId };
+    }
+
+    const ratedRecords = (result.data.records || []).filter(
+      (record: LearningRecordInfo) =>
+        record.resourceId &&
+        resourceIds.includes(Number(record.resourceId)) &&
+        record.rating !== undefined &&
+        record.rating !== null
+    );
+
+    if (!ratedRecords.length) {
+      commitResourceRatings({});
+      return { ratedRecords, requestId: currentRequestId };
+    }
+
+    const ratingBuckets: Record<number, { sum: number; count: number }> = {};
+    ratedRecords.forEach((record: LearningRecordInfo) => {
+      const rid = Number(record.resourceId);
+      if (!ratingBuckets[rid]) ratingBuckets[rid] = { sum: 0, count: 0 };
+      ratingBuckets[rid].sum += Number(record.rating);
+      ratingBuckets[rid].count += 1;
+    });
+
+    const resourceRatingMap: Record<number, number> = {};
+    Object.entries(ratingBuckets).forEach(([rid, { sum, count }]) => {
+      resourceRatingMap[Number(rid)] = sum / count;
+    });
+
+    commitResourceRatings(resourceRatingMap);
+    return { ratedRecords, requestId: currentRequestId };
+  }, []);
+
+  // 计算课程平均评分（基于资源评分结果）
+  const calculateCourseRatings = useCallback(async (resourceIds: number[]) => {
+    const { ratedRecords, requestId } = await calculateResourceRatings(resourceIds);
+    const commitAverage = (value: number | null) => {
+      if (ratingRequestIdRef.current === requestId) {
+        queueMicrotask(() => setAverageRating(value));
+      }
+    };
+
+    if (!ratedRecords.length) {
+      commitAverage(null);
+      return;
+    }
+
+    if (ratingRequestIdRef.current !== requestId) return;
+
+    const totalRating = ratedRecords.reduce((sum, record) => sum + Number(record.rating), 0);
+    commitAverage(totalRating / ratedRecords.length);
+  },
+    [calculateResourceRatings]
+  );
+
   useEffect(() => {
     const effectRequestId = courseRequestIdRef.current;
     queueMicrotask(() => {
@@ -190,6 +278,12 @@ export default function CourseMgmtId() {
       resourceRequestIdRef.current = effectRequestId + 1;
     };
   }, [loadResources]);
+
+  // 资源变化时计算课程平均评分
+  useEffect(() => {
+    const ids = resources.map((item) => item.resourceId).filter(Boolean) as number[];
+    calculateCourseRatings(ids);
+  }, [resources, calculateCourseRatings]);
 
   // 创建新资源
   const handleCreateResource = async (values: Partial<ResourceInfo> & { file?: File }) => {
@@ -458,7 +552,7 @@ export default function CourseMgmtId() {
           )}
         </div>
 
-        <CourseDetailCard course={course} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} />
+        <CourseDetailCard course={course} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} averageRating={averageRating} />
 
         <div className="mb-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
@@ -467,7 +561,7 @@ export default function CourseMgmtId() {
           )}
         </div>
         <Card className="shadow-sm">
-          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onEdit={user?.role !== UserRole.STUDENT ? handleEditClick : undefined} onItemClick={handleResourceClick} />
+          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onEdit={user?.role !== UserRole.STUDENT ? handleEditClick : undefined} onItemClick={handleResourceClick} />
         </Card>
 
         <Drawer title="上传资源" open={resourceModalVisible} onClose={() => setResourceModalVisible(false)} width={700} placement="right">

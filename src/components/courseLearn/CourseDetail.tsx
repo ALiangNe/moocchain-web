@@ -1,12 +1,14 @@
-import { Card, Descriptions, Popover } from 'antd';
+import { Card, Descriptions, Popover, Rate, Progress, Alert } from 'antd';
 import type { CourseInfo } from '@/types/courseType';
 import { formatDateTime } from '@/utils/formatTime';
 
 interface CourseDetailProps {
   course: CourseInfo;
+  averageRating?: number | null;
+  courseProgress?: number | null;
 }
 
-export default function CourseDetail({ course }: CourseDetailProps) {
+export default function CourseDetail({ course, averageRating, courseProgress }: CourseDetailProps) {
   // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
     if (!coverImage) return undefined;
@@ -14,6 +16,10 @@ export default function CourseDetail({ course }: CourseDetailProps) {
     const baseUrl = import.meta.env.VITE_API_BASE_URL.split('/api')[0];
     return `${baseUrl}${coverImage}`;
   };
+
+  const hasProgress = courseProgress !== null && courseProgress !== undefined;
+  const progressValue = hasProgress ? Math.round(courseProgress as number) : 0;
+  const isCompleted = progressValue >= 100;
 
   return (
     <Card className="shadow-sm mb-6">
@@ -45,9 +51,30 @@ export default function CourseDetail({ course }: CourseDetailProps) {
                 '-'
               )}
             </Descriptions.Item>
-            <Descriptions.Item label="课程评分">TODO：待实现</Descriptions.Item>
             <Descriptions.Item label="开课时间">{course.courseStartTime ? formatDateTime(course.courseStartTime) : '-'}</Descriptions.Item>
             <Descriptions.Item label="结课时间">{course.courseEndTime ? formatDateTime(course.courseEndTime) : '-'}</Descriptions.Item>
+            <Descriptions.Item label="课程评分">
+              {averageRating !== null && averageRating !== undefined ? <Rate allowHalf disabled value={Math.max(0, Math.min(5, averageRating))} /> : '暂无评分'}
+            </Descriptions.Item>
+            <Descriptions.Item label="课程学习进度">
+              {!hasProgress ? (
+                '未开始'
+              ) : (
+                <div className="space-y-2 w-full">
+                  <Progress percent={progressValue} strokeColor={isCompleted ? '#52c41a' : '#007aff'} className="mb-1" />
+                  <div className="flex justify-between text-xs text-[#6e6e73]">
+                    <span>进度：{progressValue}%</span>
+                    {isCompleted ? <span className="text-green-600">已完成</span> : <span>剩余 {Math.max(0, 100 - progressValue)}%</span>}
+                  </div>
+                  {!isCompleted && (
+                    <Alert type="warning" showIcon message={`未完成学习，剩余 ${Math.max(0, 100 - progressValue)}%`} description="完成 100% 后可完成课程学习。" className="text-xs" />
+                  )}
+                  {isCompleted && (
+                    <Alert type="success" showIcon message="已完成课程学习" description="恭喜你已完成本课程全部资源的学习！" className="text-xs" />
+                  )}
+                </div>
+              )}
+            </Descriptions.Item>
           </Descriptions>
         </div>
       </div>

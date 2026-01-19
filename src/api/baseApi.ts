@@ -1,10 +1,11 @@
-import type { UserInfo } from '@/types/userType';
 import type { ResponseType } from '@/types/responseType';
+import type { UserInfo } from '@/types/userType';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
+import type { LearningRecordInfo } from '@/types/learningRecordType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -140,6 +141,43 @@ export async function getResourceList(params: { courseId?: number; ownerId?: num
 }
 export async function getResource(resourceId: number): Promise<ResponseType<ResourceInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/getResource/${resourceId}`, {
+    method: 'GET',
+  }); return response.json();
+}
+
+// LearningRecord API
+export async function completeLearningRecord(resourceId: number): Promise<ResponseType<LearningRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/completeLearningRecord`, {
+    method: 'POST',
+    body: JSON.stringify({ resourceId }),
+  }); return response.json();
+}
+export async function reportLearningTime(resourceId: number, timeIncrement: number): Promise<ResponseType<LearningRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/reportLearningTime`, {
+    method: 'POST',
+    body: JSON.stringify({ resourceId, timeIncrement }),
+  }); return response.json();
+}
+export async function updateLearningProgress(resourceId: number, progress: number): Promise<ResponseType<LearningRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateLearningProgress/${resourceId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ progress }),
+  }); return response.json();
+}
+export async function submitReview(resourceId: number, review: string, rating: number): Promise<ResponseType<LearningRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/submitReview`, {
+    method: 'POST',
+    body: JSON.stringify({ resourceId, review, rating }),
+  }); return response.json();
+}
+export async function getLearningRecordList(params: { studentId?: number; resourceId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: LearningRecordInfo[]; total: number }>> {
+  const queryString = buildGetLearningRecordListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getLearningRecordList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getLearningRecord(recordId: number): Promise<ResponseType<LearningRecordInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getLearningRecord/${recordId}`, {
     method: 'GET',
   }); return response.json();
 }

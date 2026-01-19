@@ -1,4 +1,4 @@
-import { Card, Tag, Pagination, Spin } from 'antd';
+import { Card, Tag, Pagination, Spin, Rate } from 'antd';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDate } from '@/utils/formatTime';
 
@@ -10,9 +10,10 @@ interface ResourceListProps {
   total: number;
   onPageChange: (page: number, pageSize: number) => void;
   onItemClick?: (resource: ResourceInfo) => void;
+  resourceRatings?: Record<number, number>;
 }
 
-export default function ResourceList({ data, loading, page, pageSize, total, onPageChange, onItemClick }: ResourceListProps) {
+export default function ResourceList({ data, loading, page, pageSize, total, onPageChange, onItemClick, resourceRatings }: ResourceListProps) {
   const resourceTypeMap: Record<number, { text: string; color: string }> = {
     0: { text: '其他', color: 'default' },
     1: { text: '文档', color: 'blue' },
@@ -46,6 +47,10 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
       <div className="space-y-4">
         {data.map((resource) => {
           const typeConfig = resourceTypeMap[resource.resourceType || 0] || resourceTypeMap[0];
+          const ratingValue =
+            resource.resourceId !== undefined && resourceRatings
+              ? resourceRatings[resource.resourceId] ?? null
+              : null;
           return (
             <Card key={resource.resourceId} hoverable className="border border-gray-200 transition-all hover:shadow-md cursor-pointer" onClick={() => handleCardClick(resource)}>
               <div className="flex gap-4 items-start">
@@ -60,7 +65,14 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
                   <div className="flex justify-between items-center text-sm text-[#6e6e73]">
                     <div className="flex gap-4">
                       <span>上传时间：{resource.createdAt ? formatDate(resource.createdAt) : '-'}</span>
-                      <span>资源评分：TODO:待完成</span>
+                    <span className="flex items-center gap-2">
+                      <span>资源评分：</span>
+                      {ratingValue !== null && ratingValue !== undefined ? (
+                        <Rate allowHalf disabled value={Math.max(0, Math.min(5, ratingValue))} />
+                      ) : (
+                        '暂无评分'
+                      )}
+                    </span>
                     </div>
                     <div className="flex gap-4">
                       {resource.price && Number(resource.price) !== 0 && <span>价格：{resource.price} 代币</span>}

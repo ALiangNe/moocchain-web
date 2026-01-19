@@ -121,3 +121,14 @@ export function buildGetResourceListQuery(params: { courseId?: number; ownerId?:
   });
 }
 
+/**
+ * 构建获取学习记录列表的 GET 请求查询参数
+ */
+export function buildGetLearningRecordListQuery(params: { studentId?: number; resourceId?: number; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    studentId: params.studentId,
+    resourceId: params.resourceId,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}
