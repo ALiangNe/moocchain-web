@@ -15,6 +15,7 @@ import Profile from '@/pages/profile/Profile';
 import TeacherApply from '@/pages/teacherApply/TeacherApply';
 import Audit from '@/pages/audit/Audit';
 import NotFound from '@/pages/notfound/NotFound';
+import LearningHistory from '@/pages/learningHistory/LearningHistory';
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: '/coursemgmt', element: <CourseMgmt /> },
       { path: '/coursemgmt/:courseId', element: <CourseMgmtId /> },
       { path: '/coursemgmt/:courseId/resource/:resourceId', element: <CourseMgmtResourceId /> },
+      { path: '/learningHistory', element: <LearningHistory /> },
       { path: '/user', element: <User /> },
       { path: '/profile', element: <Profile /> },
       { path: '/teacherApply', element: <TeacherApply /> },

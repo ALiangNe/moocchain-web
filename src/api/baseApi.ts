@@ -5,7 +5,7 @@ import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -179,5 +179,11 @@ export async function getLearningRecordList(params: { studentId?: number; resour
 export async function getLearningRecord(recordId: number): Promise<ResponseType<LearningRecordInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/getLearningRecord/${recordId}`, {
     method: 'GET',
+  }); return response.json();
+}
+export async function getLearningHistoryList(params: { page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceInfo[]; total: number }>> {
+  const queryString = buildGetLearningHistoryListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getLearningHistoryList?${queryString}`, {
+    method: 'GET'
   }); return response.json();
 }

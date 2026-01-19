@@ -132,3 +132,13 @@ export function buildGetLearningRecordListQuery(params: { studentId?: number; re
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取学习历史课程列表的 GET 请求查询参数
+ */
+export function buildGetLearningHistoryListQuery(params: { page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}

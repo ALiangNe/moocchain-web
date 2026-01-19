@@ -19,6 +19,7 @@ export default function Header() {
     const baseItems = [
       { path: '/home', label: '首页' },
       { path: '/courselearn', label: '课程学习' },
+      { path: '/learningHistory', label: '学习记录' },
     ];
 
     if (role === UserRole.TEACHER || role === UserRole.ADMIN) {
