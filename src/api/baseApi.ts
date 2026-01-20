@@ -4,8 +4,9 @@ import type { AuditRecordInfo } from '@/types/auditRecordType';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
+import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -185,5 +186,30 @@ export async function getLearningHistoryList(params: { page?: number; pageSize?:
   const queryString = buildGetLearningHistoryListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getLearningHistoryList?${queryString}`, {
     method: 'GET'
+  }); return response.json();
+}
+
+// CertificateTemplate API
+export async function createCertificateTemplate(data: Partial<CertificateTemplateInfo>): Promise<ResponseType<CertificateTemplateInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/createCertificateTemplate`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function updateCertificateTemplate(templateId: number, data: Partial<CertificateTemplateInfo>): Promise<ResponseType<CertificateTemplateInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateCertificateTemplate/${templateId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function getCertificateTemplateList(params: { createdBy?: number; isActive?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateTemplateInfo[]; total: number }>> {
+  const queryString = buildGetCertificateTemplateListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateTemplateList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getCertificateTemplate(templateId: number): Promise<ResponseType<CertificateTemplateInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateTemplate/${templateId}`, {
+    method: 'GET',
   }); return response.json();
 }

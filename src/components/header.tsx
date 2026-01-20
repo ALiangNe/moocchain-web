@@ -29,6 +29,7 @@ export default function Header() {
     if (role === UserRole.ADMIN) {
       baseItems.push({ path: '/user', label: '用户管理' });
       baseItems.push({ path: '/audit', label: '审核管理' });
+      baseItems.push({ path: '/certificateTemplate', label: '证书模板' });
     }
 
     return baseItems;

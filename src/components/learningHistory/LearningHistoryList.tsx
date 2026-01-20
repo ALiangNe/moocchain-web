@@ -79,10 +79,12 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
     }
     const progressValue = Math.round(progress);
     const isCompleted = progressValue >= 100;
+    const color = isCompleted ? '#52c41a' : '#007aff';
     return (
       <div className="flex items-center gap-2">
-        <Progress percent={progressValue} strokeColor={isCompleted ? '#52c41a' : '#007aff'} size="small" showInfo={false} className="w-16" />
-        <span className="text-xs font-medium" style={{ color: isCompleted ? '#52c41a' : '#007aff' }}>{progressValue}%</span>
+        <Progress percent={progressValue} strokeColor={color} size="small" showInfo={false} className="w-16" />
+        <span className="text-xs font-medium" style={{ color }}>{progressValue}%</span>
+        <Tag color={color}>{isCompleted ? '已完成' : '未完成'}</Tag>
       </div>
     );
   };
@@ -104,43 +106,46 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
   }
 
   return (
-    <Card className="shadow-sm border border-gray-200 rounded-2xl bg-white/70">
-      <List
-        itemLayout="horizontal"
-        dataSource={data}
-        renderItem={(resource) => {
-          const course = resource.course;
-          const teacher = course?.teacher;
-          return (
-          <List.Item className="hover:bg-gray-50/80 transition-colors cursor-pointer rounded-xl px-3" onClick={() => onItemClick && onItemClick(resource)}>
-            <List.Item.Meta
-              avatar={renderPreview(resource)}
-              title={
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-semibold text-[#1d1d1f]">{course?.courseName || '未知课程'} {resource.title}</span>
-                    {(() => {
-                      const typeConfig = resourceTypeMap[resource.resourceType || 0] || resourceTypeMap[0];
-                      return <Tag color={typeConfig.color}>{typeConfig.text}</Tag>;
-                    })()}
-                    {renderProgress((resource as ResourceInfo & { learningProgress?: number }).learningProgress)}
-                  </div>
-                  <span className="text-xs text-[#6e6e73]">{course?.courseStartTime ? `开课：${formatDateTime(course.courseStartTime)}` : ''}</span>
-                </div>
-              }
-              description={
-                <div className="flex flex-col gap-1 text-xs text-[#6e6e73]">
-                  <span className="line-clamp-1">{resource.description || '暂无资源描述'}</span>
-                  <span>{teacher?.realName || teacher?.username || '未知教师'} · {teacher?.schoolName || '未知学校'}</span>
-                </div>
-              }
-            />
-          </List.Item>
-        )}}
-      />
+    <>
+      <Card className="shadow-sm border border-gray-200 rounded-2xl bg-white/70">
+        <List
+          itemLayout="horizontal"
+          dataSource={data}
+          renderItem={(resource) => {
+            const course = resource.course;
+            const teacher = course?.teacher;
+            return (
+              <List.Item className="hover:bg-gray-50/80 transition-colors cursor-pointer rounded-xl px-3" onClick={() => onItemClick && onItemClick(resource)}>
+                <List.Item.Meta
+                  avatar={renderPreview(resource)}
+                  title={
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-semibold text-[#1d1d1f]">{course?.courseName || '未知课程'} {resource.title}</span>
+                        {(() => {
+                          const typeConfig = resourceTypeMap[resource.resourceType || 0] || resourceTypeMap[0];
+                          return <Tag color={typeConfig.color}>{typeConfig.text}</Tag>;
+                        })()}
+                        {renderProgress((resource as ResourceInfo & { learningProgress?: number }).learningProgress)}
+                      </div>
+                      <span className="text-xs text-[#6e6e73]">{course?.courseStartTime ? `开课：${formatDateTime(course.courseStartTime)}` : ''}</span>
+                    </div>
+                  }
+                  description={
+                    <div className="flex flex-col gap-1 text-xs text-[#6e6e73]">
+                      <span className="line-clamp-1">{resource.description || '暂无资源描述'}</span>
+                      <span>{teacher?.realName || teacher?.username || '未知教师'} · {teacher?.schoolName || '未知学校'}</span>
+                    </div>
+                  }
+                />
+              </List.Item>
+            )
+          }}
+        />
+      </Card>
       <div className="mt-4 flex justify-end">
         <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(t) => `共 ${t} 门课程`} />
       </div>
-    </Card>
+    </>
   );
 }

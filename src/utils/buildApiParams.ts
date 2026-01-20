@@ -142,3 +142,15 @@ export function buildGetLearningHistoryListQuery(params: { page?: number; pageSi
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取证书模板列表的 GET 请求查询参数
+ */
+export function buildGetCertificateTemplateListQuery(params: { createdBy?: number; isActive?: number; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    createdBy: params.createdBy,
+    isActive: params.isActive,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}

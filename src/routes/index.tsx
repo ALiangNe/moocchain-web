@@ -16,6 +16,7 @@ import TeacherApply from '@/pages/teacherApply/TeacherApply';
 import Audit from '@/pages/audit/Audit';
 import NotFound from '@/pages/notfound/NotFound';
 import LearningHistory from '@/pages/learningHistory/LearningHistory';
+import CertificateTemplate from '@/pages/certificateTemplate/CertificateTemplate';
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: '/profile', element: <Profile /> },
       { path: '/teacherApply', element: <TeacherApply /> },
       { path: '/audit', element: <Audit /> },
+      { path: '/certificateTemplate', element: <CertificateTemplate /> },
       { path: '*', element: <NotFound /> },
     ],
   },
