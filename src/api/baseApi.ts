@@ -5,8 +5,9 @@ import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
+import type { ResourceCertificateConfigInfo } from '@/types/resourceCertificateConfigType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -210,6 +211,31 @@ export async function getCertificateTemplateList(params: { createdBy?: number; i
 }
 export async function getCertificateTemplate(templateId: number): Promise<ResponseType<CertificateTemplateInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateTemplate/${templateId}`, {
+    method: 'GET',
+  }); return response.json();
+}
+
+// ResourceCertificateConfig API
+export async function createResourceCertificateConfig(data: Partial<ResourceCertificateConfigInfo>): Promise<ResponseType<ResourceCertificateConfigInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/createResourceCertificateConfig`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function updateResourceCertificateConfig(configId: number, data: Partial<ResourceCertificateConfigInfo>): Promise<ResponseType<ResourceCertificateConfigInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateResourceCertificateConfig/${configId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function getResourceCertificateConfigList(params: { courseId?: number; templateId?: number; isEnabled?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceCertificateConfigInfo[]; total: number }>> {
+  const queryString = buildGetResourceCertificateConfigListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getResourceCertificateConfigList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getResourceCertificateConfig(configId: number): Promise<ResponseType<ResourceCertificateConfigInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getResourceCertificateConfig/${configId}`, {
     method: 'GET',
   }); return response.json();
 }

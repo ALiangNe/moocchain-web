@@ -154,3 +154,16 @@ export function buildGetCertificateTemplateListQuery(params: { createdBy?: numbe
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取资源证书配置列表的 GET 请求查询参数
+ */
+export function buildGetResourceCertificateConfigListQuery(params: { courseId?: number; templateId?: number; isEnabled?: number; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    courseId: params.courseId,
+    templateId: params.templateId,
+    isEnabled: params.isEnabled,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}

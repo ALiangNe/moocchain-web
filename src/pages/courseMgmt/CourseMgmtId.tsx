@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message, Spin } from 'antd';
-import { PlusOutlined, ArrowLeftOutlined, EditOutlined, ReloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, ArrowLeftOutlined, EditOutlined, ReloadOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
-import { getCourse, getResourceList, createResource, updateResource, updateCourse, reapplyCourseAudit, getAuditRecordList, getLearningRecordList } from '@/api/baseApi';
+import { getCourse, getResourceList, createResource, updateResource, updateCourse, reapplyCourseAudit, getAuditRecordList, getLearningRecordList, getCertificateTemplateList, getResourceCertificateConfigList, createResourceCertificateConfig, updateResourceCertificateConfig } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
+import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
+import type { ResourceCertificateConfigInfo } from '@/types/resourceCertificateConfigType';
 import ResourceForm from '@/components/courseMgmt/ResourceForm';
 import ResourceList from '@/components/courseMgmt/ResourceList';
 import CourseDetailCard from '@/components/courseMgmt/CourseDetail';
 import CourseForm from '@/components/courseMgmt/CourseForm';
+import CourseCertificateConfigForm from '@/components/courseMgmt/CourseCertificateConfigForm';
 import { UserRole } from '@/constants/role';
 import { buildCreateResourceFormData } from '@/utils/buildApiParams';
 import { ensureWalletConnected } from '@/utils/wallet';
@@ -37,6 +40,10 @@ export default function CourseMgmtId() {
   const [courseEditVisible, setCourseEditVisible] = useState(false);
   const [courseEditLoading, setCourseEditLoading] = useState(false);
   const [reapplyingAudit, setReapplyingAudit] = useState(false);
+  const [certificateDrawerVisible, setCertificateDrawerVisible] = useState(false);
+  const [certificateLoading, setCertificateLoading] = useState(false);
+  const [templates, setTemplates] = useState<CertificateTemplateInfo[]>([]);
+  const [courseCertificateConfig, setCourseCertificateConfig] = useState<ResourceCertificateConfigInfo | null>(null);
   const courseLoadingRef = useRef(false);
   const resourceLoadingRef = useRef(false);
   const courseRequestIdRef = useRef(0);
@@ -131,6 +138,82 @@ export default function CourseMgmtId() {
       setLatestAuditRecord(null);
     }
   }, [courseId, loadAuditRecord]);
+
+  const loadCertificateTemplates = useCallback(async () => {
+    let result;
+    try {
+      result = await getCertificateTemplateList({ isActive: 1, page: 1, pageSize: 100 });
+    } catch (error) {
+      console.error('Load certificate templates error:', error);
+      setTemplates([]);
+      return;
+    }
+    if (result.code !== 0 || !result.data) {
+      setTemplates([]);
+      return;
+    }
+    setTemplates(result.data.records || []);
+  }, []);
+
+  const loadCourseCertificateConfig = useCallback(async () => {
+    if (!courseId) return;
+    let result;
+    try {
+      result = await getResourceCertificateConfigList({ courseId: Number(courseId), page: 1, pageSize: 1 });
+    } catch (error) {
+      console.error('Load course certificate config error:', error);
+      setCourseCertificateConfig(null);
+      return;
+    }
+    if (result.code !== 0 || !result.data || !result.data.records || result.data.records.length === 0) {
+      setCourseCertificateConfig(null);
+      return;
+    }
+    setCourseCertificateConfig(result.data.records[0]);
+  }, [courseId]);
+
+  const handleOpenCertificateDrawer = async () => {
+    setCertificateDrawerVisible(true);
+    await Promise.all([loadCertificateTemplates(), loadCourseCertificateConfig()]);
+  };
+
+  const handleSubmitCourseCertificateConfig = async (values: Partial<ResourceCertificateConfigInfo>) => {
+    if (!courseId) return;
+    setCertificateLoading(true);
+
+    const params: Partial<ResourceCertificateConfigInfo> = {
+      courseId: Number(courseId),
+      templateId: values.templateId,
+      completionRequirement: values.completionRequirement,
+      minLearningTime: values.minLearningTime,
+      isEnabled: values.isEnabled,
+      overrideFields: values.overrideFields,
+    };
+
+    let result;
+    try {
+      if (courseCertificateConfig?.configId) {
+        result = await updateResourceCertificateConfig(courseCertificateConfig.configId, params);
+      } else {
+        result = await createResourceCertificateConfig(params);
+      }
+    } catch (error) {
+      console.error('Save course certificate config error:', error);
+      setCertificateLoading(false);
+      message.error('保存失败，请重试');
+      return;
+    }
+
+    setCertificateLoading(false);
+    if (result.code !== 0 || !result.data) {
+      message.error(result.message || '保存失败');
+      return;
+    }
+
+    message.success('课程证书配置已保存');
+    setCourseCertificateConfig(result.data);
+    setCertificateDrawerVisible(false);
+  };
 
   // 加载课程资源列表数据
   const loadResources = useCallback(async () => {
@@ -545,6 +628,9 @@ export default function CourseMgmtId() {
                   重新提交审核
                 </Button>
               )}
+              <Button type="primary" icon={<SafetyCertificateOutlined />} onClick={handleOpenCertificateDrawer} className="rounded-lg">
+                设置课程证书
+              </Button>
               <Button type="primary" icon={<EditOutlined />} onClick={() => setCourseEditVisible(true)} className="rounded-lg">
                 编辑课程
               </Button>
@@ -578,6 +664,10 @@ export default function CourseMgmtId() {
           {course && (
             <CourseForm initialValues={course} onSubmit={handleUpdateCourse} onCancel={() => setCourseEditVisible(false)} loading={courseEditLoading} />
           )}
+        </Drawer>
+
+        <Drawer title="设置课程证书" open={certificateDrawerVisible} onClose={() => setCertificateDrawerVisible(false)} width={700} placement="right">
+          <CourseCertificateConfigForm templates={templates} initialValues={courseCertificateConfig} defaultCourseName={course.courseName} defaultIssuerName={user?.realName || user?.username || ''} loading={certificateLoading} onSubmit={handleSubmitCourseCertificateConfig} onCancel={() => setCertificateDrawerVisible(false)} />
         </Drawer>
       </div>
     </div>
