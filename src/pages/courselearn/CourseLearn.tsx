@@ -3,7 +3,7 @@ import { Card, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { getCourseList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
-import CourseList from '@/components/courseLearn/CourseCard';
+import CourseListCard from '@/components/courseLearn/CourseListCard';
 
 export default function CourseLearn() {
   const navigate = useNavigate();
@@ -83,7 +83,7 @@ export default function CourseLearn() {
         </div>
 
         <Card className="shadow-sm">
-          <CourseList courses={courses} loading={loading} page={page} pageSize={pageSize} total={total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onCourseClick={handleCourseClick} />
+          <CourseListCard courses={courses} loading={loading} page={page} pageSize={pageSize} total={total} onPageChange={(p: number, s: number) => { setPage(p); setPageSize(s); }} onCourseClick={handleCourseClick} />
         </Card>
       </div>
     </div>

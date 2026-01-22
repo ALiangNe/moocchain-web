@@ -19,6 +19,7 @@ import LearningHistory from '@/pages/learningHistory/LearningHistory';
 import CertificateTemplate from '@/pages/certificateTemplate/CertificateTemplate';
 import CourseCertificate from '@/pages/courseCertificate/courseCertificate';
 import CourseCertificateId from '@/pages/courseCertificate/courseCertificateId';
+import TokenRule from '@/pages/tokenRule/tokenRule';
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: '/teacherApply', element: <TeacherApply /> },
       { path: '/audit', element: <Audit /> },
       { path: '/certificateTemplate', element: <CertificateTemplate /> },
+      { path: '/tokenRule', element: <TokenRule /> },
       { path: '*', element: <NotFound /> },
     ],
   },

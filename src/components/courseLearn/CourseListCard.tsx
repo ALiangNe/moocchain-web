@@ -3,7 +3,7 @@ import { ClockCircleOutlined } from '@ant-design/icons';
 import type { CourseInfo } from '@/types/courseType';
 import { formatDate } from '@/utils/formatTime';
 
-interface CourseListProps {
+interface CourseListCardProps {
   courses: CourseInfo[];
   loading?: boolean;
   page: number;
@@ -13,7 +13,7 @@ interface CourseListProps {
   onCourseClick?: (course: CourseInfo) => void;
 }
 
-export default function CourseList({ courses, loading, page, pageSize, total, onPageChange, onCourseClick }: CourseListProps) {
+export default function CourseListCard({ courses, loading, page, pageSize, total, onPageChange, onCourseClick }: CourseListCardProps) {
   // 获取课程封面图片地址
   const getCoverImageUrl = (coverImage?: string) => {
     if (!coverImage) return undefined;

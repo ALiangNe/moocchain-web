@@ -3,7 +3,7 @@ import { EditOutlined, EyeOutlined } from '@ant-design/icons';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import { formatDate } from '@/utils/formatTime';
 
-interface CertificateTemplateListProps {
+interface CertificateTemplateListCardProps {
   templates: CertificateTemplateInfo[];
   loading?: boolean;
   page: number;
@@ -14,7 +14,7 @@ interface CertificateTemplateListProps {
   onView?: (template: CertificateTemplateInfo) => void;
 }
 
-export default function CertificateTemplateList({ templates, loading, page, pageSize, total, onPageChange, onEdit, onView }: CertificateTemplateListProps) {
+export default function CertificateTemplateListCard({ templates, loading, page, pageSize, total, onPageChange, onEdit, onView }: CertificateTemplateListCardProps) {
 
   return (
     <div className="space-y-4">

@@ -180,3 +180,15 @@ export function buildGetCertificateListQuery(params: { studentId?: number; teach
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取代币规则列表的 GET 请求查询参数
+ */
+export function buildGetTokenRuleListQuery(params: { rewardType?: number; isEnabled?: number; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    rewardType: params.rewardType,
+    isEnabled: params.isEnabled,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}

@@ -31,6 +31,7 @@ export default function Header() {
       baseItems.push({ path: '/user', label: '用户管理' });
       baseItems.push({ path: '/audit', label: '审核管理' });
       baseItems.push({ path: '/certificateTemplate', label: '证书模板' });
+      baseItems.push({ path: '/tokenRule', label: '代币规则' });
     }
 
     return baseItems;

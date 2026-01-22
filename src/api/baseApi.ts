@@ -7,8 +7,9 @@ import type { LearningRecordInfo } from '@/types/learningRecordType';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import type { ResourceCertificateConfigInfo } from '@/types/resourceCertificateConfigType';
 import type { CertificateInfo } from '@/types/certificateType';
+import type { TokenRuleInfo } from '@/types/tokenRuleType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildGetTokenRuleListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -264,5 +265,30 @@ export async function updateCertificateNft(certificateId: number, data: { certif
   const response = await fetchWithAuth(`${API_BASE_URL}/updateCertificateNft/${certificateId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
+  }); return response.json();
+}
+
+// TokenRule API
+export async function createTokenRule(data: Partial<TokenRuleInfo>): Promise<ResponseType<TokenRuleInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/createTokenRule`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function updateTokenRule(ruleId: number, data: Partial<TokenRuleInfo>): Promise<ResponseType<TokenRuleInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateTokenRule/${ruleId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function getTokenRuleList(params: { rewardType?: number; isEnabled?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenRuleInfo[]; total: number }>> {
+  const queryString = buildGetTokenRuleListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getTokenRuleList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getTokenRule(ruleId: number): Promise<ResponseType<TokenRuleInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getTokenRule/${ruleId}`, {
+    method: 'GET',
   }); return response.json();
 }

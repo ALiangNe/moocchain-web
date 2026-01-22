@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { createCertificateTemplate, updateCertificateTemplate, getCertificateTemplateList } from '@/api/baseApi';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import CertificateTemplateForm from '@/components/certificateTemplate/CertificateTemplateForm';
-import CertificateTemplateList from '@/components/certificateTemplate/CertificateTemplateList';
+import CertificateTemplateListCard from '@/components/certificateTemplate/CertificateTemplateListCard';
 import { UserRole } from '@/constants/role';
 
 export default function CertificateTemplate() {
@@ -165,10 +165,10 @@ export default function CertificateTemplate() {
         </div>
 
         <Card className="shadow-sm">
-          <CertificateTemplateList templates={templates} loading={templateLoading} page={page} pageSize={pageSize} total={total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onEdit={handleEdit} onView={handleView} />
+          <CertificateTemplateListCard templates={templates} loading={templateLoading} page={page} pageSize={pageSize} total={total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onEdit={handleEdit} onView={handleView} />
         </Card>
 
-        <Drawer title={currentTemplate ? '编辑证书模板' : '创建证书模板'} open={drawerVisible} onClose={handleCloseDrawer} width={800} placement="right">
+        <Drawer title={currentTemplate ? '编辑证书模板' : '创建证书模板'} open={drawerVisible} onClose={handleCloseDrawer} width={700} placement="right">
           <CertificateTemplateForm initialValues={currentTemplate} onSubmit={currentTemplate ? handleUpdateTemplate : handleCreateTemplate} onCancel={handleCloseDrawer} />
         </Drawer>
 

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { createCourse, getCourseList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import CourseForm from '@/components/courseMgmt/CourseForm';
-import CourseList from '@/components/courseMgmt/CourseCard';
+import CourseListCard from '@/components/courseMgmt/CourseListCard';
 import { UserRole } from '@/constants/role';
 
 export default function CourseMgmt() {
@@ -124,7 +124,7 @@ export default function CourseMgmt() {
         </div>
 
         <Card className="shadow-sm">
-          <CourseList courses={courses} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseTotal} onPageChange={(p, s) => { setCoursePage(p); setPageSize(s); }} onCourseClick={handleCourseClick} />
+          <CourseListCard courses={courses} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseTotal} onPageChange={(p: number, s: number) => { setCoursePage(p); setPageSize(s); }} onCourseClick={handleCourseClick} />
         </Card>
 
         <Drawer title="创建课程" open={courseDrawerVisible} onClose={() => setCourseDrawerVisible(false)} width={700} placement="right">
