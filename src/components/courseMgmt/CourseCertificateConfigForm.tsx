@@ -8,12 +8,13 @@ export interface CourseCertificateConfigFormProps {
   initialValues?: ResourceCertificateConfigInfo | null;
   defaultCourseName?: string;
   defaultIssuerName?: string;
+  defaultTeacherSchool?: string;
   loading?: boolean;
   onSubmit: (values: Partial<ResourceCertificateConfigInfo>) => void;
   onCancel: () => void;
 }
 
-export default function CourseCertificateConfigForm({ templates, initialValues, defaultCourseName, defaultIssuerName, loading, onSubmit, onCancel }: CourseCertificateConfigFormProps) {
+export default function CourseCertificateConfigForm({ templates, initialValues, defaultCourseName, defaultIssuerName, defaultTeacherSchool, loading, onSubmit, onCancel }: CourseCertificateConfigFormProps) {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -25,8 +26,9 @@ export default function CourseCertificateConfigForm({ templates, initialValues, 
       isEnabled: initialValues?.isEnabled ?? 1,
       courseName: override?.courseName ?? defaultCourseName,
       issuerName: override?.issuerName ?? defaultIssuerName,
+      teacherSchool: override?.teacherSchool ?? defaultTeacherSchool,
     });
-  }, [defaultCourseName, defaultIssuerName, form, initialValues]);
+  }, [defaultCourseName, defaultIssuerName, defaultTeacherSchool, form, initialValues]);
 
   return (
     <div className="space-y-6">
@@ -34,7 +36,7 @@ export default function CourseCertificateConfigForm({ templates, initialValues, 
         <div className="text-sm text-[#6e6e73]">说明：这里只保存“课程级”覆盖字段，最终证书图片会在学生领取时由后端一次性渲染生成。</div>
       </div>
 
-      <Form form={form} layout="vertical" onFinish={(v) => onSubmit({ templateId: v.templateId, completionRequirement: v.completionRequirement, minLearningTime: v.minLearningTime, isEnabled: v.isEnabled ? 1 : 0, overrideFields: JSON.stringify({ courseName: v.courseName, issuerName: v.issuerName }) })}>
+      <Form form={form} layout="vertical" onFinish={(v) => onSubmit({ templateId: v.templateId, completionRequirement: v.completionRequirement, minLearningTime: v.minLearningTime, isEnabled: v.isEnabled ? 1 : 0, overrideFields: JSON.stringify({ courseName: v.courseName, issuerName: v.issuerName, teacherSchool: v.teacherSchool }) })}>
         <Form.Item name="templateId" label="选择证书模板" rules={[{ required: true, message: '请选择证书模板' }]}>
           <Select placeholder="请选择证书模板" options={templates.map((t) => ({ label: `${t.templateName || '未命名'}（#${t.templateId}）`, value: t.templateId }))} />
         </Form.Item>
@@ -56,6 +58,10 @@ export default function CourseCertificateConfigForm({ templates, initialValues, 
             <Input placeholder="例如：MOOCChain 教育平台 / 张老师" />
           </Form.Item>
         </div>
+
+        <Form.Item name="teacherSchool" label="教师学校（覆盖模板字段 teacherSchool）">
+          <Input placeholder="例如：某某大学" />
+        </Form.Item>
 
         <Form.Item name="isEnabled" label="是否启用" valuePropName="checked">
           <Switch checkedChildren="启用" unCheckedChildren="禁用" />

@@ -29,7 +29,7 @@ export default function CourseDetail({ course, averageRating, courseProgress }: 
             <img src={getCoverImageUrl(course.coverImage)} alt={course.courseName} className="w-full h-full object-cover rounded-lg" />
           </div>
         )}
-        <div className={`flex-1 ${course.coverImage ? 'w-1/2' : 'w-full'}`}>
+        <div className={`flex-1 ${course.coverImage ? 'w-1/2' : 'w-full'} relative`}>
           {course.teacher && (
             <Descriptions title="授课人信息" bordered column={1} className="mb-4" labelStyle={{ width: '25%' }} contentStyle={{ width: '75%' }}>
               <Descriptions.Item label="授课人">

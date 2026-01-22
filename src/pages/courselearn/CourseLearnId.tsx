@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, message, Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCourse, getResourceList, getLearningRecordList } from '@/api/baseApi';
+import { getCourse, getResourceList, getLearningRecordList, createCertificate, updateCertificateNft } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
+import type { CertificateInfo } from '@/types/certificateType';
 import { useAuthStore } from '@/stores/authStore';
 import ResourceList from '@/components/courseLearn/ResourceList';
 import CourseDetail from '@/components/courseLearn/CourseDetail';
+import { ensureWalletConnected } from '@/utils/wallet';
+import { mintCertificateNft } from '@/utils/certificateNft';
 
 export default function CourseLearnId() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -21,6 +24,7 @@ export default function CourseLearnId() {
   const [courseProgress, setCourseProgress] = useState<number | null>(null);
   const [courseLoading, setCourseLoading] = useState(false);
   const [resourceLoading, setResourceLoading] = useState(false);
+  const [claimingCertificate, setClaimingCertificate] = useState(false);
   const [resourcePage, setResourcePage] = useState(1);
   const [resourceTotal, setResourceTotal] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -279,6 +283,84 @@ export default function CourseLearnId() {
     };
   }, [loadResources]);
 
+  // 处理领取证书
+  const handleClaimCertificate = async () => {
+    if (!courseId) return;
+
+    setClaimingCertificate(true);
+
+    // 第一步：调用后端创建证书，生成图片并上传 IPFS
+    let createResp;
+    try {
+      createResp = await createCertificate({ courseId: Number(courseId) });
+    } catch (error) {
+      console.error('Claim certificate error:', error);
+      message.error('证书领取失败，请稍后重试');
+      setClaimingCertificate(false);
+      return;
+    }
+
+    if (createResp.code !== 0 || !createResp.data) {
+      message.error(createResp.message || '证书领取失败');
+      setClaimingCertificate(false);
+      return;
+    }
+
+    const certificate = createResp.data as CertificateInfo;
+
+    if (!certificate.certificateId || !certificate.ipfsHash) {
+      message.warning('证书已创建，但缺少链上铸造所需信息');
+      setClaimingCertificate(false);
+      loadCourse();
+      setTimeout(() => navigate('/coursecertificate'), 2000);
+      return;
+    }
+
+    // 第二步：连接钱包并铸造证书 NFT
+    const wallet = await ensureWalletConnected();
+    if (!wallet) {
+      setClaimingCertificate(false);
+      return;
+    }
+
+    const createdAt = Math.floor(Date.now() / 1000);
+
+    let mintResult;
+    try {
+      mintResult = await mintCertificateNft({ signer: wallet.signer, ownerAddress: wallet.address, ipfsHash: certificate.ipfsHash, createdAt });
+    } catch (error) {
+      console.error('Mint certificate nft error:', error);
+      setClaimingCertificate(false);
+      message.error(error instanceof Error ? error.message : '证书NFT铸造失败，请稍后重试');
+      return;
+    }
+
+    // 第三步：调用后端更新证书的链上信息
+    let updateResp;
+    try {
+      updateResp = await updateCertificateNft(certificate.certificateId, {
+        certificateNftId: mintResult.tokenId,
+        transactionHash: mintResult.transactionHash,
+      });
+    } catch (error) {
+      console.error('Update certificate nft info error:', error);
+      setClaimingCertificate(false);
+      message.error('证书NFT铸造成功，但写入链上信息失败，请稍后在证书页面重试');
+      return;
+    }
+
+    if (updateResp.code !== 0) {
+      message.error(updateResp.message || '证书NFT铸造成功，但写入链上信息失败');
+      setClaimingCertificate(false);
+      return;
+    }
+
+    setClaimingCertificate(false);
+    message.success(`证书领取成功，NFT TokenId: ${mintResult.tokenId}`);
+    loadCourse();
+    setTimeout(() => navigate('/coursecertificate'), 2000);
+  };
+
   // 处理资源点击，跳转到资源详情页
   const handleResourceClick = (resource: ResourceInfo) => {
     if (resource.resourceId && courseId) {
@@ -309,9 +391,18 @@ export default function CourseLearnId() {
   return (
     <div className="py-12">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6">
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/courselearn')} className="mb-4">返回课程列表</Button>
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/courselearn')} className="mb-4">返回课程列表</Button>
+            <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
+          </div>
+          <div className="flex gap-3">
+            {courseProgress && courseProgress >= 100 && (
+              <Button type="primary" icon={<TrophyOutlined />} loading={claimingCertificate} onClick={handleClaimCertificate} className="rounded-lg">
+                领取课程证书
+              </Button>
+            )}
+          </div>
         </div>
 
         <CourseDetail course={course} averageRating={averageRating} courseProgress={courseProgress} />

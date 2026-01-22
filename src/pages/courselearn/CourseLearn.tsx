@@ -3,7 +3,7 @@ import { Card, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { getCourseList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
-import CourseList from '@/components/courseLearn/CourseList';
+import CourseList from '@/components/courseLearn/CourseCard';
 
 export default function CourseLearn() {
   const navigate = useNavigate();

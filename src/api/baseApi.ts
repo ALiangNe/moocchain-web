@@ -6,8 +6,9 @@ import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import type { ResourceCertificateConfigInfo } from '@/types/resourceCertificateConfigType';
+import type { CertificateInfo } from '@/types/certificateType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -237,5 +238,31 @@ export async function getResourceCertificateConfigList(params: { courseId?: numb
 export async function getResourceCertificateConfig(configId: number): Promise<ResponseType<ResourceCertificateConfigInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/getResourceCertificateConfig/${configId}`, {
     method: 'GET',
+  }); return response.json();
+}
+
+// Certificate API
+export async function createCertificate(data: { courseId: number }): Promise<ResponseType<CertificateInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/createCertificate`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+export async function getCertificateList(params: { studentId?: number; teacherId?: number; courseId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateInfo[]; total: number }>> {
+  const queryString = buildGetCertificateListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateList?${queryString}`, {
+    method: 'GET',
+  }); return response.json();
+}
+export async function getCertificate(certificateId: number): Promise<ResponseType<CertificateInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/getCertificate/${certificateId}`, {
+    method: 'GET',
+  }); return response.json();
+}
+
+export async function updateCertificateNft(certificateId: number, data: { certificateNftId?: string; transactionHash?: string }): Promise<ResponseType<CertificateInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/updateCertificateNft/${certificateId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
   }); return response.json();
 }

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { createCourse, getCourseList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import CourseForm from '@/components/courseMgmt/CourseForm';
-import CourseList from '@/components/courseMgmt/CourseList';
+import CourseList from '@/components/courseMgmt/CourseCard';
 import { UserRole } from '@/constants/role';
 
 export default function CourseMgmt() {

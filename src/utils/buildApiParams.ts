@@ -167,3 +167,16 @@ export function buildGetResourceCertificateConfigListQuery(params: { courseId?: 
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取证书列表的查询参数
+ */
+export function buildGetCertificateListQuery(params: { studentId?: number; teacherId?: number; courseId?: number; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    studentId: params.studentId,
+    teacherId: params.teacherId,
+    courseId: params.courseId,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}

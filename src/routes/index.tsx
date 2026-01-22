@@ -17,6 +17,8 @@ import Audit from '@/pages/audit/Audit';
 import NotFound from '@/pages/notfound/NotFound';
 import LearningHistory from '@/pages/learningHistory/LearningHistory';
 import CertificateTemplate from '@/pages/certificateTemplate/CertificateTemplate';
+import CourseCertificate from '@/pages/courseCertificate/courseCertificate';
+import CourseCertificateId from '@/pages/courseCertificate/courseCertificateId';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +35,8 @@ export const router = createBrowserRouter([
       { path: '/coursemgmt/:courseId', element: <CourseMgmtId /> },
       { path: '/coursemgmt/:courseId/resource/:resourceId', element: <CourseMgmtResourceId /> },
       { path: '/learningHistory', element: <LearningHistory /> },
+      { path: '/coursecertificate', element: <CourseCertificate /> },
+      { path: '/coursecertificate/:certificateId', element: <CourseCertificateId /> },
       { path: '/user', element: <User /> },
       { path: '/profile', element: <Profile /> },
       { path: '/teacherApply', element: <TeacherApply /> },

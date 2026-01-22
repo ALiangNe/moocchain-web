@@ -667,7 +667,7 @@ export default function CourseMgmtId() {
         </Drawer>
 
         <Drawer title="设置课程证书" open={certificateDrawerVisible} onClose={() => setCertificateDrawerVisible(false)} width={700} placement="right">
-          <CourseCertificateConfigForm templates={templates} initialValues={courseCertificateConfig} defaultCourseName={course.courseName} defaultIssuerName={user?.realName || user?.username || ''} loading={certificateLoading} onSubmit={handleSubmitCourseCertificateConfig} onCancel={() => setCertificateDrawerVisible(false)} />
+          <CourseCertificateConfigForm templates={templates} initialValues={courseCertificateConfig} defaultCourseName={course.courseName} defaultIssuerName={user?.realName || user?.username || ''} defaultTeacherSchool={course.teacher?.schoolName || ''} loading={certificateLoading} onSubmit={handleSubmitCourseCertificateConfig} onCancel={() => setCertificateDrawerVisible(false)} />
         </Drawer>
       </div>
     </div>
