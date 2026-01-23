@@ -1,5 +1,6 @@
-import { Modal } from 'antd';
+import { Drawer, Card, Descriptions, Tag } from 'antd';
 import type { TokenRuleInfo } from '@/types/tokenRuleType';
+import { formatDateTime } from '@/utils/formatTime';
 
 interface TokenRuleDetailProps {
   visible: boolean;
@@ -18,41 +19,38 @@ export default function TokenRuleDetail({ visible, rule, onClose }: TokenRuleDet
   };
 
   return (
-    <Modal title="查看代币规则" open={visible} onCancel={onClose} footer={null} width={600}>
+    <Drawer title="查看代币规则" open={visible} onClose={onClose} width={700} placement="right">
       {rule && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">奖励类型</h3>
-            <p className="text-[#6e6e73]">{getRewardTypeName(rule.rewardType)}</p>
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">奖励数量</h3>
-            <p className="text-[#6e6e73]">{rule.rewardAmount} {rule.tokenName}</p>
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">代币名称</h3>
-            <p className="text-[#6e6e73]">{rule.tokenName}</p>
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">启用状态</h3>
-            <p className="text-[#6e6e73]">{rule.isEnabled === 1 ? '启用' : '禁用'}</p>
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">更新者</h3>
-            <p className="text-[#6e6e73]">{rule.updater?.realName || rule.updater?.username || '-'}</p>
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">创建时间</h3>
-            <p className="text-[#6e6e73]">{rule.createdAt ? new Date(rule.createdAt).toLocaleString('zh-CN') : '-'}</p>
-          </div>
-          {rule.updatedAt && (
-            <div>
-              <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">更新时间</h3>
-              <p className="text-[#6e6e73]">{new Date(rule.updatedAt).toLocaleString('zh-CN')}</p>
-            </div>
-          )}
-        </div>
+        <Card title="代币规则信息" className="shadow-sm">
+          <Descriptions column={2} size="small">
+            <Descriptions.Item label="奖励类型">
+              {getRewardTypeName(rule.rewardType)}
+            </Descriptions.Item>
+            <Descriptions.Item label="奖励数量">
+              {rule.rewardAmount} {rule.tokenName}
+            </Descriptions.Item>
+            <Descriptions.Item label="代币名称">
+              {rule.tokenName}
+            </Descriptions.Item>
+            <Descriptions.Item label="启用状态">
+              <Tag color={rule.isEnabled === 1 ? 'success' : 'default'}>
+                {rule.isEnabled === 1 ? '启用' : '禁用'}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="更新者">
+              {rule.updater?.realName || rule.updater?.username || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="创建时间">
+              {rule.createdAt ? formatDateTime(rule.createdAt) : '-'}
+            </Descriptions.Item>
+            {rule.updatedAt && (
+              <Descriptions.Item label="更新时间" span={2}>
+                {formatDateTime(rule.updatedAt)}
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        </Card>
       )}
-    </Modal>
+    </Drawer>
   );
 }

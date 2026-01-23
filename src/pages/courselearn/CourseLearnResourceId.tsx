@@ -487,7 +487,7 @@ export default function CourseLearnResourceId() {
   if (!resource) {
     return (
       <div className="py-12">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full max-w-[1600px] mx-auto">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">资源不存在</p>
           </Card>
@@ -502,27 +502,32 @@ export default function CourseLearnResourceId() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-          <Button icon={<ArrowLeftOutlined />} onClick={handleBack} className="mb-4">返回资源列表</Button>
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">资源学习</h1>
-          </div>
-          {user && (
-            <div className="flex gap-3">
-              <Tooltip title={hasClaimedLearningReward ? '您已领取过代币奖励！' : ''}>
-                <Button icon={<GiftOutlined />} loading={claimingLearningReward || checkingRewardStatus} onClick={handleClaimLearningReward} className="rounded-lg" disabled={!learningRecord || learningRecord.isCompleted !== 1 || hasClaimedLearningReward}>
-                  领取学习奖励
-                </Button>
-              </Tooltip>
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-6 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={handleBack} aria-label="返回资源列表" />
+              <h1 className="text-lg font-semibold text-[#1d1d1f]">资源学习</h1>
             </div>
-          )}
-        </div>
+            {user && (
+              <div className="flex gap-3">
+                <Tooltip title={hasClaimedLearningReward ? '您已领取过代币奖励！' : (!learningRecord || learningRecord.isCompleted !== 1 ? '请先完成该资源学习！' : '')}>
+                  <span>
+                    <Button icon={<GiftOutlined />} loading={claimingLearningReward || checkingRewardStatus} onClick={handleClaimLearningReward} className="rounded-lg" disabled={!learningRecord || learningRecord.isCompleted !== 1 || hasClaimedLearningReward}>
+                      领取学习奖励
+                    </Button>
+                  </span>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+        </Card>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3">
-              <ResourceDetail resource={resource} onDownload={!isMediaType ? handleDownload : undefined} />
+              <ResourceDetail resource={resource} onDownload={!isMediaType ? handleDownload : undefined} hidePreview={resourceType === 1} />
+              {/* 文档类型的预览下移到全宽区域 */}
             </div>
 
             <div className="lg:col-span-1">
@@ -530,13 +535,9 @@ export default function CourseLearnResourceId() {
             </div>
           </div>
 
-          {fileUrl && isMediaType && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-[#1d1d1f]">资源播放</h2>
-              </div>
-              <ResourcePlayer resource={resource} fileUrl={fileUrl} onTimeUpdate={handleTimeUpdate} onComplete={handleMediaComplete} />
-            </div>
+          {/* 统一的资源播放/预览区域：文档 / 音频 / 视频 */}
+          {fileUrl && (resourceType === 1 || isMediaType) && (
+            <ResourcePlayer resource={resource} fileUrl={fileUrl} onDownload={!isMediaType ? handleDownload : undefined} onTimeUpdate={isMediaType ? handleTimeUpdate : undefined} onComplete={isMediaType ? handleMediaComplete : undefined} />
           )}
 
           {resourceId && (

@@ -144,7 +144,7 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
         />
       </Card>
       <div className="mt-4 flex justify-end">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(t) => `共 ${t} 门课程`} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(t) => `共 ${t} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </>
   );

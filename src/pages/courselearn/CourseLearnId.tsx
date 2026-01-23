@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, message, Spin } from 'antd';
+import { Card, Button, message, Spin, Tooltip } from 'antd';
 import { ArrowLeftOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCourse, getResourceList, getLearningRecordList, createCertificate, updateCertificateNft } from '@/api/baseApi';
+import { getCourse, getResourceList, getLearningRecordList, createCertificate, updateCertificateNft, getCertificateList, getResourceCertificateConfigList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
@@ -25,6 +25,10 @@ export default function CourseLearnId() {
   const [courseLoading, setCourseLoading] = useState(false);
   const [resourceLoading, setResourceLoading] = useState(false);
   const [claimingCertificate, setClaimingCertificate] = useState(false);
+  const [hasClaimedCertificate, setHasClaimedCertificate] = useState(false);
+  const [checkingCertificateStatus, setCheckingCertificateStatus] = useState(false);
+  const [hasCertificateConfig, setHasCertificateConfig] = useState<boolean | null>(null);
+  const [checkingCertificateConfig, setCheckingCertificateConfig] = useState(false);
   const [resourcePage, setResourcePage] = useState(1);
   const [resourceTotal, setResourceTotal] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -212,6 +216,61 @@ export default function CourseLearnId() {
     [userId]
   );
 
+  // 查询课程证书配置（resourceCertificateConfig）：isEnabled=1 + courseId（并确保 templateId 存在）
+  const checkCertificateConfig = useCallback(async () => {
+    if (!courseId) return;
+
+    setCheckingCertificateConfig(true);
+
+    let result;
+    try {
+      result = await getResourceCertificateConfigList({ courseId: Number(courseId), isEnabled: 1, page: 1, pageSize: 1 });
+    } catch (error) {
+      console.error('Check course certificate config error:', error);
+      setCheckingCertificateConfig(false);
+      setHasCertificateConfig(null);
+      return;
+    }
+
+    setCheckingCertificateConfig(false);
+
+    const config = result.code === 0 && result.data && result.data.records && result.data.records.length > 0 ? result.data.records[0] : null;
+    setHasCertificateConfig(!!(config && config.templateId));
+  }, [courseId]);
+
+  // 查询是否已领取课程证书（根据 studentId + teacherId + courseId）
+  const checkCertificateStatus = useCallback(async () => {
+    if (!courseId || !userId || !course) return;
+
+    const teacherId = course.teacherId || course.teacher?.userId;
+    if (!teacherId) return;
+
+    setCheckingCertificateStatus(true);
+
+    let result;
+    try {
+      result = await getCertificateList({
+        studentId: userId,
+        teacherId,
+        courseId: Number(courseId),
+        page: 1,
+        pageSize: 1,
+      });
+    } catch (error) {
+      console.error('Check course certificate status error:', error);
+      setCheckingCertificateStatus(false);
+      return;
+    }
+
+    setCheckingCertificateStatus(false);
+
+    if (result.code === 0 && result.data && result.data.records && result.data.records.length > 0) {
+      setHasClaimedCertificate(true);
+    } else {
+      setHasClaimedCertificate(false);
+    }
+  }, [courseId, userId, course]);
+
   // 加载课程资源列表数据
   const loadResources = useCallback(async () => {
     if (!courseId) return;
@@ -283,9 +342,31 @@ export default function CourseLearnId() {
     };
   }, [loadResources]);
 
+  // 课程详情加载完成后，检查教师是否已配置课程证书
+  useEffect(() => {
+    if (!course) return;
+    queueMicrotask(() => {
+      checkCertificateConfig();
+    });
+  }, [course, checkCertificateConfig]);
+
+  // 课程详情和用户信息就绪后，查询是否已领取课程证书
+  useEffect(() => {
+    if (!course || !userId) return;
+    queueMicrotask(() => {
+      checkCertificateStatus();
+    });
+  }, [course, userId, checkCertificateStatus]);
+
   // 处理领取证书
   const handleClaimCertificate = async () => {
     if (!courseId) return;
+
+    // 证书配置未启用/不存在：直接提示
+    if (hasCertificateConfig === false) {
+      message.warning('教师未配置课程证书，请稍后领取！');
+      return;
+    }
 
     setClaimingCertificate(true);
 
@@ -357,6 +438,7 @@ export default function CourseLearnId() {
 
     setClaimingCertificate(false);
     message.success(`证书领取成功，NFT TokenId: ${mintResult.tokenId}`);
+    setHasClaimedCertificate(true);
     loadCourse();
     setTimeout(() => navigate('/coursecertificate'), 2000);
   };
@@ -379,7 +461,7 @@ export default function CourseLearnId() {
   if (!course) {
     return (
       <div className="py-12">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full max-w-[1600px] mx-auto">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">课程不存在</p>
           </Card>
@@ -390,27 +472,41 @@ export default function CourseLearnId() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/courselearn')} className="mb-4">返回课程列表</Button>
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-6 rounded-2xl">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/courselearn')} aria-label="返回课程列表" />
             <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
           </div>
           <div className="flex gap-3">
             {courseProgress && courseProgress >= 100 && (
-              <Button type="primary" icon={<TrophyOutlined />} loading={claimingCertificate} onClick={handleClaimCertificate} className="rounded-lg">
+                <Tooltip
+                  title={
+                    hasClaimedCertificate
+                      ? '您已领取过课程证书！'
+                      : hasCertificateConfig === false
+                        ? '教师未配置课程证书，请稍后领取！'
+                        : ''
+                  }
+                >
+                  <span>
+                    <Button type="primary" icon={<TrophyOutlined />} loading={claimingCertificate || checkingCertificateStatus || checkingCertificateConfig} onClick={handleClaimCertificate} className="rounded-lg" disabled={hasClaimedCertificate || hasCertificateConfig === false}  >
                 领取课程证书
               </Button>
+                  </span>
+                </Tooltip>
             )}
+            </div>
           </div>
-        </div>
+        </Card>
 
         <CourseDetail course={course} averageRating={averageRating} courseProgress={courseProgress} />
 
-        <div className="mb-4 flex justify-between items-center">
+        <Card className="shadow-sm mb-4 rounded-2xl">
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
-        </div>
-        <Card className="shadow-sm">
+        </Card>
+        <Card className="shadow-sm rounded-2xl">
           <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onItemClick={handleResourceClick} />
         </Card>
       </div>

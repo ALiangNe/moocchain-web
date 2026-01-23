@@ -26,7 +26,7 @@ export default function LearningProgress({ learningRecord, loading, submitting, 
 
   if (loading) {
     return (
-      <Card className="shadow-sm">
+      <Card className="shadow-sm rounded-2xl">
         <div className="flex justify-center items-center py-8">
           <Spin />
         </div>
@@ -36,7 +36,7 @@ export default function LearningProgress({ learningRecord, loading, submitting, 
 
   if (!learningRecord) {
     return (
-      <Card className="shadow-sm">
+      <Card className="shadow-sm rounded-2xl">
         <div className="text-center py-8 text-[#6e6e73]">
           <p>开始学习后，学习进度将显示在这里</p>
         </div>
@@ -57,7 +57,7 @@ export default function LearningProgress({ learningRecord, loading, submitting, 
 
   return (
     <>
-      <Card className="shadow-sm">
+      <Card className="shadow-sm rounded-2xl">
         <div className="space-y-6">
           <div>
             <div className="flex items-center justify-between mb-2">

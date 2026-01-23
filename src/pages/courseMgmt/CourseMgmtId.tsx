@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, Drawer, message, Spin } from 'antd';
+import { Card, Button, Drawer, message, Spin, Tooltip } from 'antd';
 import { PlusOutlined, ArrowLeftOutlined, EditOutlined, ReloadOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
@@ -26,6 +26,7 @@ export default function CourseMgmtId() {
   const user = useAuthStore((state) => state.user);
   const [course, setCourse] = useState<CourseInfo | null>(null);
   const [resources, setResources] = useState<ResourceInfo[]>([]);
+  const [rejectedResourceIds, setRejectedResourceIds] = useState<Set<number>>(new Set());
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const [resourceRatings, setResourceRatings] = useState<Record<number, number>>({});
   const [latestAuditRecord, setLatestAuditRecord] = useState<AuditRecordInfo | null>(null);
@@ -40,6 +41,7 @@ export default function CourseMgmtId() {
   const [courseEditVisible, setCourseEditVisible] = useState(false);
   const [courseEditLoading, setCourseEditLoading] = useState(false);
   const [reapplyingAudit, setReapplyingAudit] = useState(false);
+  const [hasReappliedCourseAudit, setHasReappliedCourseAudit] = useState(false);
   const [certificateDrawerVisible, setCertificateDrawerVisible] = useState(false);
   const [certificateLoading, setCertificateLoading] = useState(false);
   const [templates, setTemplates] = useState<CertificateTemplateInfo[]>([]);
@@ -49,6 +51,55 @@ export default function CourseMgmtId() {
   const courseRequestIdRef = useRef(0);
   const resourceRequestIdRef = useRef(0);
   const ratingRequestIdRef = useRef(0);
+
+  // 加载资源审核记录（用于资源列表 status 标签显示“审核未通过，请重新提交申请”）
+  const loadResourceRejectedStatus = useCallback(async (resourceIds: number[]) => {
+    if (!resourceIds.length) {
+      setRejectedResourceIds(new Set());
+      return;
+    }
+
+    const toTime = (value: unknown): number => {
+      if (!value) return 0;
+      if (value instanceof Date) return value.getTime();
+      const t = new Date(String(value)).getTime();
+      return Number.isFinite(t) ? t : 0;
+    };
+
+    let result;
+    try {
+      result = await getAuditRecordList({ targetType: 1, auditType: 1, page: 1, pageSize: 1000 });
+    } catch (error) {
+      console.error('Load resource audit records error:', error);
+      setRejectedResourceIds(new Set());
+      return;
+    }
+
+    if (result.code !== 0 || !result.data || !result.data.records) {
+      setRejectedResourceIds(new Set());
+      return;
+    }
+
+    const auditRecords = result.data.records.filter((r) => r.targetId !== undefined && resourceIds.includes(Number(r.targetId)));
+    const latestByResourceId = new Map<number, AuditRecordInfo>();
+    auditRecords.forEach((r) => {
+      const rid = Number(r.targetId);
+      const prev = latestByResourceId.get(rid);
+      if (!prev) {
+        latestByResourceId.set(rid, r);
+        return;
+      }
+      const prevTime = toTime(prev.createdAt);
+      const curTime = toTime(r.createdAt);
+      if (curTime >= prevTime) latestByResourceId.set(rid, r);
+    });
+
+    const rejected = new Set<number>();
+    latestByResourceId.forEach((r, rid) => {
+      if (r.auditStatus === 2) rejected.add(rid);
+    });
+    setRejectedResourceIds(rejected);
+  }, []);
 
   // 加载审核记录
   const loadAuditRecord = useCallback(async (courseId: number) => {
@@ -256,7 +307,10 @@ export default function CourseMgmtId() {
 
     setResources(result.data.records);
     setResourceTotal(result.data.total);
-  }, [courseId, resourcePage, pageSize]);
+
+    const ids = (result.data.records || []).map((item) => item.resourceId).filter(Boolean) as number[];
+    await loadResourceRejectedStatus(ids);
+  }, [courseId, resourcePage, pageSize, loadResourceRejectedStatus]);
 
   // 计算资源平均评分
   const calculateResourceRatings = useCallback(async (resourceIds: number[]) => {
@@ -589,6 +643,7 @@ export default function CourseMgmtId() {
     }
 
     message.success('已重新提交审核，请等待管理员审核');
+    setHasReappliedCourseAudit(true);
     // 重新加载课程，会自动加载审核记录（如果状态为待审核）
     loadCourse();
   };
@@ -604,7 +659,7 @@ export default function CourseMgmtId() {
   if (!course) {
     return (
       <div className="py-12">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full max-w-[1600px] mx-auto">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">课程不存在</p>
           </Card>
@@ -615,39 +670,45 @@ export default function CourseMgmtId() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/coursemgmt')} className="mb-4">返回课程列表</Button>
-            <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
-          </div>
-          {user?.role !== UserRole.STUDENT && (
-            <div className="flex gap-3">
-              {course.status === 0 && latestAuditRecord && latestAuditRecord.auditStatus === 2 && (
-                <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyCourseAudit} className="rounded-lg">
-                  重新提交审核
-                </Button>
-              )}
-              <Button type="primary" icon={<SafetyCertificateOutlined />} onClick={handleOpenCertificateDrawer} className="rounded-lg">
-                设置课程证书
-              </Button>
-              <Button type="primary" icon={<EditOutlined />} onClick={() => setCourseEditVisible(true)} className="rounded-lg">
-                编辑课程
-              </Button>
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-6 rounded-2xl">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/coursemgmt')} aria-label="返回课程列表" />
+              <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
             </div>
-          )}
-        </div>
+            {user?.role !== UserRole.STUDENT && (
+              <div className="flex gap-3">
+                {course.status === 0 && latestAuditRecord && (latestAuditRecord.auditStatus === 2 || hasReappliedCourseAudit) && (
+                  <Tooltip title={hasReappliedCourseAudit ? '您已重新提交审核，请耐心等待！' : ''}>
+                    <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyCourseAudit} className="rounded-lg" disabled={hasReappliedCourseAudit || latestAuditRecord.auditStatus !== 2}>
+                      重新提交审核
+                    </Button>
+                  </Tooltip>
+                )}
+                <Button type="primary" icon={<SafetyCertificateOutlined />} onClick={handleOpenCertificateDrawer} className="rounded-lg">
+                  设置课程证书
+                </Button>
+                <Button type="primary" icon={<EditOutlined />} onClick={() => setCourseEditVisible(true)} className="rounded-lg">
+                  编辑课程
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
 
         <CourseDetailCard course={course} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} averageRating={averageRating} />
 
-        <div className="mb-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
-          {user?.role !== UserRole.STUDENT && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setResourceModalVisible(true)} className="rounded-lg">上传资源</Button>
-          )}
-        </div>
-        <Card className="shadow-sm">
-          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onEdit={user?.role !== UserRole.STUDENT ? handleEditClick : undefined} onItemClick={handleResourceClick} />
+        <Card className="shadow-sm mb-4 rounded-2xl">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
+            {user?.role !== UserRole.STUDENT && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setResourceModalVisible(true)} className="rounded-lg">上传资源</Button>
+            )}
+          </div>
+        </Card>
+        <Card className="shadow-sm rounded-2xl">
+          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} rejectedResourceIds={rejectedResourceIds} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onEdit={user?.role !== UserRole.STUDENT ? handleEditClick : undefined} onItemClick={handleResourceClick} />
         </Card>
 
         <Drawer title="上传资源" open={resourceModalVisible} onClose={() => setResourceModalVisible(false)} width={700} placement="right">

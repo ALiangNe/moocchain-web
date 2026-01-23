@@ -13,9 +13,10 @@ interface ResourceListProps {
   onEdit?: (resource: ResourceInfo) => void;
   onItemClick?: (resource: ResourceInfo) => void;
   resourceRatings?: Record<number, number>;
+  rejectedResourceIds?: Set<number>;
 }
 
-export default function ResourceList({ data, loading, page, pageSize, total, onPageChange, onEdit, onItemClick, resourceRatings }: ResourceListProps) {
+export default function ResourceList({ data, loading, page, pageSize, total, onPageChange, onEdit, onItemClick, resourceRatings, rejectedResourceIds }: ResourceListProps) {
   const resourceTypeMap: Record<number, { text: string; color: string }> = {
     0: { text: '其他', color: 'default' },
     1: { text: '文档', color: 'blue' },
@@ -60,7 +61,8 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
       <div className="space-y-4">
         {data.map((resource) => {
           const typeConfig = resourceTypeMap[resource.resourceType || 0] || resourceTypeMap[0];
-          const statusConfig = statusMap[resource.status || 0] || statusMap[0];
+          const isRejected = resource.resourceId !== undefined && resource.status === 0 && rejectedResourceIds?.has(resource.resourceId);
+          const statusConfig = isRejected ? { text: '审核未通过，请重新提交申请', color: 'red' } : (statusMap[resource.status || 0] || statusMap[0]);
           const ratingValue =
             resource.resourceId !== undefined && resourceRatings
               ? resourceRatings[resource.resourceId] ?? null
@@ -107,7 +109,7 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
         {data.length === 0 && !loading && <p className="text-center text-[#6e6e73] py-8">暂无资源</p>}
       </div>
       <div className="mt-4 flex justify-end">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(total) => `共 ${total} 条`} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </>
   );

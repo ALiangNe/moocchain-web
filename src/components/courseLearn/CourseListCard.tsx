@@ -28,7 +28,7 @@ export default function CourseListCard({ courses, loading, page, pageSize, total
         <Card key={course.courseId} hoverable className="cursor-pointer border border-gray-200 transition-all hover:shadow-md overflow-hidden" onClick={() => onCourseClick?.(course)} bodyStyle={{ padding: 0 }}>
           <div className="flex flex-col">
             {course.coverImage && (
-              <img src={getCoverImageUrl(course.coverImage)} alt={course.courseName} className="w-full h-40 object-cover" style={{ margin: '-1px -1px 0 -1px', width: 'calc(100% + 2px)' }} />
+              <img src={getCoverImageUrl(course.coverImage)} alt={course.courseName} className="w-full h-56 object-cover" style={{ margin: '-1px -1px 0 -1px', width: 'calc(100% + 2px)' }} />
             )}
             <div className="flex-1 p-4">
               <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2 line-clamp-2">{course.courseName}</h3>
@@ -49,7 +49,7 @@ export default function CourseListCard({ courses, loading, page, pageSize, total
         <p className="col-span-4 text-center text-[#6e6e73] py-8">暂无课程</p>
       )}
       <div className="col-span-4 mt-4 flex justify-end">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={onPageChange} showSizeChanger pageSizeOptions={['8', '16', '32', '64']} showTotal={(total) => `共 ${total} 条`} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={onPageChange} showSizeChanger pageSizeOptions={['8', '16', '32', '64']} showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </div>
   );

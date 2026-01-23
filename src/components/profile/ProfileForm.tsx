@@ -56,7 +56,7 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
 
   return (
     <>
-      <Form form={form} layout="vertical" onFinish={handleSubmit} className="max-w-2xl">
+      <Form form={form} layout="vertical" onFinish={handleSubmit} className="w-full">
         <Form.Item label="邮箱" name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '请输入有效的邮箱地址' }]}>
           <Input placeholder="请输入邮箱" size="large" disabled={!isEditing} />
         </Form.Item>

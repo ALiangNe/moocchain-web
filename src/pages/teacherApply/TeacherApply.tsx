@@ -158,10 +158,12 @@ export default function TeacherApply() {
 
   return (
     <div className="py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-lg font-semibold mb-8 text-[#1d1d1f]">教师认证</h1>
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <h1 className="text-lg font-semibold text-[#1d1d1f]">教师认证</h1>
+        </Card>
 
-        <Card className="shadow-sm mb-6">
+        <Card className="shadow-sm mb-6 rounded-2xl">
           <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">当前身份</h2>
           <div className="flex items-center gap-4">
             <Tag color="default" className="text-base px-4 py-2 bg-gray-100 text-gray-700 border-gray-200 rounded-lg">{user.username}</Tag>
@@ -172,7 +174,7 @@ export default function TeacherApply() {
         </Card>
 
         {auditRecord ? (
-          <Card className="shadow-sm mb-6">
+          <Card className="shadow-sm mb-6 rounded-2xl">
             <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">审核信息</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-4 flex-wrap">
@@ -208,19 +210,19 @@ export default function TeacherApply() {
             </div>
           </Card>
         ) : (
-          <Card className="shadow-sm mb-6">
+          <Card className="shadow-sm mb-6 rounded-2xl">
             <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">审核信息</h2>
             <ApplyStatusCard auditRecord={auditRecord} />
           </Card>
         )}
 
-        <Card className="shadow-sm mb-6">
+        <Card className="shadow-sm mb-6 rounded-2xl">
           <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">上传认证材料</h2>
           <CertificateUpload user={user} onUpload={handleUploadMaterial} loading={loading} showReuploadButton={showReuploadButton} />
         </Card>
 
         {canSubmit && (
-          <Card className="shadow-sm mb-6">
+          <Card className="shadow-sm mb-6 rounded-2xl">
             <div className="text-center">
               <p className="text-gray-600 mb-4">请先上传认证材料，然后提交申请等待管理员审核</p>
               <Button type="primary" size="large" loading={submitting} onClick={handleSubmitApplication} className="bg-[#007aff] border-[#007aff] hover:bg-[#0051d5] hover:border-[#0051d5]">

@@ -156,18 +156,20 @@ export default function Profile() {
 
   return (
     <div className="py-12">
-      <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-lg font-semibold mb-8 text-[#1d1d1f]">个人资料</h1>
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <h1 className="text-lg font-semibold text-[#1d1d1f]">个人资料</h1>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm rounded-2xl">
               <ProfileCard user={user} walletAddress={walletAddress} walletChecking={walletChecking} onConnectWallet={handleConnectWallet} tokenBalance={tokenBalance} tokenBalanceChecking={tokenBalanceChecking} />
             </Card>
           </div>
 
           <div className="lg:col-span-2">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm rounded-2xl">
               <h2 className="text-lg font-semibold mb-6 text-[#1d1d1f]">编辑资料</h2>
               <ProfileForm user={user} onSubmit={handleUpdateProfile} loading={loading} />
             </Card>

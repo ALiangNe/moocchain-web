@@ -1,4 +1,4 @@
-import { Card, Descriptions, Popover, Rate, Progress, Alert } from 'antd';
+import { Card, Descriptions, Tooltip, Rate, Progress, Alert } from 'antd';
 import type { CourseInfo } from '@/types/courseType';
 import { formatDateTime } from '@/utils/formatTime';
 
@@ -22,14 +22,14 @@ export default function CourseDetail({ course, averageRating, courseProgress }: 
   const isCompleted = progressValue >= 100;
 
   return (
-    <Card className="shadow-sm mb-6">
+    <Card className="shadow-sm mb-6 rounded-2xl">
       <div className="flex gap-6 items-stretch">
         {course.coverImage && (
-          <div className="w-1/2 flex-shrink-0">
+          <div className="w-2/5 flex-shrink-0">
             <img src={getCoverImageUrl(course.coverImage)} alt={course.courseName} className="w-full h-full object-cover rounded-lg" />
           </div>
         )}
-        <div className={`flex-1 ${course.coverImage ? 'w-1/2' : 'w-full'} relative`}>
+        <div className={`flex-1 ${course.coverImage ? 'w-3/5' : 'w-full'} relative`}>
           {course.teacher && (
             <Descriptions title="授课人信息" bordered column={1} className="mb-4" labelStyle={{ width: '25%' }} contentStyle={{ width: '75%' }}>
               <Descriptions.Item label="授课人">
@@ -44,9 +44,9 @@ export default function CourseDetail({ course, averageRating, courseProgress }: 
             <Descriptions.Item label="课程名称">{course.courseName}</Descriptions.Item>
             <Descriptions.Item label="课程描述">
               {course.description ? (
-                <Popover content={course.description} trigger="hover">
+                <Tooltip title={course.description}>
                   <div className="line-clamp-1 cursor-pointer">{course.description}</div>
-                </Popover>
+                </Tooltip>
               ) : (
                 '-'
               )}

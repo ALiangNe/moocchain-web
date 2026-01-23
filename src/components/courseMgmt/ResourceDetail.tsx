@@ -1,14 +1,17 @@
-import { Card, Button, Descriptions, Tag, Popover } from 'antd';
+import { Card, Button, Descriptions, Tag, Tooltip } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDateTime } from '@/utils/formatTime';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
 
 interface ResourceDetailProps {
   resource: ResourceInfo;
   onDownload?: () => void;
+  latestAuditRecord?: AuditRecordInfo | null;
+  auditLoading?: boolean;
 }
 
-export default function ResourceDetail({ resource, onDownload }: ResourceDetailProps) {
+export default function ResourceDetail({ resource, onDownload, latestAuditRecord = null, auditLoading = false }: ResourceDetailProps) {
   // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
@@ -47,26 +50,18 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
     return colorMap[type || 0] || 'default';
   };
 
-  // 获取资源状态名称
-  const getStatusName = (status?: number) => {
-    const statusMap: Record<number, string> = {
-      0: '待审核',
-      1: '已审核',
-      2: '已发布',
-      3: '已下架',
-    };
-    return statusMap[status || 0] || '待审核';
-  };
-
-  // 获取资源状态标签颜色
-  const getStatusColor = (status?: number) => {
-    const colorMap: Record<number, string> = {
-      0: 'orange',  // 待审核
-      1: 'gold',    // 已审核
-      2: 'green',   // 已发布
-      3: 'default', // 已下架
-    };
-    return colorMap[status || 0] || 'orange';
+  // 获取资源状态显示文本与颜色（与 CourseDetail 保持一致）
+  const getStatusMeta = () => {
+    if (resource.status === 0) {
+      if (latestAuditRecord && latestAuditRecord.auditStatus === 2) {
+        return { text: '审核未通过，请重新提交申请', color: 'red' as const };
+      }
+      return { text: '待审核', color: 'orange' as const };
+    }
+    if (resource.status === 1) return { text: '已审核', color: 'gold' as const };
+    if (resource.status === 2) return { text: '已发布', color: 'green' as const };
+    if (resource.status === 3) return { text: '已下架', color: 'default' as const };
+    return { text: '-', color: 'default' as const };
   };
 
   // 获取访问范围名称
@@ -84,14 +79,14 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
 
   return (
     <>
-      <Card className="shadow-sm mb-6">
+      <Card className="shadow-sm mb-6 rounded-2xl">
         <Descriptions title="资源信息" bordered column={2} labelStyle={{ width: '12.5%' }} contentStyle={{ width: '37.5%' }}>
           <Descriptions.Item label="资源标题">{resource.title}</Descriptions.Item>
           <Descriptions.Item label="资源描述">
             {resource.description ? (
-              <Popover content={resource.description} trigger="hover">
+              <Tooltip title={resource.description}>
                 <div className="line-clamp-1 cursor-pointer">{resource.description}</div>
-              </Popover>
+              </Tooltip>
             ) : (
               '-'
             )}
@@ -102,14 +97,14 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
             <Tag color={getResourceTypeColor(resourceType)}>{getResourceTypeName(resourceType)}</Tag>
           </Descriptions.Item>
           <Descriptions.Item label="状态">
-            <Tag color={getStatusColor(resource.status)}>{getStatusName(resource.status)}</Tag>
+            {auditLoading ? '加载中...' : <Tag color={getStatusMeta().color}>{getStatusMeta().text}</Tag>}
           </Descriptions.Item>
           <Descriptions.Item label="上传时间">{resource.createdAt ? formatDateTime(resource.createdAt) : '-'}</Descriptions.Item>
         </Descriptions>
       </Card>
 
       {resource.owner && (
-        <Card className="shadow-sm mb-6">
+        <Card className="shadow-sm mb-6 rounded-2xl">
           <Descriptions title="上传者信息" bordered column={2} labelStyle={{ width: '12.5%' }} contentStyle={{ width: '37.5%' }}>
             <Descriptions.Item label="姓名">{resource.owner.realName || resource.owner.username || '-'}</Descriptions.Item>
             <Descriptions.Item label="学校">{resource.owner.schoolName || '-'}</Descriptions.Item>
@@ -119,13 +114,15 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
 
       {fileUrl && (
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-[#1d1d1f]">资源预览</h2>
-            {onDownload && (
-              <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} className="rounded-lg">下载资源</Button>
-            )}
-          </div>
-          <Card className="shadow-sm">
+          <Card className="shadow-sm mb-4 rounded-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-[#1d1d1f]">资源预览</h2>
+              {onDownload && (
+                <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} className="rounded-lg">下载资源</Button>
+              )}
+            </div>
+          </Card>
+          <Card className="shadow-sm rounded-2xl">
             <div className="w-full">
               {resourceType === 3 && (
                 <video controls className="w-full rounded-lg" src={fileUrl}>

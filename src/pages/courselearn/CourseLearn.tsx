@@ -77,12 +77,12 @@ export default function CourseLearn() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8 flex justify-between items-center">
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">课程学习</h1>
-        </div>
+        </Card>
 
-        <Card className="shadow-sm">
+        <Card className="shadow-sm rounded-2xl">
           <CourseListCard courses={courses} loading={loading} page={page} pageSize={pageSize} total={total} onPageChange={(p: number, s: number) => { setPage(p); setPageSize(s); }} onCourseClick={handleCourseClick} />
         </Card>
       </div>

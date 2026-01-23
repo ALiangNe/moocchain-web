@@ -87,7 +87,7 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
         {data.length === 0 && !loading && <p className="text-center text-[#6e6e73] py-8">暂无资源</p>}
       </div>
       <div className="mt-4 flex justify-end">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(total) => `共 ${total} 条`} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </>
   );

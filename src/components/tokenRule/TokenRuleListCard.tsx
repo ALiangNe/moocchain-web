@@ -58,7 +58,7 @@ export default function TokenRuleListCard({ rules, loading, page, pageSize, tota
         </div>
       )}
       <div className="flex justify-end mt-4">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={onPageChange} showSizeChanger pageSizeOptions={['8', '16', '32', '64']} showTotal={(total) => `共 ${total} 条`} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={onPageChange} showSizeChanger pageSizeOptions={['8', '16', '32', '64']} showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </div>
   );

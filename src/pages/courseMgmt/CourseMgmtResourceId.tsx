@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Spin, message, Drawer, Tooltip } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, ReloadOutlined, GiftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResource, updateResource, reapplyResourceAudit, claimResourceUploadReward, getTokenRuleList, getTokenTransactionList } from '@/api/baseApi';
+import { getResource, updateResource, reapplyResourceAudit, claimResourceUploadReward, getTokenRuleList, getTokenTransactionList, getAuditRecordList } from '@/api/baseApi';
 import type { ResourceInfo } from '@/types/resourceType';
+import type { AuditRecordInfo } from '@/types/auditRecordType';
 import ResourceDetail from '@/components/courseMgmt/ResourceDetail';
 import ResourceForm from '@/components/courseMgmt/ResourceForm';
 import { useAuthStore } from '@/stores/authStore';
@@ -14,15 +15,44 @@ export default function CourseMgmtResourceId() {
   const { resourceId } = useParams<{ resourceId: string }>();
   const navigate = useNavigate();
   const [resource, setResource] = useState<ResourceInfo | null>(null);
+  const [latestAuditRecord, setLatestAuditRecord] = useState<AuditRecordInfo | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const [reapplyingAudit, setReapplyingAudit] = useState(false);
+  const [hasReappliedResourceAudit, setHasReappliedResourceAudit] = useState(false);
   const [claimingReward, setClaimingReward] = useState(false);
   const [hasClaimedUploadReward, setHasClaimedUploadReward] = useState(false);
   const [checkingRewardStatus, setCheckingRewardStatus] = useState(false);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
   const user = useAuthStore((state) => state.user);
+
+  // 加载资源审核记录（用于 status 显示“审核未通过，请重新提交申请”）
+  const loadAuditRecord = useCallback(async (rid: number) => {
+    setAuditLoading(true);
+    let result;
+    try {
+      result = await getAuditRecordList({
+        targetId: rid,
+        targetType: 1, // 资源
+        auditType: 1, // 资源内容审核
+        page: 1,
+        pageSize: 1,
+      });
+    } catch (error) {
+      console.error('Load audit record error:', error);
+      setAuditLoading(false);
+      setLatestAuditRecord(null);
+      return;
+    }
+    setAuditLoading(false);
+    if (result.code !== 0 || !result.data || !result.data.records || result.data.records.length === 0) {
+      setLatestAuditRecord(null);
+      return;
+    }
+    setLatestAuditRecord(result.data.records[0]);
+  }, []);
 
   // 加载资源详情数据
   const loadResource = useCallback(async () => {
@@ -64,7 +94,13 @@ export default function CourseMgmtResourceId() {
     }
 
     setResource(result.data);
-  }, [resourceId]);
+
+    if (result.data.status === 0 && result.data.resourceId) {
+      loadAuditRecord(result.data.resourceId);
+    } else {
+      setLatestAuditRecord(null);
+    }
+  }, [resourceId, loadAuditRecord]);
 
   useEffect(() => {
     const effectRequestId = requestIdRef.current;
@@ -202,6 +238,7 @@ export default function CourseMgmtResourceId() {
     }
 
     message.success('已重新提交审核，请等待管理员审核');
+    setHasReappliedResourceAudit(true);
     loadResource();
   };
 
@@ -281,7 +318,7 @@ export default function CourseMgmtResourceId() {
   if (!resource) {
     return (
       <div className="py-12">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full max-w-[1600px] mx-auto">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">资源不存在</p>
           </Card>
@@ -292,28 +329,34 @@ export default function CourseMgmtResourceId() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="mb-4">返回资源列表</Button>
-            <h1 className="text-lg font-semibold text-[#1d1d1f]">资源详情</h1>
-          </div>
-          {user?.role !== UserRole.STUDENT && (
-            <div className="flex gap-3">
-              {resource.status === 0 && (
-                <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyResourceAudit} className="rounded-lg">重新提交审核</Button>
-              )}
-              <Tooltip title={hasClaimedUploadReward ? '您已领取过代币奖励！' : ''}>
-                <Button icon={<GiftOutlined />} loading={claimingReward || checkingRewardStatus} onClick={handleClaimResourceUploadReward} className="rounded-lg" disabled={hasClaimedUploadReward}>
-                  领取上传奖励
-            </Button>
-              </Tooltip>
-              <Button type="primary" icon={<EditOutlined />} onClick={() => setEditVisible(true)} className="rounded-lg">编辑资源</Button>
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-6 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate(-1)} aria-label="返回资源列表" />
+              <h1 className="text-lg font-semibold text-[#1d1d1f]">资源详情</h1>
             </div>
-          )}
-        </div>
+            {user?.role !== UserRole.STUDENT && (
+              <div className="flex gap-3">
+                {resource.status === 0 && latestAuditRecord && (latestAuditRecord.auditStatus === 2 || hasReappliedResourceAudit) && (
+                  <Tooltip title={hasReappliedResourceAudit ? '您已重新提交审核，请耐心等待！' : ''}>
+                    <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyResourceAudit} className="rounded-lg" disabled={hasReappliedResourceAudit || latestAuditRecord.auditStatus !== 2}>
+                      重新提交审核
+                    </Button>
+                  </Tooltip>
+                )}
+                <Tooltip title={hasClaimedUploadReward ? '您已领取过代币奖励！' : ''}>
+                  <Button icon={<GiftOutlined />} loading={claimingReward || checkingRewardStatus} onClick={handleClaimResourceUploadReward} className="rounded-lg" disabled={hasClaimedUploadReward}>
+                    领取上传奖励
+                  </Button>
+                </Tooltip>
+                <Button type="primary" icon={<EditOutlined />} onClick={() => setEditVisible(true)} className="rounded-lg">编辑资源</Button>
+              </div>
+            )}
+          </div>
+        </Card>
 
-        <ResourceDetail resource={resource} onDownload={handleDownload} />
+        <ResourceDetail resource={resource} onDownload={handleDownload} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} />
 
         <Drawer title="编辑资源" open={editVisible} onClose={() => setEditVisible(false)} width={700} placement="right">
           {resource && (

@@ -338,25 +338,27 @@ export default function Audit() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-lg font-semibold mb-8 text-[#1d1d1f]">审核管理</h1>
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <h1 className="text-lg font-semibold text-[#1d1d1f]">审核管理</h1>
+        </Card>
 
         <Tabs
           defaultActiveKey="teacher"
-          className="bg-white rounded-lg shadow-sm px-4 [&_.ant-tabs-nav::before]:hidden"
+          className="bg-white rounded-2xl shadow-sm px-4 [&_.ant-tabs-nav::before]:hidden"
         >
           <TabPane tab="教师认证审核" key="teacher">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm rounded-2xl">
               <AuditRecordTable data={data.records} loading={loading} page={page} pageSize={pageSize} total={data.total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onViewDetail={handleViewDetail} />
             </Card>
           </TabPane>
           <TabPane tab="资源合规审核" key="resource">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm rounded-2xl">
               <ResourceAuditTable data={resourceData.records} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceData.total} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onViewDetail={handleViewResourceDetail} />
             </Card>
           </TabPane>
           <TabPane tab="课程合规审核" key="course">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm rounded-2xl">
               <CourseAuditTable data={courseData.records} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseData.total} onPageChange={(p, s) => { setCoursePage(p); setPageSize(s); }} onViewDetail={handleViewCourseDetail} />
             </Card>
           </TabPane>

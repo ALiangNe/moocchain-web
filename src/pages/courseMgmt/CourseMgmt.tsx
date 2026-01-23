@@ -100,9 +100,11 @@ export default function CourseMgmt() {
   if (user?.role === UserRole.STUDENT) {
     return (
       <div className="py-12">
-        <div className="max-w-4xl mx-auto px-4">
-          <h1 className="text-lg font-semibold mb-6 text-[#1d1d1f]">资源管理</h1>
-          <Card className="shadow-sm">
+        <div className="w-full max-w-[1600px] mx-auto">
+          <Card className="shadow-sm mb-8 rounded-2xl">
+            <h1 className="text-lg font-semibold text-[#1d1d1f]">资源管理</h1>
+          </Card>
+          <Card className="shadow-sm rounded-2xl">
             <p className="text-center text-[#6e6e73]">学生无法访问此页面</p>
           </Card>
         </div>
@@ -117,13 +119,15 @@ export default function CourseMgmt() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8 flex justify-between items-center">
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <div className="flex justify-between items-center">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">资源管理</h1>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setCourseDrawerVisible(true)} className="rounded-lg">创建课程</Button>
         </div>
+        </Card>
 
-        <Card className="shadow-sm">
+        <Card className="shadow-sm rounded-2xl">
           <CourseListCard courses={courses} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseTotal} onPageChange={(p: number, s: number) => { setCoursePage(p); setPageSize(s); }} onCourseClick={handleCourseClick} />
         </Card>
 

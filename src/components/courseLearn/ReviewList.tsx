@@ -22,7 +22,7 @@ export default function ReviewList({ reviews, loading, total, page, pageSize, on
   };
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-sm rounded-2xl">
       <h2 className="text-lg font-semibold text-[#1d1d1f] mb-6">评价列表</h2>
       {loading && reviews.length === 0 ? (
         <div className="flex justify-center items-center py-8">
@@ -59,7 +59,7 @@ export default function ReviewList({ reviews, loading, total, page, pageSize, on
       )}
 
       <div className="mt-6 flex justify-end">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(t) => `共 ${t} 条`} hideOnSinglePage={false} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(t) => `共 ${t} 条数据`} hideOnSinglePage={false} locale={{ items_per_page: '条/页' }} />
       </div>
     </Card>
   );

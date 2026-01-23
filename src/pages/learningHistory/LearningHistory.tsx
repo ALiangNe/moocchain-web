@@ -72,11 +72,11 @@ export default function LearningHistory() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8 flex justify-between items-center">
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">学习记录</h1>
-        </div>
-        <Card className="shadow-sm">
+        </Card>
+        <Card className="shadow-sm rounded-2xl">
           <LearningHistoryList data={courses} loading={loading} page={page} pageSize={pageSize} total={total} onPageChange={handlePageChange} onItemClick={handleCourseClick} />
         </Card>
       </div>

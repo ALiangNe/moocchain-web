@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin, Empty, message } from 'antd';
+import { Spin, Empty, message, Pagination, Card } from 'antd';
 import { getCertificateList } from '@/api/baseApi';
 import { useAuthStore } from '@/stores/authStore';
-import CertificateCard from '@/components/courseCertificate/CertificateCard';
+import CertificateListCard from '@/components/courseCertificate/CertificateListCard';
 import type { CertificateInfo } from '@/types/certificateType';
 
 export default function CourseCertificate() {
@@ -12,74 +12,86 @@ export default function CourseCertificate() {
   const [records, setRecords] = useState<CertificateInfo[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(8);
   const [loading, setLoading] = useState(false);
-  const prevUserIdRef = useRef<number | null>(null);
+  const loadingRef = useRef(false);
+  const requestIdRef = useRef(0);
 
   // 加载证书列表
-  const loadCertificates = useCallback(async (pageNum: number = 1, pageSizeNum: number = 12) => {
+  const loadCertificates = useCallback(async () => {
     if (!user?.userId) return;
+    if (loadingRef.current) return;
+
+    const currentRequestId = ++requestIdRef.current;
+    loadingRef.current = true;
+
+    queueMicrotask(() => {
+      if (requestIdRef.current !== currentRequestId) {
+        loadingRef.current = false;
+        return;
+      }
+      setLoading(true);
+    });
 
     const params = {
       studentId: user.userId,
-      page: pageNum,
-      pageSize: pageSizeNum,
+      page,
+      pageSize,
     };
-
-    setLoading(true);
 
     let response;
     try {
       response = await getCertificateList(params);
     } catch (error) {
-      console.error('Claim certificate error:', error);
-      message.error('证书领取失败，请稍后重试');
-      setLoading(false);
+      console.error('Load certificates error:', error);
+      if (requestIdRef.current === currentRequestId) {
+        setLoading(false);
+        loadingRef.current = false;
+        message.error('加载失败，请重试');
+      }
       return;
     }
 
+    if (requestIdRef.current !== currentRequestId) return;
+
     setLoading(false);
+    loadingRef.current = false;
 
     if (response.code === 0 && response.data && Array.isArray(response.data.records)) {
       const newRecords = response.data.records as CertificateInfo[];
-      setRecords(pageNum === 1 ? newRecords : [...records, ...newRecords]);
+      setRecords(newRecords);
       setTotal(response.data.total || 0);
-      setPage(pageNum);
-      setPageSize(pageSizeNum);
       return;
     }
 
     message.error(response.message || '获取证书列表失败');
-  }, [user, records]);
-
-  // 加载更多证书
-  const loadMoreCertificates = () => {
-    if (records.length < total && !loading) {
-      loadCertificates(page + 1, pageSize);
-    }
-  };
+  }, [user, page, pageSize]);
 
   const handleCertificateClick = (certificate: CertificateInfo) => {
     if (!certificate.certificateId) return;
     navigate(`/coursecertificate/${certificate.certificateId}`);
   };
 
+  // 处理分页变化
+  const handlePageChange = (newPage: number, newPageSize: number) => {
+    setPage(newPage);
+    setPageSize(newPageSize);
+  };
+
   useEffect(() => {
-    if (user?.userId === prevUserIdRef.current) return;
-
-    prevUserIdRef.current = user?.userId || null;
-
-    if (!user?.userId) return;
-
+    const effectRequestId = requestIdRef.current;
     queueMicrotask(() => {
-      loadCertificates(1, 12);
+      loadCertificates();
     });
-  }, [user?.userId, loadCertificates]);
+    return () => {
+      requestIdRef.current = effectRequestId + 1;
+    };
+  }, [loadCertificates]);
 
   if (loading && records.length === 0) {
     return (
       <div className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full max-w-[1600px] mx-auto">
           <div className="flex justify-center items-center min-h-[200px]"><Spin size="large" /></div>
         </div>
       </div>
@@ -88,32 +100,32 @@ export default function CourseCertificate() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8 flex justify-between items-center">
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">我的证书</h1>
-        </div>
+        </Card>
 
-        <div className="shadow-sm bg-white rounded-lg p-6">
-          {records.length === 0 ? (
-            <Empty description="暂无证书" />
+        <Card className="shadow-sm rounded-2xl" bodyStyle={{ padding: 0 }}>
+          {records.length === 0 && !loading ? (
+            <div className="p-6">
+              <Empty description="暂无证书" />
+            </div>
           ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="p-6">
+              <div className="grid grid-cols-4 gap-4">
                 {records.map((certificate) => (
-                  <CertificateCard key={certificate.certificateId} certificate={certificate} onClick={() => handleCertificateClick(certificate)} />
+                  <CertificateListCard key={certificate.certificateId} certificate={certificate} onClick={() => handleCertificateClick(certificate)} />
                 ))}
               </div>
 
-              {records.length < total && (
-                <div className="text-center pt-6">
-                  <button onClick={loadMoreCertificates} disabled={loading} className="px-6 py-3 bg-[#007aff] text-white rounded-lg hover:bg-[#0056cc] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {loading ? '加载中...' : '加载更多'}
-                  </button>
+              {records.length > 0 && (
+                <div className="mt-4 flex justify-end">
+                  <Pagination current={page} pageSize={pageSize} total={total} onChange={handlePageChange} showSizeChanger pageSizeOptions={['8', '16', '32', '64']} showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
                 </div>
               )}
-            </>
+            </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -88,7 +88,7 @@ export default function CourseAuditTable({ data, loading, page, pageSize, total,
     <>
       <Table columns={columns} dataSource={data} rowKey="auditId" loading={loading} pagination={false} />
       <div className="mt-4 flex justify-end">
-        <Pagination current={page} pageSize={pageSize} total={total} onChange={onPageChange} showSizeChanger showTotal={(total) => `共 ${total} 条`} />
+        <Pagination current={page} pageSize={pageSize} total={total} onChange={onPageChange} showSizeChanger showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </>
   );

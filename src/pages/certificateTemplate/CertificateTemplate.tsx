@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, Drawer, message, Modal } from 'antd';
+import { Card, Button, Drawer, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { createCertificateTemplate, updateCertificateTemplate, getCertificateTemplateList } from '@/api/baseApi';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import CertificateTemplateForm from '@/components/certificateTemplate/CertificateTemplateForm';
 import CertificateTemplateListCard from '@/components/certificateTemplate/CertificateTemplateListCard';
+import CertificateTemplateDetail from '@/components/certificateTemplate/CertificateTemplateDetail';
 import { UserRole } from '@/constants/role';
 
 export default function CertificateTemplate() {
@@ -13,7 +14,7 @@ export default function CertificateTemplate() {
   const [templates, setTemplates] = useState<CertificateTemplateInfo[]>([]);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [viewDrawerVisible, setViewDrawerVisible] = useState(false);
   const [currentTemplate, setCurrentTemplate] = useState<CertificateTemplateInfo | undefined>();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
@@ -128,7 +129,7 @@ export default function CertificateTemplate() {
   // 查看模板：直接使用列表数据回显
   const handleView = (template: CertificateTemplateInfo) => {
     setCurrentTemplate(template);
-    setViewModalVisible(true);
+    setViewDrawerVisible(true);
   };
 
   // 打开创建抽屉
@@ -146,9 +147,11 @@ export default function CertificateTemplate() {
   if (user?.role !== UserRole.ADMIN) {
     return (
       <div className="py-12">
-        <div className="max-w-4xl mx-auto px-4">
-          <h1 className="text-lg font-semibold mb-6 text-[#1d1d1f]">证书模板管理</h1>
-          <Card className="shadow-sm">
+        <div className="w-full max-w-[1600px] mx-auto">
+          <Card className="shadow-sm mb-6 rounded-2xl">
+            <h1 className="text-lg font-semibold text-[#1d1d1f]">证书模板管理</h1>
+          </Card>
+          <Card className="shadow-sm rounded-2xl">
             <p className="text-center text-[#6e6e73]">只有管理员可以访问此页面</p>
           </Card>
         </div>
@@ -158,13 +161,15 @@ export default function CertificateTemplate() {
 
   return (
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8 flex justify-between items-center">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">证书模板管理</h1>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate} className="rounded-lg">创建模板</Button>
-        </div>
+      <div className="w-full max-w-[1600px] mx-auto">
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <div className="flex justify-between items-center">
+            <h1 className="text-lg font-semibold text-[#1d1d1f]">证书模板管理</h1>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate} className="rounded-lg">创建模板</Button>
+          </div>
+        </Card>
 
-        <Card className="shadow-sm">
+        <Card className="shadow-sm rounded-2xl">
           <CertificateTemplateListCard templates={templates} loading={templateLoading} page={page} pageSize={pageSize} total={total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onEdit={handleEdit} onView={handleView} />
         </Card>
 
@@ -172,30 +177,9 @@ export default function CertificateTemplate() {
           <CertificateTemplateForm initialValues={currentTemplate} onSubmit={currentTemplate ? handleUpdateTemplate : handleCreateTemplate} onCancel={handleCloseDrawer} />
         </Drawer>
 
-        <Modal title="查看证书模板" open={viewModalVisible} onCancel={() => setViewModalVisible(false)} footer={null} width={800}>
-          {currentTemplate && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">模板名称</h3>
-                <p className="text-[#6e6e73]">{currentTemplate.templateName}</p>
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">模板配置（JSON）</h3>
-                <pre className="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96 text-sm font-mono">
-                  {currentTemplate.templateContent
-                    ? typeof currentTemplate.templateContent === 'string'
-                      ? JSON.stringify(JSON.parse(currentTemplate.templateContent), null, 2)
-                      : JSON.stringify(currentTemplate.templateContent, null, 2)
-                    : '-'}
-                </pre>
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-[#1d1d1f] mb-2">启用状态</h3>
-                <p className="text-[#6e6e73]">{currentTemplate.isActive === 1 ? '启用' : '禁用'}</p>
-              </div>
-            </div>
-          )}
-        </Modal>
+        <Drawer title="查看证书模板" open={viewDrawerVisible} onClose={() => setViewDrawerVisible(false)} width={700} placement="right" >
+          {currentTemplate && <CertificateTemplateDetail template={currentTemplate} />}
+        </Drawer>
       </div>
     </div>
   );

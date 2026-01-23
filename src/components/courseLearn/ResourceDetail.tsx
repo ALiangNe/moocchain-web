@@ -1,4 +1,4 @@
-import { Card, Button, Descriptions, Tag, Popover } from 'antd';
+import { Card, Button, Descriptions, Tag, Tooltip } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDateTime } from '@/utils/formatTime';
@@ -6,9 +6,10 @@ import { formatDateTime } from '@/utils/formatTime';
 interface ResourceDetailProps {
   resource: ResourceInfo;
   onDownload?: () => void;
+  hidePreview?: boolean;
 }
 
-export default function ResourceDetail({ resource, onDownload }: ResourceDetailProps) {
+export default function ResourceDetail({ resource, onDownload, hidePreview = false }: ResourceDetailProps) {
   // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
@@ -62,14 +63,14 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
 
   return (
     <>
-      <Card className="shadow-sm mb-6">
+      <Card className="shadow-sm mb-6 rounded-2xl">
         <Descriptions title="资源信息" bordered column={2} labelStyle={{ width: '12.5%', whiteSpace: 'nowrap' }} contentStyle={{ width: '37.5%' }}>
           <Descriptions.Item label="资源标题">{resource.title}</Descriptions.Item>
           <Descriptions.Item label="资源描述">
             {resource.description ? (
-              <Popover content={resource.description} trigger="hover">
+              <Tooltip title={resource.description}>
                 <div className="line-clamp-1 cursor-pointer">{resource.description}</div>
-              </Popover>
+              </Tooltip>
             ) : (
               '-'
             )}
@@ -89,7 +90,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
         </Descriptions>
       </Card>
 
-      {fileUrl && (resourceType === 0 || resourceType === 1) && (
+      {!hidePreview && fileUrl && (resourceType === 0 || resourceType === 1) && (
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[#1d1d1f]">资源预览</h2>
@@ -97,7 +98,7 @@ export default function ResourceDetail({ resource, onDownload }: ResourceDetailP
               <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} className="rounded-lg">下载资源</Button>
             )}
           </div>
-          <Card className="shadow-sm">
+          <Card className="shadow-sm rounded-2xl">
             <div className="w-full">
               {resourceType === 1 && (
                 <div className="w-full h-[200px] border border-gray-200 rounded-lg">

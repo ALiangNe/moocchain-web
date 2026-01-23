@@ -98,51 +98,62 @@ export default function ResourcePlayer({ resource, fileUrl, onDownload, onTimeUp
   };
 
   return (
-    <Card className="shadow-sm">
-      <div className="w-full">
-        {resourceType === 3 && (
-          <div>
-            <video ref={videoRef} controls className="w-full rounded-lg" src={fileUrl}>您的浏览器不支持视频播放</video>
-            {duration > 0 && (
-              <div className="mt-2 text-sm text-[#6e6e73] text-center">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </div>
-            )}
-          </div>
-        )}
-        {resourceType === 2 && (
-          <div>
-            <audio ref={audioRef} controls className="w-full" src={fileUrl}>您的浏览器不支持音频播放</audio>
-            {duration > 0 && (
-              <div className="mt-2 text-sm text-[#6e6e73] text-center">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </div>
-            )}
-          </div>
-        )}
-        {resourceType === 1 && (
-          <div className="w-full h-[200px] border border-gray-200 rounded-lg">
-            {fileUrl.endsWith('.pdf') ? (
-              <iframe src={fileUrl} className="w-full h-full rounded-lg" title={resource.title} />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-[#6e6e73]">
-                <p className="mb-4">该文档类型不支持在线预览</p>
-                {onDownload && (
-                  <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload}>下载查看</Button>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-        {resourceType === 0 && (
-          <div className="text-center py-12 text-[#6e6e73]">
-            <p>该资源类型不支持预览</p>
-            {onDownload && (
-              <Button type="link" onClick={onDownload} className="mt-4">点击下载查看</Button>
-            )}
-          </div>
-        )}
-      </div>
-    </Card>
+    <>
+      <Card className="shadow-sm mb-4 rounded-2xl">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-[#1d1d1f]">资源播放</h2>
+          {/* 非音视频类型支持下载按钮（文档 / 其他） */}
+          {resourceType !== 2 && resourceType !== 3 && onDownload && (
+            <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} className="rounded-lg">下载资源 </Button>
+          )}
+        </div>
+      </Card>
+      <Card className="shadow-sm rounded-2xl">
+        <div className="w-full">
+          {resourceType === 3 && (
+            <div>
+              <video ref={videoRef} controls className="w-full rounded-lg" src={fileUrl}>您的浏览器不支持视频播放</video>
+              {duration > 0 && (
+                <div className="mt-2 text-sm text-[#6e6e73] text-center">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+              )}
+            </div>
+          )}
+          {resourceType === 2 && (
+            <div>
+              <audio ref={audioRef} controls className="w-full" src={fileUrl}>您的浏览器不支持音频播放</audio>
+              {duration > 0 && (
+                <div className="mt-2 text-sm text-[#6e6e73] text-center">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+              )}
+            </div>
+          )}
+          {resourceType === 1 && (
+            <div className="w-full h-[200px] border border-gray-200 rounded-lg">
+              {fileUrl.endsWith('.pdf') ? (
+                <iframe src={fileUrl} className="w-full h-full rounded-lg" title={resource.title} />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-[#6e6e73]">
+                  <p className="mb-4">该文档类型不支持在线预览</p>
+                  {onDownload && (
+                    <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload}>下载查看</Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {resourceType === 0 && (
+            <div className="text-center py-12 text-[#6e6e73]">
+              <p>该资源类型不支持预览</p>
+              {onDownload && (
+                <Button type="link" onClick={onDownload} className="mt-4">点击下载查看</Button>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+    </>
   );
 }
