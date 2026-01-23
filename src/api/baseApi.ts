@@ -8,8 +8,9 @@ import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import type { ResourceCertificateConfigInfo } from '@/types/resourceCertificateConfigType';
 import type { CertificateInfo } from '@/types/certificateType';
 import type { TokenRuleInfo } from '@/types/tokenRuleType';
+import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildGetTokenRuleListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildGetTokenRuleListQuery, buildGetTokenTransactionListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -148,6 +149,13 @@ export async function getResource(resourceId: number): Promise<ResponseType<Reso
     method: 'GET',
   }); return response.json();
 }
+export async function claimResourceUploadReward(data: { resourceId: number; walletAddress: string }): Promise<ResponseType<TokenTransactionInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/claimResourceUploadReward`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+
 
 // LearningRecord API
 export async function completeLearningRecord(resourceId: number): Promise<ResponseType<LearningRecordInfo>> {
@@ -189,6 +197,12 @@ export async function getLearningHistoryList(params: { page?: number; pageSize?:
   const queryString = buildGetLearningHistoryListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getLearningHistoryList?${queryString}`, {
     method: 'GET'
+  }); return response.json();
+}
+export async function claimLearningReward(data: { resourceId: number; rewardType: number; walletAddress: string }): Promise<ResponseType<TokenTransactionInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/claimLearningReward`, {
+    method: 'POST',
+    body: JSON.stringify(data),
   }); return response.json();
 }
 
@@ -289,6 +303,14 @@ export async function getTokenRuleList(params: { rewardType?: number; isEnabled?
 }
 export async function getTokenRule(ruleId: number): Promise<ResponseType<TokenRuleInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/getTokenRule/${ruleId}`, {
+    method: 'GET',
+  }); return response.json();
+}
+
+// TokenTransaction API
+export async function getTokenTransactionList(params: { transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenTransactionInfo[]; total: number }>> {
+  const queryString = buildGetTokenTransactionListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getTokenTransactionList?${queryString}`, {
     method: 'GET',
   }); return response.json();
 }

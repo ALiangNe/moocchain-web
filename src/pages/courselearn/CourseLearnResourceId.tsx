@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Card, Button, Spin, message } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Card, Button, Spin, message, Tooltip } from 'antd';
+import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResource, completeLearningRecord, reportLearningTime, updateLearningProgress, submitReview, getLearningRecordList } from '@/api/baseApi';
+import { getResource, completeLearningRecord, reportLearningTime, updateLearningProgress, submitReview, getLearningRecordList, claimLearningReward, getTokenRuleList, getTokenTransactionList } from '@/api/baseApi';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
 import ResourceDetail from '@/components/courseLearn/ResourceDetail';
@@ -10,6 +10,7 @@ import ResourcePlayer from '@/components/courseLearn/ResourcePlayer';
 import LearningProgress from '@/components/courseLearn/LearningProgressCard';
 import ReviewList from '@/components/courseLearn/ReviewList';
 import { useAuthStore } from '@/stores/authStore';
+import { ensureWalletConnected } from '@/utils/wallet';
 
 export default function CourseLearnResourceId() {
   const { resourceId, courseId } = useParams<{ resourceId: string; courseId: string }>();
@@ -26,6 +27,9 @@ export default function CourseLearnResourceId() {
   const [reviewsPage, setReviewsPage] = useState(1);
   const [reviewsPageSize, setReviewsPageSize] = useState(10);
   const [allReviews, setAllReviews] = useState<LearningRecordInfo[]>([]); // 存储所有评价，用于分页
+  const [claimingLearningReward, setClaimingLearningReward] = useState(false);
+  const [hasClaimedLearningReward, setHasClaimedLearningReward] = useState(false);
+  const [checkingRewardStatus, setCheckingRewardStatus] = useState(false);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
   const reportTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -158,6 +162,46 @@ export default function CourseLearnResourceId() {
       loadLearningData();
     });
   }, [reviewListRefreshKey, loadLearningData]);
+
+  // 查询是否已领取学习奖励
+  const checkLearningRewardStatus = useCallback(async () => {
+    if (!resourceId || !user?.userId) return;
+
+    setCheckingRewardStatus(true);
+    let result;
+    try {
+      // 查询该资源的学习奖励记录（transactionType=0 表示奖励，relatedId=resourceId）
+      // 不要求 rewardType，因为历史数据可能为 NULL
+      result = await getTokenTransactionList({
+        transactionType: 0,
+        relatedId: Number(resourceId),
+        page: 1,
+        pageSize: 1,
+      });
+    } catch (error) {
+      console.error('Check learning reward status error:', error);
+      setCheckingRewardStatus(false);
+      return;
+    }
+
+    setCheckingRewardStatus(false);
+
+    // 后端已经按 userId 过滤，所以如果查询到记录，说明当前用户已经领取过
+    if (result.code === 0 && result.data && result.data.records.length > 0) {
+      const transaction = result.data.records[0];
+      // 额外检查：确保 userId 匹配（虽然后端已过滤，但这里再确认一下）
+      if (transaction.userId === user.userId) {
+        setHasClaimedLearningReward(true);
+      }
+    }
+  }, [resourceId, user]);
+
+  useEffect(() => {
+    if (!resource || !user) return;
+    queueMicrotask(() => {
+      checkLearningRewardStatus();
+    });
+  }, [resource, user, checkLearningRewardStatus]);
 
   const handleReviewsPageChange = (page: number, pageSize: number) => {
     setReviewsPage(page);
@@ -359,6 +403,79 @@ export default function CourseLearnResourceId() {
     }
   };
 
+  // 领取学习完成奖励
+  const handleClaimLearningReward = async () => {
+    if (!resourceId || !resource) {
+      message.error('资源信息不存在');
+      return;
+    }
+
+    // 检查是否已完成学习
+    if (!learningRecord || learningRecord.isCompleted !== 1) {
+      message.warning('请先完成学习才能领取奖励');
+      return;
+    }
+
+    // 获取代币规则
+    let ruleResult;
+    try {
+      ruleResult = await getTokenRuleList({ rewardType: 0, isEnabled: 1, page: 1, pageSize: 1 });
+    } catch (error) {
+      console.error('Get token rule error:', error);
+      message.error('获取奖励规则失败，请重试');
+      return;
+    }
+
+    if (ruleResult.code !== 0 || !ruleResult.data || ruleResult.data.records.length === 0) {
+      message.warning('未找到可用的奖励规则');
+      return;
+    }
+
+    const rule = ruleResult.data.records[0];
+    const rewardAmount = String(rule.rewardAmount || 0);
+
+    if (Number(rewardAmount) <= 0) {
+      message.warning('奖励数量为0，无法领取');
+      return;
+    }
+
+    // 连接钱包
+    const wallet = await ensureWalletConnected();
+    if (!wallet) return;
+
+    setClaimingLearningReward(true);
+    message.loading({ content: '正在领取奖励...', key: 'claim', duration: 0 });
+
+    // 调用后端 API，后端会使用管理员私钥代为 mint
+    let result;
+    try {
+      result = await claimLearningReward({
+        resourceId: Number(resourceId),
+        rewardType: 0, // 学习完成
+        walletAddress: wallet.address,
+      });
+    } catch (error) {
+      console.error('Claim reward error:', error);
+      message.destroy('claim');
+      setClaimingLearningReward(false);
+      message.error('记录交易失败，请重试');
+      return;
+    }
+
+    message.destroy('claim');
+    setClaimingLearningReward(false);
+
+    if (result.code !== 0) {
+      message.error(result.message || '领取奖励失败');
+      return;
+    }
+
+    message.success(`成功领取 ${rewardAmount} ${rule.tokenName} 代币奖励`);
+    setHasClaimedLearningReward(true);
+    loadLearningData();
+  };
+
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -386,9 +503,20 @@ export default function CourseLearnResourceId() {
   return (
     <div className="py-12">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
           <Button icon={<ArrowLeftOutlined />} onClick={handleBack} className="mb-4">返回资源列表</Button>
           <h1 className="text-lg font-semibold text-[#1d1d1f]">资源学习</h1>
+          </div>
+          {user && (
+            <div className="flex gap-3">
+              <Tooltip title={hasClaimedLearningReward ? '您已领取过代币奖励！' : ''}>
+                <Button icon={<GiftOutlined />} loading={claimingLearningReward || checkingRewardStatus} onClick={handleClaimLearningReward} className="rounded-lg" disabled={!learningRecord || learningRecord.isCompleted !== 1 || hasClaimedLearningReward}>
+                  领取学习奖励
+                </Button>
+              </Tooltip>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">

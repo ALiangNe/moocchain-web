@@ -192,3 +192,17 @@ export function buildGetTokenRuleListQuery(params: { rewardType?: number; isEnab
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取代币交易记录列表的 GET 请求查询参数
+ */
+export function buildGetTokenTransactionListQuery(params: { transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    transactionType: params.transactionType,
+    rewardType: params.rewardType,
+    consumeType: params.consumeType,
+    relatedId: params.relatedId,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}
