@@ -35,10 +35,9 @@ export default function TokenRuleListCard({ rules, loading, page, pageSize, tota
                 <Tag color={rule.isEnabled === 1 ? 'green' : 'default'}>{rule.isEnabled === 1 ? '启用' : '禁用'}</Tag>
               </div>
               <div className="text-sm text-[#6e6e73] space-y-1">
-                <p>奖励数量：{rule.rewardAmount} {rule.tokenName}</p>
-                <p>更新者：{rule.updater?.realName || rule.updater?.username || '-'}</p>
+                <p>奖励代币：{rule.rewardAmount} {rule.tokenName}</p>
+                <p>创建者：{rule.updater?.realName || rule.updater?.username || '-'}</p>
                 <p>创建时间：{rule.createdAt ? formatDate(rule.createdAt) : '-'}</p>
-                {rule.updatedAt && <p>更新时间：{formatDate(rule.updatedAt)}</p>}
               </div>
             </div>
             <Space>

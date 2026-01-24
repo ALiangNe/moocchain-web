@@ -1,112 +1,239 @@
 {
   "canvas": {
-    "width": 1600,
-    "height": 1200,
+    "width": 1200,
+    "height": 1600,
     "background": {
-      "type": "image",
-      "src": "https://cdn.xxx.com/cert/bg-default.png"
+      "type": "color",
+      "color": "#FFFFFF"
+    },
+    "border": {
+      "width": 2,
+      "color": "#000000",
+      "style": "solid"
     }
   },
   "fields": [
     {
-      "key": "certificateTitle",
-      "type": "text",
-      "defaultValue": "结业证书",
+      "key": "geometricDecoration",
+      "type": "shape",
+      "shape": "geometric",
       "position": {
-        "x": 800,
-        "y": 180
+        "x": 0,
+        "y": 0
       },
       "style": {
-        "fontSize": 64,
-        "fontWeight": "bold",
-        "color": "#2c3e50",
-        "align": "center"
+        "color": "#00CED1"
       }
     },
     {
-      "key": "studentName",
+      "key": "platformName",
       "type": "text",
-      "label": "学生姓名",
+      "defaultValue": "MOOCChain",
       "position": {
-        "x": 800,
-        "y": 360
-      },
-      "style": {
-        "fontSize": 48,
-        "fontWeight": "bold",
-        "color": "#000000",
-        "align": "center"
-      }
-    },
-    {
-      "key": "courseName",
-      "type": "text",
-      "label": "课程名称",
-      "position": {
-        "x": 800,
-        "y": 460
+        "x": 526,
+        "y": 100
       },
       "style": {
         "fontSize": 36,
-        "color": "#333333",
-        "align": "center"
+        "fontWeight": "bold",
+        "color": "#007AFF",
+        "align": "left",
+        "fontFamily": "Arial"
       }
     },
     {
-      "key": "issueDescription",
-      "type": "text",
-      "defaultValue": "已完成本课程全部学习任务，特此颁发此证。",
+      "key": "logoImage",
+      "type": "image",
+      "label": "Logo图标",
       "position": {
-        "x": 800,
-        "y": 560
+        "x": 489,
+        "y": 100
       },
-      "style": {
-        "fontSize": 28,
-        "color": "#555555",
-        "align": "center",
-        "maxWidth": 1000
-      }
-    },
-    {
-      "key": "issueDate",
-      "type": "date",
-      "label": "颁发日期",
-      "format": "YYYY-MM-DD",
-      "position": {
-        "x": 500,
-        "y": 820
-      },
-      "style": {
-        "fontSize": 24,
-        "color": "#666666"
-      }
+      "width": 50,
+      "height": 50,
+      "src": "src/assets/image/moocchain-icon.png"
     },
     {
       "key": "teacherSchool",
       "type": "text",
       "label": "教师学校",
-      "defaultValue": "某某大学",
       "position": {
-        "x": 500,
-        "y": 870
+        "x": 600,
+        "y": 200
       },
       "style": {
-        "fontSize": 24,
-        "color": "#666666"
+        "fontSize": 64,
+        "fontWeight": "bold",
+        "color": "#000000",
+        "align": "center",
+        "fontFamily": "Arial"
+      }
+    },
+    {
+      "key": "certificateSubtitle",
+      "type": "text",
+      "defaultValue": "课程证书",
+      "position": {
+        "x": 600,
+        "y": 320
+      },
+      "style": {
+        "fontSize": 44,
+        "fontWeight": "bold",
+        "color": "#000000",
+        "align": "center",
+        "fontFamily": "Arial"
+      }
+    },
+    {
+      "key": "separatorLine1",
+      "type": "shape",
+      "shape": "line",
+      "position": {
+        "x": 600,
+        "y": 380
+      },
+      "style": {
+        "color": "#E0E0E0",
+        "width": 600
+      }
+    },
+    {
+      "key": "tagline",
+      "type": "text",
+      "defaultValue": "结业证明 · 学习认证 · 学术认可",
+      "position": {
+        "x": 600,
+        "y": 410
+      },
+      "style": {
+        "fontSize": 16,
+        "fontWeight": "normal",
+        "color": "#000000",
+        "align": "center",
+        "fontFamily": "Arial"
+      }
+    },
+    {
+      "key": "separatorLine2",
+      "type": "shape",
+      "shape": "line",
+      "position": {
+        "x": 600,
+        "y": 440
+      },
+      "style": {
+        "color": "#E0E0E0",
+        "width": 600
+      }
+    },
+    {
+      "key": "studentName",
+      "type": "text",
+      "label": "学员姓名",
+      "position": {
+        "x": 600,
+        "y": 520
+      },
+      "style": {
+        "fontSize": 56,
+        "fontWeight": "bold",
+        "color": "#000000",
+        "align": "center",
+        "fontFamily": "Arial"
+      }
+    },
+    {
+      "key": "certificateText",
+      "type": "text",
+      "defaultValue": "兹证明：<在此完成> 课程\n已顺利完成在线学习并通过所有考核要求\n特发此证，以兹证明。",
+      "position": {
+        "x": 600,
+        "y": 600
+      },
+      "style": {
+        "fontSize": 26,
+        "fontWeight": "normal",
+        "color": "#000000",
+        "align": "center",
+        "fontFamily": "Arial",
+        "maxWidth": 900,
+        "lineHeight": 44
       }
     },
     {
       "key": "issuerName",
       "type": "text",
-      "defaultValue": "MOOCChain 教育平台",
+      "label": "颁发者",
       "position": {
-        "x": 1100,
-        "y": 820
+        "x": 200,
+        "y": 850
       },
       "style": {
-        "fontSize": 24,
-        "color": "#666666",
-        "align": "right"
+        "fontSize": 26,
+        "fontWeight": "normal",
+        "color": "#000000",
+        "align": "left",
+        "fontFamily": "Arial"
+      }
+    },
+    {
+      "key": "badgeCertified",
+      "type": "shape",
+      "shape": "badge",
+      "badgeType": "certified",
+      "position": {
+        "x": 300,
+        "y": 1200
+      },
+      "size": 90,
+      "style": {
+        "color": "#007AFF"
+      }
+    },
+    {
+      "key": "badgeGraduation",
+      "type": "shape",
+      "shape": "badge",
+      "badgeType": "graduation",
+      "position": {
+        "x": 600,
+        "y": 1200
+      },
+      "size": 90,
+      "style": {
+        "color": "#1a1a1a"
+      }
+    },
+    {
+      "key": "badgeOfficial",
+      "type": "shape",
+      "shape": "badge",
+      "badgeType": "official",
+      "position": {
+        "x": 900,
+        "y": 1200
+      },
+      "size": 90,
+      "style": {
+        "color": "#28a745"
+      }
+    },
+    {
+      "key": "issueDate",
+      "type": "date",
+      "label": "领取时间",
+      "format": "YYYY年MM月DD日",
+      "position": {
+        "x": 1000,
+        "y": 850
+      },
+      "style": {
+        "fontSize": 26,
+        "fontWeight": "normal",
+        "color": "#000000",
+        "align": "right",
+        "fontFamily": "Arial"
       }
     }
   ]
