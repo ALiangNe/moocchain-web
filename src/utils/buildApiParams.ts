@@ -206,3 +206,20 @@ export function buildGetTokenTransactionListQuery(params: { transactionType?: nu
     pageSize: params.pageSize,
   });
 }
+
+/**
+ * 构建获取用户列表的 GET 请求查询参数（管理员）
+ */
+export function buildGetUserListQuery(params: { userId?: number; username?: string; email?: string; realName?: string; role?: number; walletBound?: number; schoolName?: string; page?: number; pageSize?: number }): string {
+  return buildQueryParams({
+    userId: params.userId,
+    username: params.username,
+    email: params.email,
+    realName: params.realName,
+    role: params.role,
+    walletBound: params.walletBound,
+    schoolName: params.schoolName,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+}

@@ -10,7 +10,7 @@ import type { CertificateInfo } from '@/types/certificateType';
 import type { TokenRuleInfo } from '@/types/tokenRuleType';
 import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
 import { fetchWithAuth } from '@/api/authApi';
-import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildGetTokenRuleListQuery, buildGetTokenTransactionListQuery, buildFormData } from '@/utils/buildApiParams';
+import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildGetTokenRuleListQuery, buildGetTokenTransactionListQuery, buildGetUserListQuery, buildFormData } from '@/utils/buildApiParams';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -43,6 +43,15 @@ export async function uploadAvatar(file: File): Promise<ResponseType<UserInfo>> 
     method: 'POST',
     body: formData,
   }); return response.json();
+}
+export async function getUserList(params: { userId?: number; username?: string; email?: string; realName?: string; role?: number; walletBound?: number; schoolName?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: UserInfo[]; total: number }>> {
+  const queryString = buildGetUserListQuery(params);
+  const response = await fetchWithAuth(`${API_BASE_URL}/getUserList?${queryString}`, { method: 'GET' });
+  return response.json();
+}
+export async function adminUpdateUser(userId: number, data: Partial<UserInfo>): Promise<ResponseType<UserInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/adminUpdateUser/${userId}`, { method: 'PUT', body: JSON.stringify(data) });
+  return response.json();
 }
 
 // AuditRecord API

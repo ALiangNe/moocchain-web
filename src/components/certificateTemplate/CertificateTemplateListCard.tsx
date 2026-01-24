@@ -29,7 +29,6 @@ export default function CertificateTemplateListCard({ templates, loading, page, 
               <div className="text-sm text-[#6e6e73] space-y-1">
                 <p>创建者：{template.creator?.realName || template.creator?.username || '-'}</p>
                 <p>创建时间：{template.createdAt ? formatDate(template.createdAt) : '-'}</p>
-                {template.updatedAt && <p>更新时间：{formatDate(template.updatedAt)}</p>}
               </div>
             </div>
             <Space>
