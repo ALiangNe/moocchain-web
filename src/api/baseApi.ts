@@ -164,6 +164,12 @@ export async function claimResourceUploadReward(data: { resourceId: number; wall
     body: JSON.stringify(data),
   }); return response.json();
 }
+export async function buyResource(data: { resourceId: number; transactionHash: string; walletAddress: string }): Promise<ResponseType<TokenTransactionInfo>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/buyResource`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
 
 
 // LearningRecord API

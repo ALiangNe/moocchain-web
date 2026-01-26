@@ -41,3 +41,62 @@ export async function getMOOCTokenBalance(params: {
   return formattedBalance;
 }
 
+/**
+ * 获取平台钱包地址
+ * @param params.provider 以太坊提供者（BrowserProvider）
+ * @param params.contractAddress 合约地址（MOOC_TOKEN_ADDRESS）
+ * @returns 平台钱包地址
+ */
+export async function getPlatformWalletAddress(params: {
+  provider: ethers.BrowserProvider;
+  contractAddress: string;
+}): Promise<string> {
+  const abi = getAbi();
+  const contract = new ethers.Contract(params.contractAddress, abi, params.provider);
+
+  let platformWallet;
+  try {
+    platformWallet = await contract.getPlatformWallet();
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'Query platform wallet failed');
+  }
+
+  return platformWallet;
+}
+
+/**
+ * 转账代币到平台钱包
+ * @param params.signer 签名者（JsonRpcSigner）
+ * @param params.contractAddress 合约地址（MOOC_TOKEN_ADDRESS）
+ * @param params.to 接收地址（平台钱包地址）
+ * @param params.amount 转账数量（字符串形式，例如 "10.5"）
+ * @returns 交易哈希
+ */
+export async function transferMOOCToken(params: {
+  signer: ethers.Signer;
+  contractAddress: string;
+  to: string;
+  amount: string;
+}): Promise<string> {
+  const abi = getAbi();
+  const contract = new ethers.Contract(params.contractAddress, abi, params.signer);
+
+  // 将代币数量转换为 wei（ERC20 通常使用 18 位小数）
+  const amountInWei = ethers.parseUnits(params.amount, 18);
+
+  let tx;
+  try {
+    tx = await contract.transfer(params.to, amountInWei);
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'Transfer transaction failed');
+  }
+
+  let receipt;
+  try {
+    receipt = await tx.wait();
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'Wait transfer transaction failed');
+  }
+
+  return receipt.hash;
+}

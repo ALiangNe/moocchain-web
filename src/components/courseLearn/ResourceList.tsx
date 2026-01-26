@@ -1,4 +1,4 @@
-import { Card, Tag, Pagination, Spin, Rate } from 'antd';
+import { Card, Tag, Pagination, Spin, Rate, Button } from 'antd';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDate } from '@/utils/formatTime';
 
@@ -10,10 +10,12 @@ interface ResourceListProps {
   total: number;
   onPageChange: (page: number, pageSize: number) => void;
   onItemClick?: (resource: ResourceInfo) => void;
+  onPurchaseClick?: (resource: ResourceInfo) => void;
   resourceRatings?: Record<number, number>;
+  purchasedResourceIds?: Set<number>;
 }
 
-export default function ResourceList({ data, loading, page, pageSize, total, onPageChange, onItemClick, resourceRatings }: ResourceListProps) {
+export default function ResourceList({ data, loading, page, pageSize, total, onPageChange, onItemClick, onPurchaseClick, resourceRatings, purchasedResourceIds }: ResourceListProps) {
   const resourceTypeMap: Record<number, { text: string; color: string }> = {
     0: { text: '其他', color: 'default' },
     1: { text: '文档', color: 'blue' },
@@ -28,9 +30,18 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
   };
 
   // 处理资源卡片点击事件
-  const handleCardClick = (resource: ResourceInfo) => {
+  const handleCardClick = (resource: ResourceInfo, e: React.MouseEvent) => {
+    // 如果是付费资源且未购买，仍然调用onItemClick，让父组件处理提示
     if (onItemClick) {
       onItemClick(resource);
+    }
+  };
+
+  // 处理购买按钮点击事件
+  const handlePurchaseClick = (resource: ResourceInfo, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPurchaseClick) {
+      onPurchaseClick(resource);
     }
   };
 
@@ -51,8 +62,13 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
             resource.resourceId !== undefined && resourceRatings
               ? resourceRatings[resource.resourceId] ?? null
               : null;
+          const isPaid = resource.price && Number(resource.price) > 0;
+          const isPurchased = resource.resourceId && purchasedResourceIds?.has(resource.resourceId);
+          const showPurchaseButton = isPaid && !isPurchased;
+          const showPurchasedLabel = isPaid && isPurchased;
+          
           return (
-            <Card key={resource.resourceId} hoverable className="border border-gray-200 transition-all hover:shadow-md cursor-pointer" onClick={() => handleCardClick(resource)}>
+            <Card key={resource.resourceId} hoverable={!showPurchaseButton} className={`border border-gray-200 transition-all hover:shadow-md ${showPurchaseButton ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={(e) => handleCardClick(resource, e)}>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2 gap-2">
@@ -60,6 +76,16 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
                       <h3 className="text-lg font-semibold text-[#1d1d1f]">{resource.title}</h3>
                       <Tag color={typeConfig.color}>{typeConfig.text}</Tag>
                     </div>
+                    {showPurchaseButton && (
+                      <Button type="primary" onClick={(e) => handlePurchaseClick(resource, e)} className="rounded-lg">
+                        购买
+                      </Button>
+                    )}
+                    {showPurchasedLabel && (
+                      <Button disabled className="rounded-lg">
+                        已购买
+                      </Button>
+                    )}
                   </div>
                   {resource.description && <p className="text-[#6e6e73] mb-2">{resource.description}</p>}
                   <div className="flex justify-between items-center text-sm text-[#6e6e73]">

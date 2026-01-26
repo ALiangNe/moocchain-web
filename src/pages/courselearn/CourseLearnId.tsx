@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, message, Spin, Tooltip } from 'antd';
+import { Card, Button, message, Spin, Tooltip,Modal } from 'antd';
 import { ArrowLeftOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCourse, getResourceList, getLearningRecordList, createCertificate, updateCertificateNft, getCertificateList, getResourceCertificateConfigList } from '@/api/baseApi';
+import { getCourse, getResourceList, getLearningRecordList, createCertificate, updateCertificateNft, getCertificateList, getResourceCertificateConfigList, getTokenTransactionList, buyResource } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { LearningRecordInfo } from '@/types/learningRecordType';
@@ -12,6 +12,8 @@ import ResourceList from '@/components/courseLearn/ResourceList';
 import CourseDetail from '@/components/courseLearn/CourseDetail';
 import { ensureWalletConnected } from '@/utils/wallet';
 import { mintCertificateNft } from '@/utils/certificateNft';
+import { getPlatformWalletAddress, transferMOOCToken } from '@/utils/moocToken';
+import { MOOC_TOKEN_ADDRESS } from '@/contracts/contractAddresses';
 
 export default function CourseLearnId() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -32,10 +34,17 @@ export default function CourseLearnId() {
   const [resourcePage, setResourcePage] = useState(1);
   const [resourceTotal, setResourceTotal] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [purchasedResourceIds, setPurchasedResourceIds] = useState<Set<number>>(new Set());
   const courseLoadingRef = useRef(false);
   const resourceLoadingRef = useRef(false);
+  const purchasedResourcesLoadingRef = useRef(false);
+  const certificateConfigLoadingRef = useRef(false);
+  const certificateStatusLoadingRef = useRef(false);
   const courseRequestIdRef = useRef(0);
   const resourceRequestIdRef = useRef(0);
+  const purchasedResourcesRequestIdRef = useRef(0);
+  const certificateConfigRequestIdRef = useRef(0);
+  const certificateStatusRequestIdRef = useRef(0);
   const ratingRequestIdRef = useRef(0);
   const progressRequestIdRef = useRef(0);
   const userId = user?.userId;
@@ -219,23 +228,35 @@ export default function CourseLearnId() {
   // 查询课程证书配置（resourceCertificateConfig）：isEnabled=1 + courseId（并确保 templateId 存在）
   const checkCertificateConfig = useCallback(async () => {
     if (!courseId) return;
+    if (certificateConfigLoadingRef.current) return;
 
-    setCheckingCertificateConfig(true);
+    const currentRequestId = ++certificateConfigRequestIdRef.current;
+    certificateConfigLoadingRef.current = true;
+
+    queueMicrotask(() => setCheckingCertificateConfig(true));
 
     let result;
     try {
       result = await getResourceCertificateConfigList({ courseId: Number(courseId), isEnabled: 1, page: 1, pageSize: 1 });
     } catch (error) {
       console.error('Check course certificate config error:', error);
+      if (certificateConfigRequestIdRef.current === currentRequestId) {
+        certificateConfigLoadingRef.current = false;
+        queueMicrotask(() => {
       setCheckingCertificateConfig(false);
       setHasCertificateConfig(null);
+        });
+      }
       return;
     }
 
-    setCheckingCertificateConfig(false);
+    if (certificateConfigRequestIdRef.current !== currentRequestId) return;
+
+    certificateConfigLoadingRef.current = false;
+    queueMicrotask(() => setCheckingCertificateConfig(false));
 
     const config = result.code === 0 && result.data && result.data.records && result.data.records.length > 0 ? result.data.records[0] : null;
-    setHasCertificateConfig(!!(config && config.templateId));
+    queueMicrotask(() => setHasCertificateConfig(!!(config && config.templateId)));
   }, [courseId]);
 
   // 查询是否已领取课程证书（根据 studentId + teacherId + courseId）
@@ -244,8 +265,12 @@ export default function CourseLearnId() {
 
     const teacherId = course.teacherId || course.teacher?.userId;
     if (!teacherId) return;
+    if (certificateStatusLoadingRef.current) return;
 
-    setCheckingCertificateStatus(true);
+    const currentRequestId = ++certificateStatusRequestIdRef.current;
+    certificateStatusLoadingRef.current = true;
+
+    queueMicrotask(() => setCheckingCertificateStatus(true));
 
     let result;
     try {
@@ -258,18 +283,70 @@ export default function CourseLearnId() {
       });
     } catch (error) {
       console.error('Check course certificate status error:', error);
-      setCheckingCertificateStatus(false);
+      if (certificateStatusRequestIdRef.current === currentRequestId) {
+        certificateStatusLoadingRef.current = false;
+        queueMicrotask(() => setCheckingCertificateStatus(false));
+      }
       return;
     }
 
-    setCheckingCertificateStatus(false);
+    if (certificateStatusRequestIdRef.current !== currentRequestId) return;
+
+    certificateStatusLoadingRef.current = false;
+    queueMicrotask(() => setCheckingCertificateStatus(false));
 
     if (result.code === 0 && result.data && result.data.records && result.data.records.length > 0) {
-      setHasClaimedCertificate(true);
+      queueMicrotask(() => setHasClaimedCertificate(true));
     } else {
-      setHasClaimedCertificate(false);
+      queueMicrotask(() => setHasClaimedCertificate(false));
     }
   }, [courseId, userId, course]);
+
+  // 加载已购买的资源ID列表
+  const loadPurchasedResources = useCallback(async () => {
+    if (!userId) {
+      queueMicrotask(() => setPurchasedResourceIds(new Set()));
+      return;
+    }
+    if (purchasedResourcesLoadingRef.current) return;
+
+    const currentRequestId = ++purchasedResourcesRequestIdRef.current;
+    purchasedResourcesLoadingRef.current = true;
+
+    let result;
+    try {
+      result = await getTokenTransactionList({
+        transactionType: 1, // 消费
+        consumeType: 0, // 购买资源
+        page: 1,
+        pageSize: 1000,
+      });
+    } catch (error) {
+      console.error('Load purchased resources error:', error);
+      if (purchasedResourcesRequestIdRef.current === currentRequestId) {
+        purchasedResourcesLoadingRef.current = false;
+        queueMicrotask(() => setPurchasedResourceIds(new Set()));
+      }
+      return;
+    }
+
+    if (purchasedResourcesRequestIdRef.current !== currentRequestId) return;
+
+    purchasedResourcesLoadingRef.current = false;
+
+    if (result.code !== 0 || !result.data) {
+      queueMicrotask(() => setPurchasedResourceIds(new Set()));
+      return;
+    }
+
+    const purchasedIds = new Set<number>();
+    result.data.records.forEach((transaction) => {
+      if (transaction.relatedId) {
+        purchasedIds.add(transaction.relatedId);
+      }
+    });
+    queueMicrotask(() => setPurchasedResourceIds(purchasedIds));
+  }, [userId]);
 
   // 加载课程资源列表数据
   const loadResources = useCallback(async () => {
@@ -342,20 +419,38 @@ export default function CourseLearnId() {
     };
   }, [loadResources]);
 
+  useEffect(() => {
+    const effectRequestId = purchasedResourcesRequestIdRef.current;
+    queueMicrotask(() => {
+      loadPurchasedResources();
+    });
+    return () => {
+      purchasedResourcesRequestIdRef.current = effectRequestId + 1;
+    };
+  }, [loadPurchasedResources]);
+
   // 课程详情加载完成后，检查教师是否已配置课程证书
   useEffect(() => {
     if (!course) return;
+    const effectRequestId = certificateConfigRequestIdRef.current;
     queueMicrotask(() => {
       checkCertificateConfig();
     });
+    return () => {
+      certificateConfigRequestIdRef.current = effectRequestId + 1;
+    };
   }, [course, checkCertificateConfig]);
 
   // 课程详情和用户信息就绪后，查询是否已领取课程证书
   useEffect(() => {
     if (!course || !userId) return;
+    const effectRequestId = certificateStatusRequestIdRef.current;
     queueMicrotask(() => {
       checkCertificateStatus();
     });
+    return () => {
+      certificateStatusRequestIdRef.current = effectRequestId + 1;
+    };
   }, [course, userId, checkCertificateStatus]);
 
   // 处理领取证书
@@ -445,9 +540,101 @@ export default function CourseLearnId() {
 
   // 处理资源点击，跳转到资源详情页
   const handleResourceClick = (resource: ResourceInfo) => {
+    const isPaid = resource.price && Number(resource.price) > 0;
+    const isPurchased = resource.resourceId && purchasedResourceIds.has(resource.resourceId);
+    
+    if (isPaid && !isPurchased) {
+      Modal.warning({
+        title: '付费资源',
+        content: '该资源为付费资源，请先购买后再学习',
+      });
+      return;
+    }
+    
     if (resource.resourceId && courseId) {
       navigate(`/courselearn/${courseId}/resource/${resource.resourceId}`);
     }
+  };
+
+  // 处理购买资源
+  const handlePurchaseResource = async (resource: ResourceInfo) => {
+    if (!resource.resourceId || !resource.price) {
+      message.error('资源信息不完整');
+      return;
+    }
+
+    const price = Number(resource.price);
+    if (price <= 0) {
+      message.error('资源价格无效');
+      return;
+    }
+
+    message.loading({ content: '正在购买资源...', key: 'purchase', duration: 0 });
+
+    // 连接钱包
+    const wallet = await ensureWalletConnected();
+    if (!wallet) {
+      message.destroy('purchase');
+      return;
+    }
+
+    // 获取平台钱包地址
+    let platformWalletAddress: string;
+    try {
+      platformWalletAddress = await getPlatformWalletAddress({
+        provider: wallet.provider,
+        contractAddress: MOOC_TOKEN_ADDRESS,
+      });
+    } catch (error) {
+      console.error('Get platform wallet error:', error);
+      message.destroy('purchase');
+      message.error('获取平台钱包地址失败，请重试');
+      return;
+    }
+
+    // 调用合约转账
+    let transactionHash: string;
+    try {
+      transactionHash = await transferMOOCToken({
+        signer: wallet.signer,
+        contractAddress: MOOC_TOKEN_ADDRESS,
+        to: platformWalletAddress,
+        amount: String(price),
+      });
+    } catch (error) {
+      console.error('Transfer token error:', error);
+      message.destroy('purchase');
+      message.error(error instanceof Error ? error.message : '转账失败，请重试');
+      return;
+    }
+
+    // 调用后端记录交易
+    let result;
+    try {
+      result = await buyResource({
+        resourceId: resource.resourceId,
+        transactionHash,
+        walletAddress: wallet.address,
+      });
+    } catch (error) {
+      console.error('Buy resource error:', error);
+      message.destroy('purchase');
+      message.error('记录交易失败，请重试');
+      return;
+    }
+
+    message.destroy('purchase');
+
+    if (result.code !== 0) {
+      message.error(result.message || '购买失败');
+      return;
+    }
+
+    message.success(`成功购买资源，已支付 ${price} 代币`);
+    // 更新已购买资源列表
+    setPurchasedResourceIds((prev) => new Set([...prev, resource.resourceId!]));
+    // 重新加载资源列表
+    loadResources();
   };
 
   if (courseLoading) {
@@ -507,7 +694,7 @@ export default function CourseLearnId() {
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
         </Card>
         <Card className="shadow-sm rounded-2xl">
-          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onItemClick={handleResourceClick} />
+          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} purchasedResourceIds={purchasedResourceIds} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onItemClick={handleResourceClick} onPurchaseClick={handlePurchaseResource} />
         </Card>
       </div>
     </div>
