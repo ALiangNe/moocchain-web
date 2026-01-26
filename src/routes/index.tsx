@@ -17,9 +17,10 @@ import Audit from '@/pages/audit/Audit';
 import NotFound from '@/pages/notfound/NotFound';
 import LearningHistory from '@/pages/learningHistory/LearningHistory';
 import CertificateTemplate from '@/pages/certificateTemplate/CertificateTemplate';
-import CourseCertificate from '@/pages/courseCertificate/courseCertificate';
-import CourseCertificateId from '@/pages/courseCertificate/courseCertificateId';
+import CourseCertificate from '@/pages/courseCertificate/CourseCertificate';
+import CourseCertificateId from '@/pages/courseCertificate/CourseCertificateId';
 import TokenRule from '@/pages/tokenRule/tokenRule';
+import BlockchainRecord from '@/pages/blockchainRecord/BlockchainRecord';
 
 export const router = createBrowserRouter([
   {
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: '/audit', element: <Audit /> },
       { path: '/certificateTemplate', element: <CertificateTemplate /> },
       { path: '/tokenRule', element: <TokenRule /> },
+      { path: '/blockchainRecord', element: <BlockchainRecord /> },
       { path: '*', element: <NotFound /> },
     ],
   },

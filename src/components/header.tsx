@@ -29,6 +29,7 @@ export default function Header() {
       { path: '/courselearn', label: '课程学习' },
       { path: '/learningHistory', label: '学习记录' },
       { path: '/coursecertificate', label: '课程证书' },
+      { path: '/blockchainRecord', label: '上链记录' },
     ];
 
     if (role === UserRole.TEACHER || role === UserRole.ADMIN) {

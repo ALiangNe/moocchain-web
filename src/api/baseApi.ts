@@ -294,7 +294,12 @@ export async function updateCertificateNft(certificateId: number, data: { certif
   const response = await fetchWithAuth(`${API_BASE_URL}/updateCertificateNft/${certificateId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
-  }); return response.json();
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+  }
+  return response.json();
 }
 
 // TokenRule API
