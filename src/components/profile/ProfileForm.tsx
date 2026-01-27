@@ -31,7 +31,7 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
   useEffect(() => {
     if (!user) return;
     // 恢复为原始值，而不是清空
-    form.setFieldsValue({ email: user.email, realName: user.realName, phone: user.phone, idCard: user.idCard, gender: user.gender, schoolName: user.schoolName, });
+    form.setFieldsValue({ username: user.username, email: user.email, realName: user.realName, phone: user.phone, idCard: user.idCard, gender: user.gender, schoolName: user.schoolName, });
   }, [user, form]);
 
   // 进入编辑模式
@@ -49,7 +49,7 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
   const handleCancel = () => {
     // 恢复为原始值，而不是清空
     if (user) {
-      form.setFieldsValue({ email: user.email, realName: user.realName, phone: user.phone, idCard: user.idCard, gender: user.gender, schoolName: user.schoolName, });
+      form.setFieldsValue({ username: user.username, email: user.email, realName: user.realName, phone: user.phone, idCard: user.idCard, gender: user.gender, schoolName: user.schoolName, });
     }
     setIsEditing(false);
   };
@@ -57,6 +57,10 @@ export default function ProfileForm({ user, onSubmit, loading }: ProfileFormProp
   return (
     <>
       <Form form={form} layout="vertical" onFinish={handleSubmit} className="w-full">
+        <Form.Item label="用户名" name="username" rules={[{ required: true, message: '请输入用户名' }]}>
+          <Input placeholder="请输入用户名" size="large" disabled={!isEditing} />
+        </Form.Item>
+
         <Form.Item label="邮箱" name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '请输入有效的邮箱地址' }]}>
           <Input placeholder="请输入邮箱" size="large" disabled={!isEditing} />
         </Form.Item>

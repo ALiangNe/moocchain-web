@@ -1,4 +1,4 @@
-import { Card, List, Empty, Spin, Pagination, Progress, Tag } from 'antd';
+import { List, Empty, Spin, Pagination, Progress, Tag } from 'antd';
 import { PlayCircleFilled, FileTextOutlined, CustomerServiceOutlined, FileOutlined } from '@ant-design/icons';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDateTime } from '@/utils/formatTime';
@@ -37,7 +37,7 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
     const t = resource.resourceType ?? 0;
     if (t === 3 && fileUrl) {
       return (
-        <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-gray-200 bg-black/5">
+        <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-black/5 self-stretch">
           <video className="w-full h-full object-cover" src={fileUrl} muted playsInline preload="metadata" />
           <div className="absolute inset-0 flex items-center justify-center">
             <PlayCircleFilled className="text-white/90 text-2xl drop-shadow" />
@@ -47,28 +47,28 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
     }
     if (t === 2) {
       return (
-        <div className="w-14 h-14 rounded-xl overflow-hidden border border-gray-200 bg-gradient-to-br from-[#f5f5f7] to-white flex items-center justify-center">
-          <CustomerServiceOutlined className="text-[#007aff] text-2xl" />
+        <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-gradient-to-br from-[#f5f5f7] to-white flex items-center justify-center self-stretch">
+          <CustomerServiceOutlined className="text-[#007aff] text-3xl" />
         </div>
       );
     }
     if (t === 1) {
       return (
-        <div className="w-14 h-14 rounded-xl overflow-hidden border border-gray-200 bg-gradient-to-br from-[#f5f5f7] to-white flex items-center justify-center">
-          <FileTextOutlined className="text-[#007aff] text-2xl" />
+        <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-gradient-to-br from-[#f5f5f7] to-white flex items-center justify-center self-stretch">
+          <FileTextOutlined className="text-[#007aff] text-3xl" />
         </div>
       );
     }
     if (fileUrl) {
       return (
-        <div className="w-14 h-14 rounded-xl overflow-hidden border border-gray-200 bg-black/5">
+        <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-black/5 self-stretch">
           <img src={fileUrl} alt={resource.title || '资源封面'} className="w-full h-full object-cover" />
         </div>
       );
     }
     return (
-      <div className="w-14 h-14 rounded-xl overflow-hidden border border-gray-200 bg-gradient-to-br from-[#f5f5f7] to-white flex items-center justify-center">
-        <FileOutlined className="text-[#6e6e73] text-2xl" />
+      <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-gradient-to-br from-[#f5f5f7] to-white flex items-center justify-center self-stretch">
+        <FileOutlined className="text-[#6e6e73] text-3xl" />
       </div>
     );
   };
@@ -98,16 +98,11 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
   }
 
   if (!data.length) {
-    return (
-      <Card className="shadow-sm border border-gray-200 rounded-2xl bg-white/70">
-        <Empty description="还没有学习记录，去探索课程开始学习吧～" />
-      </Card>
-    );
+    return <Empty description="还没有学习记录，去探索课程开始学习吧～" />;
   }
 
   return (
     <>
-      <Card className="shadow-sm border border-gray-200 rounded-2xl bg-white/70">
         <List
           itemLayout="horizontal"
           dataSource={data}
@@ -142,7 +137,6 @@ export default function LearningHistoryCourseList({ data, loading, page, pageSiz
             )
           }}
         />
-      </Card>
       <div className="mt-4 flex justify-end">
         <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(t) => `共 ${t} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>

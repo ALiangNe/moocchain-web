@@ -98,10 +98,12 @@ export function buildGetAuditRecordListQuery(params: { targetId?: number; target
 /**
  * 构建获取课程列表的 GET 请求查询参数
  */
-export function buildGetCourseListQuery(params: { teacherId?: number; status?: number; page?: number; pageSize?: number }): string {
+export function buildGetCourseListQuery(params: { teacherId?: number; status?: number; schoolName?: string; schoolNames?: string[]; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     teacherId: params.teacherId,
     status: params.status,
+    schoolName: params.schoolName,
+    schoolNames: params.schoolNames && params.schoolNames.length > 0 ? params.schoolNames.join(',') : undefined,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -196,8 +198,9 @@ export function buildGetTokenRuleListQuery(params: { rewardType?: number; isEnab
 /**
  * 构建获取代币交易记录列表的 GET 请求查询参数
  */
-export function buildGetTokenTransactionListQuery(params: { transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): string {
+export function buildGetTokenTransactionListQuery(params: { userId?: number; transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): string {
   return buildQueryParams({
+    userId: params.userId,
     transactionType: params.transactionType,
     rewardType: params.rewardType,
     consumeType: params.consumeType,

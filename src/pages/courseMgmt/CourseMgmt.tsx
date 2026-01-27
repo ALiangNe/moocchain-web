@@ -100,7 +100,7 @@ export default function CourseMgmt() {
   if (user?.role === UserRole.STUDENT) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm mb-8 rounded-2xl">
             <h1 className="text-lg font-semibold text-[#1d1d1f]">资源管理</h1>
           </Card>
@@ -114,12 +114,12 @@ export default function CourseMgmt() {
 
   // 处理课程点击，跳转到课程详情页
   const handleCourseClick = (course: CourseInfo) => {
-    navigate(`/coursemgmt/${course.courseId}`);
+    navigate(`/courseMgmt/${course.courseId}`);
   };
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <div className="flex justify-between items-center">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">资源管理</h1>

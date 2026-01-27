@@ -50,16 +50,19 @@ export default function ResourceAuditTable({ data, loading, page, pageSize, tota
     {
       title: '课程标题',
       key: 'courseTitle',
+      width: 120,
       render: (_: unknown, record: AuditRecordInfo) => record.targetResource?.course?.courseName || '-',
     },
     {
       title: '资源标题',
       key: 'resourceTitle',
+      width: 200,
       render: (_: unknown, record: AuditRecordInfo) => record.targetResource?.title || '-',
     },
     {
       title: '资源类型',
       key: 'resourceType',
+      width: 150,
       render: (_: unknown, record: AuditRecordInfo) => {
         const type = record.targetResource?.resourceType;
         if (type === undefined) return '-';
@@ -71,6 +74,7 @@ export default function ResourceAuditTable({ data, loading, page, pageSize, tota
       title: '审核状态',
       dataIndex: 'auditStatus',
       key: 'auditStatus',
+      width: 120,
       render: (status: number) => {
         const statusMap: Record<number, { text: string; color: string }> = {
           0: { text: '待审核', color: 'processing' },
@@ -84,11 +88,13 @@ export default function ResourceAuditTable({ data, loading, page, pageSize, tota
     {
       title: '上传时间',
       key: 'uploadDate',
+      width: 180,
       render: (_: unknown, record: AuditRecordInfo) => formatDate(record.targetResource?.createdAt),
     },
     {
       title: '操作',
       key: 'action',
+      width: 120,
       render: (_: unknown, record: AuditRecordInfo) => (
         <Button type="link" icon={<EyeOutlined />} onClick={() => onViewDetail(record)} className="focus:outline-none focus:shadow-none">查看详情</Button>
       ),

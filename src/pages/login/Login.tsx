@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Form, Input, message } from 'antd';
+import { message } from 'antd';
 import { useAuthStore } from '@/stores/authStore';
 import type { UserInfo } from '@/types/userType';
 import type { ResponseType } from '@/types/responseType';
 import { login } from '@/api/baseApi';
+import icon from '@/assets/images/moocchain-icon.png';
+import exploreBg from '@/assets/images/explore-bg-02.jpg';
+import LoginForm from '@/components/login/LoginForm';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -38,30 +41,31 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12">
-      <div className="w-full max-w-md px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-lg font-semibold text-center mb-8 text-[#1d1d1f]">登录</h1>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center antialiased py-12 px-4 relative" style={{ backgroundImage: `url(${exploreBg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+      <div className="w-full max-w-md mx-auto">
+        <div className="relative bg-white/70 rounded-2xl lg:rounded-3xl shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] overflow-hidden flex flex-col border border-slate-100/70">
+          <div className="px-6 pt-8 pb-8 flex-1 flex flex-col gap-6">
+            {/* Header */}
+            <header className="text-center space-y-2">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+                <img src={icon} alt="MOOC Chain" className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">欢迎回来</h2>
+              <p className="text-sm text-slate-500">登录您的 MOOC Chain 账户</p>
+            </header>
 
-          <Form name="login" onFinish={onFinish} layout="vertical" size="large" autoComplete="off">
-            <Form.Item label="用户名" name="username" rules={[{ required: true, message: '请输入用户名' }]}>
-              <Input placeholder="请输入用户名" />
-            </Form.Item>
-
-            <Form.Item label="密码" name="password" rules={[{ required: true, message: '请输入密码' }]}>
-              <Input.Password placeholder="请输入密码" />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading} block style={{ background: '#007aff', border: 'none', height: '40px', outline: 'none', boxShadow: 'none' }} className="focus:outline-none focus:shadow-none">
-                登录
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <div className="text-center mt-6">
-            <Link to="/register" className="text-[#007aff] hover:text-[#0051d5] no-underline">还没有账号？立即注册</Link>
+            <LoginForm onFinish={onFinish} loading={loading} />
           </div>
+
+          {/* Footer */}
+          <footer className="text-center text-sm pb-6 px-6 border-t border-slate-100/70 pt-6">
+            <p className="text-slate-500">
+              还没有账户？{' '}
+              <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors no-underline">
+                立即注册
+              </Link>
+            </p>
+          </footer>
         </div>
       </div>
     </div>

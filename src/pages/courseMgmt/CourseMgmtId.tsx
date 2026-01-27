@@ -551,7 +551,7 @@ export default function CourseMgmtId() {
   // 处理资源点击，跳转到资源详情页
   const handleResourceClick = (resource: ResourceInfo) => {
     if (resource.resourceId && courseId) {
-      navigate(`/coursemgmt/${courseId}/resource/${resource.resourceId}`);
+      navigate(`/courseMgmt/${courseId}/resource/${resource.resourceId}`);
     }
   };
 
@@ -659,7 +659,7 @@ export default function CourseMgmtId() {
   if (!course) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">课程不存在</p>
           </Card>
@@ -670,18 +670,18 @@ export default function CourseMgmtId() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-6 rounded-2xl">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/coursemgmt')} aria-label="返回课程列表" />
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/courseMgmt')} aria-label="返回课程列表" />
               <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
             </div>
             {user?.role !== UserRole.STUDENT && (
               <div className="flex gap-3">
                 {course.status === 0 && latestAuditRecord && (latestAuditRecord.auditStatus === 2 || hasReappliedCourseAudit) && (
                   <Tooltip title={hasReappliedCourseAudit ? '您已重新提交审核，请耐心等待！' : ''}>
-                    <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyCourseAudit} className="rounded-lg" disabled={hasReappliedCourseAudit || latestAuditRecord.auditStatus !== 2}>
+                    <Button type="primary" icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyCourseAudit} className="rounded-lg" disabled={hasReappliedCourseAudit || latestAuditRecord.auditStatus !== 2}>
                       重新提交审核
                     </Button>
                   </Tooltip>

@@ -1,4 +1,4 @@
-import { Card, Tag, Pagination, Spin, Rate, Button } from 'antd';
+import { Card, Tag, Pagination, Spin, Rate, Button, Tooltip } from 'antd';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDate } from '@/utils/formatTime';
 
@@ -30,7 +30,7 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
   };
 
   // 处理资源卡片点击事件
-  const handleCardClick = (resource: ResourceInfo, e: React.MouseEvent) => {
+  const handleCardClick = (resource: ResourceInfo) => {
     // 如果是付费资源且未购买，仍然调用onItemClick，让父组件处理提示
     if (onItemClick) {
       onItemClick(resource);
@@ -68,7 +68,7 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
           const showPurchasedLabel = isPaid && isPurchased;
           
           return (
-            <Card key={resource.resourceId} hoverable={!showPurchaseButton} className={`border border-gray-200 transition-all hover:shadow-md ${showPurchaseButton ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={(e) => handleCardClick(resource, e)}>
+            <Card key={resource.resourceId} hoverable={!showPurchaseButton} className={`border border-gray-200 transition-all hover:shadow-md ${showPurchaseButton ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleCardClick(resource)}>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2 gap-2">
@@ -82,9 +82,11 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
                       </Button>
                     )}
                     {showPurchasedLabel && (
-                      <Button disabled className="rounded-lg">
-                        已购买
-                      </Button>
+                      <Tooltip title="您已购买该资源！">
+                        <Button type="primary" disabled className="rounded-lg">
+                          已购买
+                        </Button>
+                      </Tooltip>
                     )}
                   </div>
                   {resource.description && <p className="text-[#6e6e73] mb-2">{resource.description}</p>}

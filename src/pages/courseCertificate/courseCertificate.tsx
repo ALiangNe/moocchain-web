@@ -69,7 +69,7 @@ export default function CourseCertificate() {
 
   const handleCertificateClick = (certificate: CertificateInfo) => {
     if (!certificate.certificateId) return;
-    navigate(`/coursecertificate/${certificate.certificateId}`);
+    navigate(`/courseCertificate/${certificate.certificateId}`);
   };
 
   // 处理分页变化
@@ -91,7 +91,7 @@ export default function CourseCertificate() {
   if (loading && records.length === 0) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center items-center min-h-[200px]"><Spin size="large" /></div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function CourseCertificate() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">我的证书</h1>
         </Card>

@@ -151,7 +151,7 @@ export default function CertificateTemplateForm({ initialValues, onSubmit, onCan
         </div>
       </Form.Item>
       <Form.Item name="isActive" label="启用状态" valuePropName="checked">
-        <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+        <Switch />
       </Form.Item>
       <Form.Item>
         <div className="flex gap-3">

@@ -85,7 +85,7 @@ export default function TokenRuleForm({ initialValues, onSubmit, onCancel, loadi
         <Input placeholder="请输入代币名称" className="rounded-lg" />
       </Form.Item>
       <Form.Item name="isEnabled" label="启用状态" valuePropName="checked">
-        <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+        <Switch />
       </Form.Item>
       <Form.Item>
         <div className="flex gap-3">

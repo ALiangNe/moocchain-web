@@ -6,6 +6,8 @@ import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
 import RewardRecordList from '@/components/blockchainRecord/RewardRecordList';
 import CertificateRecordList from '@/components/blockchainRecord/CertificateRecordList';
 import PurchaseRecordList from '@/components/blockchainRecord/PurchaseRecordList';
+import BlockchainRecordBarChart from '@/components/blockchainRecord/blockchainRecordBarChart';
+import BlockchainRecordPieChart from '@/components/blockchainRecord/blockchainRecordPieChart';
 import { useAuthStore } from '@/stores/authStore';
 import { UserRole } from '@/constants/role';
 
@@ -349,7 +351,16 @@ export default function BlockchainRecord() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card className="shadow-sm rounded-2xl">
+            <BlockchainRecordBarChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} purchaseRecords={purchaseRecords} />
+          </Card>
+          <Card className="shadow-sm rounded-2xl">
+            <BlockchainRecordPieChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} purchaseRecords={purchaseRecords} />
+          </Card>
+        </div>
+
         <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">上链记录</h1>
         </Card>

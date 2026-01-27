@@ -40,6 +40,7 @@ export default function CertificateTable({ data, loading, page, pageSize, total,
     {
       title: '申请人',
       key: 'applicant',
+      width: 120,
       render: (_: unknown, record: AuditRecordInfo) => {
         const name = record.targetUser?.realName || record.targetUser?.username || '-';
         return name;
@@ -48,17 +49,20 @@ export default function CertificateTable({ data, loading, page, pageSize, total,
     {
       title: '邮箱',
       key: 'targetEmail',
+      width: 200,
       render: (_: unknown, record: AuditRecordInfo) => record.targetUser?.email || '-',
     },
     {
       title: '学校',
       key: 'targetSchoolName',
+      width: 150,
       render: (_: unknown, record: AuditRecordInfo) => record.targetUser?.schoolName || '-',
     },
     {
       title: '审核状态',
       dataIndex: 'auditStatus',
       key: 'auditStatus',
+      width: 120,
       render: (status: number) => {
         const statusMap: Record<number, { text: string; color: string }> = {
           0: { text: '待审核', color: 'processing' },
@@ -73,11 +77,13 @@ export default function CertificateTable({ data, loading, page, pageSize, total,
       title: '申请日期',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 180,
       render: (time: Date | string | null | undefined) => formatDate(time),
     },
     {
       title: '操作',
       key: 'action',
+      width: 120,
       render: (_: unknown, record: AuditRecordInfo) => (
         <Button type="link" icon={<EyeOutlined />} onClick={() => onViewDetail(record)} className="focus:outline-none focus:shadow-none">
           查看详情

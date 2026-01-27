@@ -3,9 +3,11 @@ import { Card, Spin, message } from 'antd';
 import { useAuthStore } from '@/stores/authStore';
 import ProfileCard from '@/components/profile/ProfileCard';
 import ProfileForm from '@/components/profile/ProfileForm';
-import { updateUser } from '@/api/baseApi';
+import ProfileLineChart from '@/components/profile/profileLineChart';
+import { updateUser, getTokenTransactionList } from '@/api/baseApi';
 import type { UserInfo } from '@/types/userType';
-import { ensureWalletConnected, restoreWallet } from '@/utils/wallet';
+import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
+import { ensureWalletConnected } from '@/utils/wallet';
 import { getMOOCTokenBalance } from '@/utils/moocToken';
 import { MOOC_TOKEN_ADDRESS } from '@/contracts/contractAddresses';
 
@@ -18,6 +20,8 @@ export default function Profile() {
   const [walletChecking, setWalletChecking] = useState(true);
   const [tokenBalance, setTokenBalance] = useState<string | null>(null);
   const [tokenBalanceChecking, setTokenBalanceChecking] = useState(true);
+  const [transactions, setTransactions] = useState<TokenTransactionInfo[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
   const hasUpdatedRef = useRef(false);
 
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -52,7 +56,41 @@ export default function Profile() {
     message.success('个人信息更新成功');
   };
 
+  // 加载交易记录
+  const loadTransactions = useCallback(async () => {
+    if (!user?.userId) {
+      setTransactions([]);
+      return;
+    }
+
+    setTransactionsLoading(true);
+
+    let result;
+    try {
+      result = await getTokenTransactionList({
+        userId: user.userId,
+        page: 1,
+        pageSize: 1000,
+      });
+    } catch (error) {
+      console.error('Load token transactions error:', error);
+      setTransactions([]);
+      setTransactionsLoading(false);
+      return;
+    }
+
+    setTransactionsLoading(false);
+
+    if (result.code !== 0 || !result.data) {
+      setTransactions([]);
+      return;
+    }
+
+    setTransactions(result.data.records);
+  }, [user]);
+
   const handleConnectWallet = useCallback(async () => {
+    setWalletChecking(true);
     const result = await ensureWalletConnected();
     if (!result) return;
     setWalletAddress(result.address);
@@ -88,63 +126,22 @@ export default function Profile() {
     if (updateResult.code !== 0 || !updateResult.data) return;
 
     setAuth(accessToken, updateResult.data);
-  }, [accessToken, setAuth]);
+
+    // 更新钱包和代币后，加载交易记录
+    queueMicrotask(() => {
+      loadTransactions();
+    });
+    setWalletChecking(false);
+  }, [accessToken, setAuth, loadTransactions]);
 
   useEffect(() => {
     void (async () => {
       // 防止重复调用
       if (hasUpdatedRef.current) return;
       hasUpdatedRef.current = true;
-      
-      const restored = await restoreWallet();
-      setTokenBalanceChecking(true);
-
-      if (restored) setWalletAddress(restored.address);
-
-      let balance: string | null = null;
-      if (restored) {
-        try {
-          balance = await getMOOCTokenBalance({ provider: restored.provider, contractAddress: MOOC_TOKEN_ADDRESS, walletAddress: restored.address });
-        } catch (error) {
-          console.error('获取代币余额失败:', error);
-        }
-      }
-
-      await wait(2000);
-      setTokenBalance(balance);
-      setTokenBalanceChecking(false);
-      setWalletChecking(false);
-
-      // 更新钱包地址和代币余额到数据库
-      if (!restored?.address || balance === null) return;
-
-      // 检查是否需要更新（如果数据库中的值已经和当前值一致，则不需要更新）
-      const currentBalance = parseFloat(balance);
-      const currentUser = useAuthStore.getState().user;
-      if (currentUser?.walletAddress === restored.address && currentUser?.tokenBalance === currentBalance) {
-        return;
-      }
-
-      const updateData: Partial<UserInfo> = {
-        walletAddress: restored.address,
-        tokenBalance: currentBalance,
-      };
-
-      let updateResult;
-      try {
-        updateResult = await updateUser(updateData);
-      } catch (error) {
-        console.error('更新钱包地址和代币余额失败:', error);
-        return;
-      }
-
-      if (updateResult.code !== 0 || !updateResult.data) return;
-
-      const currentAccessToken = useAuthStore.getState().accessToken;
-      const currentSetAuth = useAuthStore.getState().setAuth;
-      currentSetAuth(currentAccessToken, updateResult.data);
+      await handleConnectWallet();
     })();
-  }, []);
+  }, [handleConnectWallet]);
 
   if (!user) {
     return (
@@ -162,14 +159,19 @@ export default function Profile() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 flex flex-col gap-8">
             <Card className="shadow-sm rounded-2xl">
               <ProfileCard user={user} walletAddress={walletAddress} walletChecking={walletChecking} onConnectWallet={handleConnectWallet} tokenBalance={tokenBalance} tokenBalanceChecking={tokenBalanceChecking} />
             </Card>
+            <Card className="shadow-sm rounded-2xl flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <ProfileLineChart transactions={transactions} loading={transactionsLoading} />
+              </div>
+            </Card>
           </div>
 
-          <div className="lg:col-span-2">
-            <Card className="shadow-sm rounded-2xl">
+          <div className="lg:col-span-2 flex">
+            <Card className="shadow-sm rounded-2xl flex-1 flex flex-col">
               <h2 className="text-lg font-semibold mb-6 text-[#1d1d1f]">编辑资料</h2>
               <ProfileForm user={user} onSubmit={handleUpdateProfile} loading={loading} />
             </Card>

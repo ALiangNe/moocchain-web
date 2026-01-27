@@ -71,13 +71,13 @@ export default function CourseLearn() {
   // 处理课程点击，跳转到课程详情页
   const handleCourseClick = (course: CourseInfo) => {
     if (course.courseId) {
-      navigate(`/courselearn/${course.courseId}`);
+      navigate(`/courseLearn/${course.courseId}`);
     }
   };
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">课程学习</h1>
         </Card>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Drawer, Tabs, message } from 'antd';
+import { Card, Drawer, message } from 'antd';
 import { getAuditRecordList, approveTeacherApplication, approveResourceApplication, approveCourseApplication } from '@/api/baseApi';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import AuditRecordDetail from '@/components/audit/CertificateDetail';
@@ -9,8 +9,8 @@ import ResourceAuditDetail from '@/components/audit/ResourceAuditDetail';
 import CourseAuditTable from '@/components/audit/CourseAuditTable';
 import CourseAuditDetail from '@/components/audit/CourseAuditDetail';
 import AuditApproveModal from '@/components/audit/AuditApplyModal';
-
-const { TabPane } = Tabs;
+import AuditBarChart from '@/components/audit/AuditBarChart';
+import AuditLineChart from '@/components/audit/AuditLineChart';
 
 export default function Audit() {
   const [loading, setLoading] = useState(false);
@@ -335,34 +335,40 @@ export default function Audit() {
     };
   }, [loadResourceData]);
 
-
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">审核管理</h1>
         </Card>
 
-        <Tabs
-          defaultActiveKey="teacher"
-          className="bg-white rounded-2xl shadow-sm px-4 [&_.ant-tabs-nav::before]:hidden"
-        >
-          <TabPane tab="教师认证审核" key="teacher">
-            <Card className="shadow-sm rounded-2xl">
+        {/* 审核状态统计图表 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card className="shadow-sm rounded-2xl">
+            <AuditBarChart teacherRecords={data.records} resourceRecords={resourceData.records} courseRecords={courseData.records} />
+          </Card>
+          <Card className="shadow-sm rounded-2xl">
+            <AuditLineChart teacherRecords={data.records} resourceRecords={resourceData.records} courseRecords={courseData.records} />
+          </Card>
+        </div>
+
+        {/* 教师认证审核 */}
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">教师认证审核</h2>
               <AuditRecordTable data={data.records} loading={loading} page={page} pageSize={pageSize} total={data.total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onViewDetail={handleViewDetail} />
             </Card>
-          </TabPane>
-          <TabPane tab="资源合规审核" key="resource">
-            <Card className="shadow-sm rounded-2xl">
+
+        {/* 资源合规审核 */}
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">资源合规审核</h2>
               <ResourceAuditTable data={resourceData.records} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceData.total} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onViewDetail={handleViewResourceDetail} />
             </Card>
-          </TabPane>
-          <TabPane tab="课程合规审核" key="course">
+
+        {/* 课程合规审核 */}
             <Card className="shadow-sm rounded-2xl">
+          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">课程合规审核</h2>
               <CourseAuditTable data={courseData.records} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseData.total} onPageChange={(p, s) => { setCoursePage(p); setPageSize(s); }} onViewDetail={handleViewCourseDetail} />
             </Card>
-          </TabPane>
-        </Tabs>
 
         <Drawer title="审核详情" open={detailVisible} onClose={() => setDetailVisible(false)} width={800} placement="right">
           {selectedRecord && (

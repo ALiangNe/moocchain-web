@@ -43,23 +43,27 @@ export default function CourseAuditTable({ data, loading, page, pageSize, total,
     {
       title: '课程名称',
       key: 'courseName',
+      width: 120,
       render: (_: unknown, record: AuditRecordInfo) => record.targetCourse?.courseName || '-',
     },
     {
       title: '教师',
       key: 'teacher',
+      width: 200,
       render: (_: unknown, record: AuditRecordInfo) => 
         record.targetCourse?.teacher?.realName || record.targetCourse?.teacher?.username || '-',
     },
     {
       title: '学校',
       key: 'school',
+      width: 150,
       render: (_: unknown, record: AuditRecordInfo) => record.targetCourse?.teacher?.schoolName || '-',
     },
     {
       title: '审核状态',
       dataIndex: 'auditStatus',
       key: 'auditStatus',
+      width: 120,
       render: (status: number) => {
         const statusMap: Record<number, { text: string; color: string }> = {
           0: { text: '待审核', color: 'processing' },
@@ -73,11 +77,13 @@ export default function CourseAuditTable({ data, loading, page, pageSize, total,
     {
       title: '上传时间',
       key: 'createdAt',
+      width: 180,
       render: (_: unknown, record: AuditRecordInfo) => formatDate(record.createdAt),
     },
     {
       title: '操作',
       key: 'action',
+      width: 120,
       render: (_: unknown, record: AuditRecordInfo) => (
         <Button type="link" icon={<EyeOutlined />} onClick={() => onViewDetail(record)} className="focus:outline-none focus:shadow-none">查看详情</Button>
       ),

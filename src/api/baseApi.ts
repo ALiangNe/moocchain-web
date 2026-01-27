@@ -121,7 +121,7 @@ export async function updateCourse(courseId: number, data: Partial<CourseInfo>, 
     body: formData,
   }); return response.json();
 }
-export async function getCourseList(params: { teacherId?: number; status?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CourseInfo[]; total: number }>> {
+export async function getCourseList(params: { teacherId?: number; status?: number; schoolName?: string; schoolNames?: string[]; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CourseInfo[]; total: number }>> {
   const queryString = buildGetCourseListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getCourseList?${queryString}`, {
     method: 'GET',
@@ -328,7 +328,7 @@ export async function getTokenRule(ruleId: number): Promise<ResponseType<TokenRu
 }
 
 // TokenTransaction API
-export async function getTokenTransactionList(params: { transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenTransactionInfo[]; total: number }>> {
+export async function getTokenTransactionList(params: { userId?: number; transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenTransactionInfo[]; total: number }>> {
   const queryString = buildGetTokenTransactionListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getTokenTransactionList?${queryString}`, {
     method: 'GET',

@@ -397,7 +397,7 @@ export default function CourseLearnResourceId() {
   // 处理返回按钮点击
   const handleBack = () => {
     if (courseId) {
-      navigate(`/courselearn/${courseId}`);
+      navigate(`/courseLearn/${courseId}`);
     } else {
       navigate(-1);
     }
@@ -487,7 +487,7 @@ export default function CourseLearnResourceId() {
   if (!resource) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">资源不存在</p>
           </Card>
@@ -502,7 +502,7 @@ export default function CourseLearnResourceId() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-6 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -513,7 +513,7 @@ export default function CourseLearnResourceId() {
               <div className="flex gap-3">
                 <Tooltip title={hasClaimedLearningReward ? '您已领取过代币奖励！' : (!learningRecord || learningRecord.isCompleted !== 1 ? '请先完成该资源学习！' : '')}>
                   <span>
-                    <Button icon={<GiftOutlined />} loading={claimingLearningReward || checkingRewardStatus} onClick={handleClaimLearningReward} className="rounded-lg" disabled={!learningRecord || learningRecord.isCompleted !== 1 || hasClaimedLearningReward}>
+                    <Button type="primary" icon={<GiftOutlined />} loading={claimingLearningReward || checkingRewardStatus} onClick={handleClaimLearningReward} className="rounded-lg" disabled={!learningRecord || learningRecord.isCompleted !== 1 || hasClaimedLearningReward}>
                       领取学习奖励
                     </Button>
                   </span>

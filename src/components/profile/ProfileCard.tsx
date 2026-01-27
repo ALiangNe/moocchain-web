@@ -18,23 +18,25 @@ export default function ProfileCard({ user: userProp, walletAddress, walletCheck
   const addressToShow = walletAddress || user?.walletAddress || null;
 
   return (
-    <div className="flex flex-col items-center">
-      <AvatarUpload user={user} />
-      <div className="mt-4 text-center">
-        <h2 className="text-2xl font-bold text-[#1d1d1f]">{user?.username || '未知用户'}</h2>
-        <p className="text-[#6e6e73] mt-1">{user?.email || '未设置邮箱'}</p>
+    <div className="flex flex-col">
+      <div className="flex items-center justify-center gap-12">
+        <AvatarUpload user={user} />
+        <div>
+          <h2 className="text-2xl font-bold text-[#1d1d1f]">{user?.username || '未知用户'}</h2>
+          <p className="text-[#6e6e73] mt-1">{user?.email || '未设置邮箱'}</p>
+        </div>
       </div>
 
       <div className="mt-6 pt-6 border-t border-gray-200 w-full">
         <div className="space-y-3">
-          <div>
+          {/* <div>
             <p className="text-sm text-[#6e6e73]">用户ID</p>
             <p className="text-base text-[#1d1d1f] font-medium">{user?.userId || '-'}</p>
           </div>
           <div>
             <p className="text-sm text-[#6e6e73]">用户名</p>
             <p className="text-base text-[#1d1d1f] font-medium">{user?.username || '-'}</p>
-          </div>
+          </div> */}
           <div>
             <p className="text-sm text-[#6e6e73]">钱包地址</p>
             <p className="text-base text-[#1d1d1f] font-medium break-all">

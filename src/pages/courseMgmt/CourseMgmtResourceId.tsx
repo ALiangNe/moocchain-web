@@ -180,15 +180,22 @@ export default function CourseMgmtResourceId() {
   const handleEditSubmit = async (values: Partial<ResourceInfo>) => {
     if (!resourceId || !resource) return;
 
+    const payload: Partial<ResourceInfo> = {
+      title: values.title,
+      description: values.description,
+      resourceType: values.resourceType,
+      price: values.price,
+      accessScope: values.accessScope,
+    };
+
+    // 如果在表单中选择了资源状态（发布/下架），一并提交
+    if (values.status !== undefined) {
+      payload.status = values.status;
+    }
+
     let result;
     try {
-      result = await updateResource(Number(resourceId), {
-        title: values.title,
-        description: values.description,
-        resourceType: values.resourceType,
-        price: values.price,
-        accessScope: values.accessScope,
-      });
+      result = await updateResource(Number(resourceId), payload);
     } catch (error) {
       console.error('Update resource error:', error);
       message.error('更新失败，请重试');
@@ -318,7 +325,7 @@ export default function CourseMgmtResourceId() {
   if (!resource) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">资源不存在</p>
           </Card>
@@ -329,7 +336,7 @@ export default function CourseMgmtResourceId() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-6 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -340,13 +347,13 @@ export default function CourseMgmtResourceId() {
               <div className="flex gap-3">
                 {resource.status === 0 && latestAuditRecord && (latestAuditRecord.auditStatus === 2 || hasReappliedResourceAudit) && (
                   <Tooltip title={hasReappliedResourceAudit ? '您已重新提交审核，请耐心等待！' : ''}>
-                    <Button icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyResourceAudit} className="rounded-lg" disabled={hasReappliedResourceAudit || latestAuditRecord.auditStatus !== 2}>
+                    <Button type="primary" icon={<ReloadOutlined />} loading={reapplyingAudit} onClick={handleReapplyResourceAudit} className="rounded-lg" disabled={hasReappliedResourceAudit || latestAuditRecord.auditStatus !== 2}>
                       重新提交审核
                     </Button>
                   </Tooltip>
                 )}
                 <Tooltip title={hasClaimedUploadReward ? '您已领取过代币奖励！' : ''}>
-                  <Button icon={<GiftOutlined />} loading={claimingReward || checkingRewardStatus} onClick={handleClaimResourceUploadReward} className="rounded-lg" disabled={hasClaimedUploadReward}>
+                  <Button type="primary" icon={<GiftOutlined />} loading={claimingReward || checkingRewardStatus} onClick={handleClaimResourceUploadReward} className="rounded-lg" disabled={hasClaimedUploadReward}>
                     领取上传奖励
                   </Button>
                 </Tooltip>

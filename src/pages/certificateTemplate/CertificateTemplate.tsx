@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, Drawer, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Card, Button, Drawer, message, Input } from 'antd';
+import { PlusOutlined, CodeOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { createCertificateTemplate, updateCertificateTemplate, getCertificateTemplateList } from '@/api/baseApi';
 import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
@@ -8,6 +8,9 @@ import CertificateTemplateForm from '@/components/certificateTemplate/Certificat
 import CertificateTemplateListCard from '@/components/certificateTemplate/CertificateTemplateListCard';
 import CertificateTemplateDetail from '@/components/certificateTemplate/CertificateTemplateDetail';
 import { UserRole } from '@/constants/role';
+import certificateTemplateJson from '@/constants/certificateTemplate.json';
+
+const { TextArea } = Input;
 
 export default function CertificateTemplate() {
   const user = useAuthStore((state) => state.user);
@@ -15,6 +18,7 @@ export default function CertificateTemplate() {
   const [templateLoading, setTemplateLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState(false);
+  const [jsonTemplateDrawerVisible, setJsonTemplateDrawerVisible] = useState(false);
   const [currentTemplate, setCurrentTemplate] = useState<CertificateTemplateInfo | undefined>();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
@@ -147,7 +151,7 @@ export default function CertificateTemplate() {
   if (user?.role !== UserRole.ADMIN) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm mb-6 rounded-2xl">
             <h1 className="text-lg font-semibold text-[#1d1d1f]">证书模板管理</h1>
           </Card>
@@ -161,11 +165,14 @@ export default function CertificateTemplate() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <div className="flex justify-between items-center">
             <h1 className="text-lg font-semibold text-[#1d1d1f]">证书模板管理</h1>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate} className="rounded-lg">创建模板</Button>
+            <div className="flex gap-3">
+              <Button type="primary" icon={<CodeOutlined />} onClick={() => setJsonTemplateDrawerVisible(true)} className="rounded-lg">JSON模板</Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate} className="rounded-lg">创建模板</Button>
+            </div>
           </div>
         </Card>
 
@@ -179,6 +186,10 @@ export default function CertificateTemplate() {
 
         <Drawer title="查看证书模板" open={viewDrawerVisible} onClose={() => setViewDrawerVisible(false)} width={700} placement="right" >
           {currentTemplate && <CertificateTemplateDetail template={currentTemplate} />}
+        </Drawer>
+
+        <Drawer title="JSON模板" open={jsonTemplateDrawerVisible} onClose={() => setJsonTemplateDrawerVisible(false)} width={800} placement="right">
+          <TextArea value={JSON.stringify(certificateTemplateJson, null, 2)} rows={30} readOnly className="font-mono text-sm" style={{ resize: 'none' }} />
         </Drawer>
       </div>
     </div>

@@ -41,30 +41,28 @@ export default function CourseCertificateConfigForm({ templates, initialValues, 
           <Select placeholder="请选择证书模板" options={templates.map((t) => ({ label: `${t.templateName || '未命名'}（#${t.templateId}）`, value: t.templateId }))} />
         </Form.Item>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Form.Item name="completionRequirement" label="完成进度标准（0-100）" rules={[{ required: true, message: '请输入完成进度标准' }]}>
-            <InputNumber min={0} max={100} precision={0} className="w-full" />
-          </Form.Item>
-          <Form.Item name="minLearningTime" label="最低学习时长（秒）">
-            <InputNumber min={0} precision={0} className="w-full" />
-          </Form.Item>
-        </div>
+        <Form.Item name="completionRequirement" label="完成进度标准（0-100）" rules={[{ required: true, message: '请输入完成进度标准' }]}>
+          <InputNumber min={0} max={100} precision={0} className="w-full" />
+        </Form.Item>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Form.Item name="courseName" label="课程名称（覆盖模板字段 courseName）">
-            <Input placeholder="例如：区块链基础（2025春）" />
-          </Form.Item>
-          <Form.Item name="issuerName" label="签发者名称（覆盖模板字段 issuerName）">
-            <Input placeholder="例如：MOOCChain 教育平台 / 张老师" />
-          </Form.Item>
-        </div>
+        <Form.Item name="minLearningTime" label="最低学习时长（秒）">
+          <InputNumber min={0} precision={0} className="w-full" />
+        </Form.Item>
+
+        <Form.Item name="courseName" label="课程名称（覆盖模板字段 courseName）">
+          <Input placeholder="例如：区块链基础（2025春）" />
+        </Form.Item>
+
+        <Form.Item name="issuerName" label="签发者名称（覆盖模板字段 issuerName）">
+          <Input placeholder="例如：MOOCChain 教育平台 / 张老师" />
+        </Form.Item>
 
         <Form.Item name="teacherSchool" label="教师学校（覆盖模板字段 teacherSchool）">
           <Input placeholder="例如：某某大学" />
         </Form.Item>
 
         <Form.Item name="isEnabled" label="是否启用" valuePropName="checked">
-          <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+          <Switch />
         </Form.Item>
 
         <div className="flex gap-3 mt-4">

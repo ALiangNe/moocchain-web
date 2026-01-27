@@ -153,7 +153,7 @@ export default function TokenRule() {
   if (user?.role !== UserRole.ADMIN) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm mb-6 rounded-2xl">
             <h1 className="text-lg font-semibold text-[#1d1d1f]">代币规则管理</h1>
           </Card>
@@ -167,7 +167,7 @@ export default function TokenRule() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <div className="flex justify-between items-center">
             <h1 className="text-lg font-semibold text-[#1d1d1f]">代币规则管理</h1>

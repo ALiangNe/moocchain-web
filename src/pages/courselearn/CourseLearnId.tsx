@@ -488,7 +488,7 @@ export default function CourseLearnId() {
       message.warning('证书已创建，但缺少链上铸造所需信息');
       setClaimingCertificate(false);
       loadCourse();
-      setTimeout(() => navigate('/coursecertificate'), 2000);
+      setTimeout(() => navigate('/courseCertificate'), 2000);
       return;
     }
 
@@ -535,7 +535,8 @@ export default function CourseLearnId() {
     message.success(`证书领取成功，NFT TokenId: ${mintResult.tokenId}`);
     setHasClaimedCertificate(true);
     loadCourse();
-    setTimeout(() => navigate('/coursecertificate'), 2000);
+    setTimeout(() => navigate('/courseCertificate'), 2000);
+    setTimeout(() => navigate('/courseCertificate'), 2000);
   };
 
   // 处理资源点击，跳转到资源详情页
@@ -552,7 +553,7 @@ export default function CourseLearnId() {
     }
     
     if (resource.resourceId && courseId) {
-      navigate(`/courselearn/${courseId}/resource/${resource.resourceId}`);
+      navigate(`/courseLearn/${courseId}/resource/${resource.resourceId}`);
     }
   };
 
@@ -648,7 +649,7 @@ export default function CourseLearnId() {
   if (!course) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm">
             <p className="text-center text-[#6e6e73]">课程不存在</p>
           </Card>
@@ -659,11 +660,11 @@ export default function CourseLearnId() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-6 rounded-2xl">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/courselearn')} aria-label="返回课程列表" />
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/courseLearn')} aria-label="返回课程列表" />
             <h1 className="text-lg font-semibold text-[#1d1d1f]">课程详情</h1>
           </div>
           <div className="flex gap-3">

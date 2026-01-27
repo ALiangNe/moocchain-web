@@ -76,7 +76,7 @@ export default function CourseCertificateId() {
   if (!certificate) {
     return (
       <div className="py-12">
-        <div className="w-full max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="shadow-sm"><p className="text-center text-[#6e6e73]">证书不存在</p></Card>
         </div>
       </div>
@@ -87,11 +87,11 @@ export default function CourseCertificateId() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-6 rounded-2xl">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/coursecertificate')} aria-label="返回证书列表" />
+              <Button icon={<ArrowLeftOutlined />} type="text" shape="circle" onClick={() => navigate('/courseCertificate')} aria-label="返回证书列表" />
               <h1 className="text-lg font-semibold text-[#1d1d1f]">证书详情</h1>
             </div>
             <div className="flex gap-3">

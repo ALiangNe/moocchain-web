@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { getLearningHistoryList } from '@/api/baseApi';
 import type { ResourceInfo } from '@/types/resourceType';
 import LearningHistoryList from '@/components/learningHistory/LearningHistoryList';
+import LearningHistoryPieChart from '@/components/learningHistory/LearningHistoryPieChart';
+import LearningHistoryBarChart from '@/components/learningHistory/LearningHistoryBarChart';
 
 export default function LearningHistory() {
   const navigate = useNavigate();
@@ -67,12 +69,20 @@ export default function LearningHistory() {
   };
 
   const handleCourseClick = (resource: ResourceInfo) => {
-    if (resource.course?.courseId && resource.resourceId) navigate(`/courselearn/${resource.course.courseId}/resource/${resource.resourceId}`);
+    if (resource.course?.courseId && resource.resourceId) navigate(`/courseLearn/${resource.course.courseId}/resource/${resource.resourceId}`);
   };
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1600px] mx-auto">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card className="shadow-sm rounded-2xl">
+            <LearningHistoryBarChart data={courses} />
+          </Card>
+          <Card className="shadow-sm rounded-2xl">
+            <LearningHistoryPieChart data={courses} />
+          </Card>
+        </div>
         <Card className="shadow-sm mb-8 rounded-2xl">
           <h1 className="text-lg font-semibold text-[#1d1d1f]">学习记录</h1>
         </Card>
