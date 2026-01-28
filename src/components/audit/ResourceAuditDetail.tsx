@@ -1,7 +1,9 @@
-import { Descriptions, Tag, Button, Card } from 'antd';
+import { Descriptions, Tag, Button, Card, message } from 'antd';
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import { formatDateTime } from '@/utils/formatTime';
+import { useState } from 'react';
+import { downloadFile } from '@/utils/download';
 
 interface ResourceAuditDetailProps {
   record: AuditRecordInfo;
@@ -9,6 +11,7 @@ interface ResourceAuditDetailProps {
 }
 
 export default function ResourceAuditDetail({ record, onApprove }: ResourceAuditDetailProps) {
+  const [downloading, setDownloading] = useState(false);
   const statusMap: Record<number, { text: string; color: string }> = {
     0: { text: '待审核', color: 'processing' },
     1: { text: '已通过', color: 'success' },
@@ -20,7 +23,15 @@ export default function ResourceAuditDetail({ record, onApprove }: ResourceAudit
   // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
+    // 如果是完整的 URL，直接返回
     if (ipfsHash.startsWith('http')) return ipfsHash;
+    // 如果是 IPFS Hash (CID)，使用 Pinata Gateway
+    // IPFS Hash 通常以 Qm 开头（CIDv0）或 b 开头（CIDv1），且不包含路径分隔符
+    if (!ipfsHash.startsWith('/') && (ipfsHash.startsWith('Qm') || ipfsHash.startsWith('b') || ipfsHash.length > 30)) {
+      const gatewayUrl = import.meta.env.VITE_IPFS_GATEWAY_URL || 'https://gateway.pinata.cloud/ipfs/';
+      return `${gatewayUrl}${ipfsHash}`;
+    }
+    // 否则认为是本地路径
     const baseUrl = import.meta.env.VITE_API_BASE_URL.split('/api')[0];
     return `${baseUrl}${ipfsHash}`;
   };
@@ -29,9 +40,32 @@ export default function ResourceAuditDetail({ record, onApprove }: ResourceAudit
   const resourceType = record.targetResource?.resourceType || 0;
 
   // 处理资源文件下载
-  const handleDownload = () => {
-    if (fileUrl) {
-      window.open(fileUrl, '_blank');
+  const handleDownload = async () => {
+    if (!fileUrl || downloading) return;
+
+    const downloadMsgKey = 'audit-resource-download';
+    message.loading({ content: '准备下载...', key: downloadMsgKey, duration: 0 });
+
+    const filename = record.targetResource?.title || `resource-${record.targetResource?.resourceId ?? 'unknown'}`;
+    let result: Awaited<ReturnType<typeof downloadFile>> | undefined;
+    setDownloading(true);
+    try {
+      result = await downloadFile(fileUrl, { filename });
+    } catch (error) {
+      console.error('Download resource error:', error);
+      message.error('下载失败，请稍后重试');
+      message.destroy(downloadMsgKey);
+    } finally {
+      setDownloading(false);
+    }
+    if (!result) return;
+    if (result.method === 'browser') {
+      message.info({
+        content: '已尝试使用浏览器直接下载（若仍打开预览页，说明网关未开启附件下载）',
+        key: downloadMsgKey,
+      });
+    } else {
+      message.success({ content: '开始下载', key: downloadMsgKey });
     }
   };
 

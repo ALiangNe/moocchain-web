@@ -102,10 +102,6 @@ export default function ResourcePlayer({ resource, fileUrl, onDownload, onTimeUp
       <Card className="shadow-sm mb-4 rounded-2xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源播放</h2>
-          {/* 非音视频类型支持下载按钮（文档 / 其他） */}
-          {resourceType !== 2 && resourceType !== 3 && onDownload && (
-            <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} className="rounded-lg">下载资源 </Button>
-          )}
         </div>
       </Card>
       <Card className="shadow-sm rounded-2xl">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message, Input } from 'antd';
+import type { Dayjs } from 'dayjs';
 import { PlusOutlined, CodeOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { createCertificateTemplate, updateCertificateTemplate, getCertificateTemplateList } from '@/api/baseApi';
@@ -7,6 +8,7 @@ import type { CertificateTemplateInfo } from '@/types/certificateTemplateType';
 import CertificateTemplateForm from '@/components/certificateTemplate/CertificateTemplateForm';
 import CertificateTemplateListCard from '@/components/certificateTemplate/CertificateTemplateListCard';
 import CertificateTemplateDetail from '@/components/certificateTemplate/CertificateTemplateDetail';
+import CertificateTemplateFilterBar, { type TemplateActiveFilter } from '@/components/certificateTemplate/CertificateTemplateFilterBar';
 import { UserRole } from '@/constants/role';
 import certificateTemplateJson from '@/constants/certificateTemplate.json';
 
@@ -26,6 +28,13 @@ export default function CertificateTemplate() {
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
 
+  // 筛选条件（真正用于请求的）
+  const [isActiveFilter, setIsActiveFilter] = useState<TemplateActiveFilter>(undefined);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  // 临时输入状态，点击查询按钮后才同步到筛选条件
+  const [isActiveInput, setIsActiveInput] = useState<TemplateActiveFilter>(undefined);
+  const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+
   // 加载模板列表数据
   const loadTemplates = useCallback(async () => {
     if (!user?.userId || user.role !== UserRole.ADMIN) return;
@@ -42,9 +51,25 @@ export default function CertificateTemplate() {
       setTemplateLoading(true);
     });
 
+    const params: {
+      page: number;
+      pageSize: number;
+      isActive?: number;
+      startDate?: string;
+      endDate?: string;
+    } = { page, pageSize };
+
+    if (isActiveFilter !== undefined) {
+      params.isActive = isActiveFilter;
+    }
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      result = await getCertificateTemplateList({ page, pageSize });
+      result = await getCertificateTemplateList(params);
     } catch (error) {
       console.error('Load templates error:', error);
       if (requestIdRef.current === currentRequestId) {
@@ -67,7 +92,7 @@ export default function CertificateTemplate() {
 
     setTemplates(result.data.records);
     setTotal(result.data.total);
-  }, [user, page, pageSize]);
+  }, [user, page, pageSize, isActiveFilter, dateRange]);
 
   useEffect(() => {
     const effectRequestId = requestIdRef.current;
@@ -104,9 +129,10 @@ export default function CertificateTemplate() {
   const handleUpdateTemplate = async (values: Partial<CertificateTemplateInfo>) => {
     if (!currentTemplate?.templateId) return;
 
+    const templateId = currentTemplate.templateId;
     let result;
     try {
-      result = await updateCertificateTemplate(currentTemplate.templateId, values);
+      result = await updateCertificateTemplate(templateId, values);
     } catch (error) {
       console.error('Update template error:', error);
       message.error('更新失败，请重试');
@@ -148,6 +174,22 @@ export default function CertificateTemplate() {
     setCurrentTemplate(undefined);
   };
 
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleIsActiveInputChange = (value: TemplateActiveFilter) => {
+    setIsActiveInput(value);
+  };
+
+  const handleDateRangeInputChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRangeInput(dates);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setIsActiveFilter(isActiveInput);
+    setDateRange(dateRangeInput);
+    setPage(1);
+  };
+
   if (user?.role !== UserRole.ADMIN) {
     return (
       <div className="py-12">
@@ -168,7 +210,7 @@ export default function CertificateTemplate() {
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold text-[#1d1d1f]">证书模板管理</h1>
+            <CertificateTemplateFilterBar isActive={isActiveInput} onIsActiveChange={handleIsActiveInputChange} dateRange={dateRangeInput} onDateRangeChange={handleDateRangeInputChange} onSearch={handleSearch} />
             <div className="flex gap-3">
               <Button type="primary" icon={<CodeOutlined />} onClick={() => setJsonTemplateDrawerVisible(true)} className="rounded-lg">JSON模板</Button>
               <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate} className="rounded-lg">创建模板</Button>

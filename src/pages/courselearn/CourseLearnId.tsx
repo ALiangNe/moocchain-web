@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, message, Spin, Tooltip,Modal } from 'antd';
+import { Card, Button, message, Spin, Tooltip, Modal } from 'antd';
 import { ArrowLeftOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCourse, getResourceList, getLearningRecordList, createCertificate, updateCertificateNft, getCertificateList, getResourceCertificateConfigList, getTokenTransactionList, buyResource } from '@/api/baseApi';
@@ -18,7 +18,7 @@ import { MOOC_TOKEN_ADDRESS } from '@/contracts/contractAddresses';
 export default function CourseLearnId() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, accessToken, setAuth } = useAuthStore();
   const [course, setCourse] = useState<CourseInfo | null>(null);
   const [resources, setResources] = useState<ResourceInfo[]>([]);
   const [averageRating, setAverageRating] = useState<number | null>(null);
@@ -629,6 +629,11 @@ export default function CourseLearnId() {
     if (result.code !== 0) {
       message.error(result.message || '购买失败');
       return;
+    }
+
+    // 如果后端返回了最新的用户信息，则更新全局用户状态，及时刷新 Header 中的代币余额
+    if (result.data && result.data.user && accessToken) {
+      setAuth(accessToken, result.data.user);
     }
 
     message.success(`成功购买资源，已支付 ${price} 代币`);

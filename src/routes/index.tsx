@@ -19,7 +19,7 @@ import LearningHistory from '@/pages/learningHistory/LearningHistory';
 import CertificateTemplate from '@/pages/certificateTemplate/CertificateTemplate';
 import CourseCertificate from '@/pages/courseCertificate/CourseCertificate';
 import CourseCertificateId from '@/pages/courseCertificate/CourseCertificateId';
-import TokenRule from '@/pages/tokenRule/tokenRule';
+import TokenRule from '@/pages/tokenRule/TokenRule';
 import BlockchainRecord from '@/pages/blockchainRecord/BlockchainRecord';
 
 export const router = createBrowserRouter([

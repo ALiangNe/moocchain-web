@@ -2,11 +2,11 @@ import { Card, Image, Descriptions } from 'antd';
 import type { CertificateInfo } from '@/types/certificateType';
 import { formatDateTime } from '@/utils/formatTime';
 
-interface CertificateDetailProps {
+interface CourseCertificateDetailProps {
   certificate: CertificateInfo;
 }
 
-export default function CertificateDetail({ certificate }: CertificateDetailProps) {
+export default function CertificateDetail({ certificate }: CourseCertificateDetailProps) {
   const imageUrl = certificate.ipfsHash ? `https://gateway.pinata.cloud/ipfs/${certificate.ipfsHash}` : undefined;
 
   return (

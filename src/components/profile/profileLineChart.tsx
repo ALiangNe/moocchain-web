@@ -10,7 +10,7 @@ interface ProfileLineChartProps {
 export default function ProfileLineChart({ transactions, loading = false }: ProfileLineChartProps) {
   const chartData = useMemo(() => {
     if (transactions.length === 0) {
-      return { dates: [], balances: [] };
+      return { dates: [], balances: [], tooltipLabels: [] as string[] };
     }
 
     // 过滤有效数据并按时间排序（从早到晚）
@@ -23,7 +23,7 @@ export default function ProfileLineChart({ transactions, loading = false }: Prof
       });
 
     if (validTransactions.length === 0) {
-      return { dates: [], balances: [] };
+      return { dates: [], balances: [], tooltipLabels: [] as string[] };
     }
 
     // 判断时间跨度：检查是否都在同一天
@@ -36,26 +36,31 @@ export default function ProfileLineChart({ transactions, loading = false }: Prof
 
     const dates: string[] = [];
     const balances: number[] = [];
+    const tooltipLabels: string[] = [];
 
     validTransactions.forEach((tx) => {
       const date = new Date(tx.createdAt!);
-      
+
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
       if (isSameDay) {
-        // 同一天，显示时分格式：14:30
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
+        // 同一天，x 轴仍然只显示时分：14:30
         dates.push(`${hours}:${minutes}`);
       } else {
-        // 跨天，显示日期格式：2月20日
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
+        // 跨天，x 轴显示日期：2月20日
         dates.push(`${month}月${day}日`);
       }
-      
+
+      // tooltip 始终显示完整“x月x日 13:30”格式
+      tooltipLabels.push(`${month}月${day}日 ${hours}:${minutes}`);
+
       balances.push(tx.balanceAfter!);
     });
 
-    return { dates, balances };
+    return { dates, balances, tooltipLabels };
   }, [transactions]);
 
   const option = useMemo(() => ({
@@ -70,8 +75,10 @@ export default function ProfileLineChart({ transactions, loading = false }: Prof
       trigger: 'axis',
       formatter: (params: unknown) => {
         if (Array.isArray(params) && params.length > 0) {
-          const param = params[0] as { name: string; value: number };
-          return `${param.name}<br/>余额: ${param.value}`;
+          const param = params[0] as { name: string; value: number; dataIndex: number };
+          const index = param.dataIndex ?? 0;
+          const label = chartData.tooltipLabels[index] ?? param.name;
+          return `${label}<br/>余额: ${param.value}`;
         }
         return '';
       },

@@ -174,7 +174,7 @@ export default function Home() {
   return (
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <HomeBanner />
+        <HomeBanner onBannerClick={() => navigate('/courseLearn')} />
         <Card className="shadow-sm mb-4 rounded-2xl">
           <h2 className="text-lg font-semibold text-[#1d1d1f]">名师指路，名校同行！</h2>
         </Card>

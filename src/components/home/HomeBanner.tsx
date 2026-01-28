@@ -1,12 +1,15 @@
 import { Carousel, ConfigProvider } from 'antd';
-import Banner01 from '@/assets/images/banner-01.png';
-import Banner02 from '@/assets/images/banner-02.png';
-import Banner03 from '@/assets/images/banner-03.png';
-import Banner04 from '@/assets/images/banner-04.png';
-import Banner05 from '@/assets/images/banner-05.png';
-import Banner06 from '@/assets/images/banner-06.png';
+import Banner01 from '@/assets/images/banner-01.jpg';
+import Banner02 from '@/assets/images/banner-02.jpg';
+import Banner03 from '@/assets/images/banner-03.jpg';
+import Banner04 from '@/assets/images/banner-04.jpg';
+import Banner05 from '@/assets/images/banner-05.jpg';
 
-export default function HomeBanner() {
+interface HomeBannerProps {
+  onBannerClick?: () => void;
+}
+
+export default function HomeBanner({ onBannerClick }: HomeBannerProps) {
   return (
     <div className="mb-8">
       <ConfigProvider
@@ -18,24 +21,21 @@ export default function HomeBanner() {
           },
         }}
       >
-        <Carousel arrows autoplay={{ dotDuration: true }} autoplaySpeed={5000} className="rounded-2xl overflow-hidden">
+        <Carousel arrows autoplay={{ dotDuration: true }} autoplaySpeed={2500} className="rounded-2xl overflow-hidden">
           <div>
-            <img src={Banner01} alt="Banner 01" className="w-full h-[500px] object-cover" />
+            <img src={Banner01} alt="Banner 01" className="w-full h-[500px] object-cover cursor-pointer" onClick={onBannerClick} />
           </div>
           <div>
-            <img src={Banner02} alt="Banner 02" className="w-full h-[500px] object-cover" />
+            <img src={Banner02} alt="Banner 02" className="w-full h-[500px] object-cover cursor-pointer" onClick={onBannerClick} />
           </div>
           <div>
-            <img src={Banner03} alt="Banner 03" className="w-full h-[500px] object-cover" />
+            <img src={Banner03} alt="Banner 03" className="w-full h-[500px] object-cover cursor-pointer" onClick={onBannerClick} />
           </div>
           <div>
-            <img src={Banner04} alt="Banner 04" className="w-full h-[500px] object-cover" />
+            <img src={Banner04} alt="Banner 04" className="w-full h-[500px] object-cover cursor-pointer" onClick={onBannerClick} />
           </div>
           <div>
-            <img src={Banner05} alt="Banner 05" className="w-full h-[500px] object-cover" />
-          </div>
-          <div>
-            <img src={Banner06} alt="Banner 06" className="w-full h-[500px] object-cover" />
+            <img src={Banner05} alt="Banner 05" className="w-full h-[500px] object-cover cursor-pointer" onClick={onBannerClick} />
           </div>
         </Carousel>
       </ConfigProvider>

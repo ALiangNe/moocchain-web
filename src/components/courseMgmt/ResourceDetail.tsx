@@ -117,9 +117,6 @@ export default function ResourceDetail({ resource, onDownload, latestAuditRecord
           <Card className="shadow-sm mb-4 rounded-2xl">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[#1d1d1f]">资源预览</h2>
-              {onDownload && (
-                <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} className="rounded-lg">下载资源</Button>
-              )}
             </div>
           </Card>
           <Card className="shadow-sm rounded-2xl">

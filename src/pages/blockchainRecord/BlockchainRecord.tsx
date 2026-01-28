@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from 'antd';
+import type { Dayjs } from 'dayjs';
 import { getCertificateList, getTokenTransactionList } from '@/api/baseApi';
 import type { CertificateInfo } from '@/types/certificateType';
 import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
 import RewardRecordList from '@/components/blockchainRecord/RewardRecordList';
 import CertificateRecordList from '@/components/blockchainRecord/CertificateRecordList';
 import PurchaseRecordList from '@/components/blockchainRecord/PurchaseRecordList';
-import BlockchainRecordBarChart from '@/components/blockchainRecord/blockchainRecordBarChart';
-import BlockchainRecordPieChart from '@/components/blockchainRecord/blockchainRecordPieChart';
+import BlockchainRecordBarChart from '@/components/blockchainRecord/BlockchainRecordBarChart';
+import BlockchainRecordPieChart from '@/components/blockchainRecord/BlockchainRecordPieChart';
+import BlockchainRecordFilterBar, { type BlockchainRecordType } from '@/components/blockchainRecord/BlockchainRecordFilterBar';
 import { useAuthStore } from '@/stores/authStore';
 import { UserRole } from '@/constants/role';
 
@@ -60,8 +62,43 @@ export default function BlockchainRecord() {
   const purchaseLoadingRef = useRef(false);
   const purchaseRequestIdRef = useRef(0);
 
+  // 筛选条件
+  const [recordType, setRecordType] = useState<BlockchainRecordType | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  // 临时输入状态，用于存储下拉框和日期选择器的值，点击查询按钮后才同步到实际筛选条件
+  const [recordTypeInput, setRecordTypeInput] = useState<BlockchainRecordType | undefined>(undefined);
+  const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+
+  const recordTypeOptions: { value: BlockchainRecordType; label: string }[] = isAdmin ? [
+    { value: 'certificate', label: '铸造证书' },
+    { value: 'uploadReward', label: '上传奖励' },
+    { value: 'learningReward', label: '学习奖励' },
+    { value: 'purchase', label: '资源消费' },
+  ] : isTeacher ? [
+    { value: 'certificate', label: '铸造证书' },
+    { value: 'uploadReward', label: '上传奖励' },
+    { value: 'purchase', label: '资源消费' },
+  ] : [
+    { value: 'certificate', label: '铸造证书' },
+    { value: 'learningReward', label: '学习奖励' },
+    { value: 'purchase', label: '资源消费' },
+  ];
+
   // 加载奖励记录（学生：学习完成奖励，教师：上传资源奖励）
   const loadRewardRecords = useCallback(async () => {
+    // 管理员不使用该列表（管理员有单独的 uploadRewardRecords / learningRewardRecords）
+    if (isAdmin) return;
+
+    // 如果筛选了上链类型，且不是当前角色对应的奖励类型，则不加载
+    const allowedType: BlockchainRecordType = isTeacher ? 'uploadReward' : 'learningReward';
+    if (recordType !== undefined && recordType !== allowedType) {
+      setRewardRecords([]);
+      setRewardTotal(0);
+      setRewardLoading(false);
+      rewardLoadingRef.current = false;
+      return;
+    }
+
     if (rewardLoadingRef.current) return;
 
     const currentRequestId = ++rewardRequestIdRef.current;
@@ -75,14 +112,28 @@ export default function BlockchainRecord() {
       setRewardLoading(true);
     });
 
+    const params: {
+      transactionType: number;
+      rewardType: number;
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      transactionType: 0, // 奖励
+      rewardType: isStudent ? 0 : 1, // 学生：学习完成(0)，教师：资源上传(1)
+      page: rewardPage,
+      pageSize: rewardPageSize,
+    };
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      result = await getTokenTransactionList({
-        transactionType: 0, // 奖励
-        rewardType: isStudent ? 0 : 1, // 学生：学习完成(0)，教师：资源上传(1)
-        page: rewardPage,
-        pageSize: rewardPageSize,
-      });
+      result = await getTokenTransactionList(params);
     } catch (error) {
       console.error('Load reward records error:', error);
       if (rewardRequestIdRef.current === currentRequestId) {
@@ -100,10 +151,20 @@ export default function BlockchainRecord() {
     if (result.code !== 0 || !result.data) return;
     setRewardRecords(result.data.records);
     setRewardTotal(result.data.total);
-  }, [rewardPage, rewardPageSize, isStudent]);
+  }, [rewardPage, rewardPageSize, isStudent, isTeacher, isAdmin, dateRange, recordType]);
 
   // 管理员：加载上传资源奖励记录
   const loadUploadRewardRecords = useCallback(async () => {
+    if (!isAdmin) return;
+
+    if (recordType !== undefined && recordType !== 'uploadReward') {
+      setUploadRewardRecords([]);
+      setUploadRewardTotal(0);
+      setUploadRewardLoading(false);
+      uploadRewardLoadingRef.current = false;
+      return;
+    }
+
     if (uploadRewardLoadingRef.current) return;
 
     const currentRequestId = ++uploadRewardRequestIdRef.current;
@@ -117,14 +178,28 @@ export default function BlockchainRecord() {
       setUploadRewardLoading(true);
     });
 
+    const params: {
+      transactionType: number;
+      rewardType: number;
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      transactionType: 0, // 奖励
+      rewardType: 1, // 上传资源奖励
+      page: uploadRewardPage,
+      pageSize: uploadRewardPageSize,
+    };
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      result = await getTokenTransactionList({
-        transactionType: 0, // 奖励
-        rewardType: 1, // 上传资源奖励
-        page: uploadRewardPage,
-        pageSize: uploadRewardPageSize,
-      });
+      result = await getTokenTransactionList(params);
     } catch (error) {
       console.error('Load upload reward records error:', error);
       if (uploadRewardRequestIdRef.current === currentRequestId) {
@@ -142,10 +217,20 @@ export default function BlockchainRecord() {
     if (result.code !== 0 || !result.data) return;
     setUploadRewardRecords(result.data.records);
     setUploadRewardTotal(result.data.total);
-  }, [uploadRewardPage, uploadRewardPageSize]);
+  }, [uploadRewardPage, uploadRewardPageSize, isAdmin, dateRange, recordType]);
 
   // 管理员：加载学习完成奖励记录
   const loadLearningRewardRecords = useCallback(async () => {
+    if (!isAdmin) return;
+
+    if (recordType !== undefined && recordType !== 'learningReward') {
+      setLearningRewardRecords([]);
+      setLearningRewardTotal(0);
+      setLearningRewardLoading(false);
+      learningRewardLoadingRef.current = false;
+      return;
+    }
+
     if (learningRewardLoadingRef.current) return;
 
     const currentRequestId = ++learningRewardRequestIdRef.current;
@@ -159,14 +244,28 @@ export default function BlockchainRecord() {
       setLearningRewardLoading(true);
     });
 
+    const params: {
+      transactionType: number;
+      rewardType: number;
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      transactionType: 0, // 奖励
+      rewardType: 0, // 学习完成奖励
+      page: learningRewardPage,
+      pageSize: learningRewardPageSize,
+    };
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      result = await getTokenTransactionList({
-        transactionType: 0, // 奖励
-        rewardType: 0, // 学习完成奖励
-        page: learningRewardPage,
-        pageSize: learningRewardPageSize,
-      });
+      result = await getTokenTransactionList(params);
     } catch (error) {
       console.error('Load learning reward records error:', error);
       if (learningRewardRequestIdRef.current === currentRequestId) {
@@ -184,10 +283,18 @@ export default function BlockchainRecord() {
     if (result.code !== 0 || !result.data) return;
     setLearningRewardRecords(result.data.records);
     setLearningRewardTotal(result.data.total);
-  }, [learningRewardPage, learningRewardPageSize]);
+  }, [learningRewardPage, learningRewardPageSize, isAdmin, dateRange, recordType]);
 
   // 加载铸造证书记录
   const loadCertificateRecords = useCallback(async () => {
+    if (recordType !== undefined && recordType !== 'certificate') {
+      setCertificateRecords([]);
+      setCertificateTotal(0);
+      setCertificateLoading(false);
+      certificateLoadingRef.current = false;
+      return;
+    }
+
     if (certificateLoadingRef.current) return;
 
     const currentRequestId = ++certificateRequestIdRef.current;
@@ -201,12 +308,24 @@ export default function BlockchainRecord() {
       setCertificateLoading(true);
     });
 
+    const params: {
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      page: certificatePage,
+      pageSize: certificatePageSize,
+    };
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      result = await getCertificateList({
-        page: certificatePage,
-        pageSize: certificatePageSize,
-      });
+      result = await getCertificateList(params);
     } catch (error) {
       console.error('Load certificate records error:', error);
       if (certificateRequestIdRef.current === currentRequestId) {
@@ -224,10 +343,18 @@ export default function BlockchainRecord() {
     if (result.code !== 0 || !result.data) return;
     setCertificateRecords(result.data.records);
     setCertificateTotal(result.data.total);
-  }, [certificatePage, certificatePageSize]);
+  }, [certificatePage, certificatePageSize, dateRange, recordType]);
 
   // 加载购买资源消费记录
   const loadPurchaseRecords = useCallback(async () => {
+    if (recordType !== undefined && recordType !== 'purchase') {
+      setPurchaseRecords([]);
+      setPurchaseTotal(0);
+      setPurchaseLoading(false);
+      purchaseLoadingRef.current = false;
+      return;
+    }
+
     if (purchaseLoadingRef.current) return;
 
     const currentRequestId = ++purchaseRequestIdRef.current;
@@ -241,14 +368,28 @@ export default function BlockchainRecord() {
       setPurchaseLoading(true);
     });
 
+    const params: {
+      transactionType: number;
+      consumeType: number;
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      transactionType: 1, // 消费
+      consumeType: 0, // 购买资源
+      page: purchasePage,
+      pageSize: purchasePageSize,
+    };
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      result = await getTokenTransactionList({
-        transactionType: 1, // 消费
-        consumeType: 0, // 购买资源
-        page: purchasePage,
-        pageSize: purchasePageSize,
-      });
+      result = await getTokenTransactionList(params);
     } catch (error) {
       console.error('Load purchase records error:', error);
       if (purchaseRequestIdRef.current === currentRequestId) {
@@ -266,7 +407,7 @@ export default function BlockchainRecord() {
     if (result.code !== 0 || !result.data) return;
     setPurchaseRecords(result.data.records);
     setPurchaseTotal(result.data.total);
-  }, [purchasePage, purchasePageSize]);
+  }, [purchasePage, purchasePageSize, dateRange, recordType]);
 
   useEffect(() => {
     if (!isAdmin && (isStudent || isTeacher)) {
@@ -349,9 +490,41 @@ export default function BlockchainRecord() {
     setPurchasePageSize(s);
   };
 
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleRecordTypeInputChange = (value: BlockchainRecordType | undefined) => {
+    setRecordTypeInput(value);
+  };
+
+  const handleDateRangeInputChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRangeInput(dates);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setRecordType(recordTypeInput);
+    setDateRange(dateRangeInput);
+    // 重置所有分页到第一页
+    setRewardPage(1);
+    setUploadRewardPage(1);
+    setLearningRewardPage(1);
+    setCertificatePage(1);
+    setPurchasePage(1);
+  };
+
+  const showCertificates = recordType === undefined || recordType === 'certificate';
+  const showPurchase = recordType === undefined || recordType === 'purchase';
+  const showTeacherOrStudentReward = !isAdmin && (recordType === undefined || recordType === (isTeacher ? 'uploadReward' : 'learningReward'));
+  const showAdminUploadReward = isAdmin && (recordType === undefined || recordType === 'uploadReward');
+  const showAdminLearningReward = isAdmin && (recordType === undefined || recordType === 'learningReward');
+
   return (
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <Card className="shadow-sm mb-8 rounded-2xl">
+          <div className="flex justify-start items-center">
+            <BlockchainRecordFilterBar recordType={recordTypeInput} onRecordTypeChange={handleRecordTypeInputChange} recordTypeOptions={recordTypeOptions} dateRange={dateRangeInput} onDateRangeChange={handleDateRangeInputChange} onSearch={handleSearch} />
+          </div>
+        </Card>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card className="shadow-sm rounded-2xl">
             <BlockchainRecordBarChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} purchaseRecords={purchaseRecords} />
@@ -361,18 +534,17 @@ export default function BlockchainRecord() {
           </Card>
         </div>
 
-        <Card className="shadow-sm mb-8 rounded-2xl">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">上链记录</h1>
-        </Card>
 
         {/* 铸造证书记录 */}
-        <Card className="shadow-sm mb-8 rounded-2xl">
-          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">铸造证书记录</h2>
-          <CertificateRecordList data={certificateRecords} loading={certificateLoading} page={certificatePage} pageSize={certificatePageSize} total={certificateTotal} onPageChange={handleCertificatePageChange} />
-        </Card>
+        {showCertificates && (
+          <Card className="shadow-sm mb-8 rounded-2xl">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">铸造证书记录</h2>
+            <CertificateRecordList data={certificateRecords} loading={certificateLoading} page={certificatePage} pageSize={certificatePageSize} total={certificateTotal} onPageChange={handleCertificatePageChange} />
+          </Card>
+        )}
 
         {/* 管理员：领取上传资源奖励记录 */}
-        {isAdmin && (
+        {showAdminUploadReward && (
           <Card className="shadow-sm mb-8 rounded-2xl">
             <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">领取上传资源奖励</h2>
             <RewardRecordList data={uploadRewardRecords} loading={uploadRewardLoading} page={uploadRewardPage} pageSize={uploadRewardPageSize} total={uploadRewardTotal} onPageChange={handleUploadRewardPageChange} title="上传资源奖励" emptyDescription="暂无领取上传资源奖励记录" />
@@ -380,7 +552,7 @@ export default function BlockchainRecord() {
         )}
 
         {/* 管理员：领取资源完成奖励记录 */}
-        {isAdmin && (
+        {showAdminLearningReward && (
           <Card className="shadow-sm mb-8 rounded-2xl">
             <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">领取资源完成奖励</h2>
             <RewardRecordList data={learningRewardRecords} loading={learningRewardLoading} page={learningRewardPage} pageSize={learningRewardPageSize} total={learningRewardTotal} onPageChange={handleLearningRewardPageChange} title="学习完成奖励" emptyDescription="暂无领取资源完成奖励记录" />
@@ -388,7 +560,7 @@ export default function BlockchainRecord() {
         )}
 
         {/* 教师：领取上传资源奖励记录 */}
-        {isTeacher && (
+        {isTeacher && showTeacherOrStudentReward && (
           <Card className="shadow-sm mb-8 rounded-2xl">
             <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">领取上传资源奖励</h2>
             <RewardRecordList data={rewardRecords} loading={rewardLoading} page={rewardPage} pageSize={rewardPageSize} total={rewardTotal} onPageChange={handleRewardPageChange} title="上传资源奖励" emptyDescription="暂无领取上传资源奖励记录" />
@@ -396,7 +568,7 @@ export default function BlockchainRecord() {
         )}
 
         {/* 学生：领取资源完成奖励记录 */}
-        {isStudent && (
+        {isStudent && showTeacherOrStudentReward && (
           <Card className="shadow-sm mb-8 rounded-2xl">
             <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">领取资源完成奖励</h2>
             <RewardRecordList data={rewardRecords} loading={rewardLoading} page={rewardPage} pageSize={rewardPageSize} total={rewardTotal} onPageChange={handleRewardPageChange} />
@@ -404,10 +576,12 @@ export default function BlockchainRecord() {
         )}
 
         {/* 购买资源消费记录 */}
-        <Card className="shadow-sm rounded-2xl">
-          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">购买资源消费记录</h2>
-          <PurchaseRecordList data={purchaseRecords} loading={purchaseLoading} page={purchasePage} pageSize={purchasePageSize} total={purchaseTotal} onPageChange={handlePurchasePageChange} />
-        </Card>
+        {showPurchase && (
+          <Card className="shadow-sm rounded-2xl">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">购买资源消费记录</h2>
+            <PurchaseRecordList data={purchaseRecords} loading={purchaseLoading} page={purchasePage} pageSize={purchasePageSize} total={purchaseTotal} onPageChange={handlePurchasePageChange} />
+          </Card>
+        )}
       </div>
     </div>
   );

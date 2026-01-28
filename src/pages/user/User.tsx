@@ -7,6 +7,7 @@ import { UserRole } from '@/constants/role';
 import UserListCard from '@/components/user/UserListCard';
 import UserForm from '@/components/user/UserForm';
 import UserDetail from '@/components/user/UserDetail';
+import UserFilterBar, { type UserRoleFilter } from '@/components/user/UserFilterBar';
 
 export default function User() {
   const user = useAuthStore((state) => state.user);
@@ -20,6 +21,13 @@ export default function User() {
   const [total, setTotal] = useState(0);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
+
+  // 筛选条件（真正用于请求的）
+  const [roleFilter, setRoleFilter] = useState<UserRoleFilter>(undefined);
+  const [schoolFilter, setSchoolFilter] = useState<string | undefined>(undefined);
+  // 临时输入状态，点击查询按钮后才同步到筛选条件
+  const [roleInput, setRoleInput] = useState<UserRoleFilter>(undefined);
+  const [schoolInput, setSchoolInput] = useState<string | undefined>(undefined);
 
   // 获取用户列表
   const loadUsers = useCallback(async () => {
@@ -39,7 +47,24 @@ export default function User() {
 
     let result;
     try {
-      result = await getUserList({ page, pageSize });
+      const params: {
+        page: number;
+        pageSize: number;
+        role?: number;
+        schoolName?: string;
+      } = {
+        page,
+        pageSize,
+      };
+
+      if (roleFilter !== undefined) {
+        params.role = roleFilter;
+      }
+      if (schoolFilter) {
+        params.schoolName = schoolFilter;
+      }
+
+      result = await getUserList(params);
     } catch (error) {
       console.error('Load users error:', error);
       if (requestIdRef.current === currentRequestId) {
@@ -61,7 +86,7 @@ export default function User() {
 
     setUsers(result.data.records || []);
     setTotal(result.data.total || 0);
-  }, [user, page, pageSize]);
+  }, [user, page, pageSize, roleFilter, schoolFilter]);
 
   useEffect(() => {
     const effectRequestId = requestIdRef.current;
@@ -120,6 +145,31 @@ export default function User() {
     loadUsers();
   };
 
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleRoleInputChange = (value: UserRoleFilter) => {
+    setRoleInput(value);
+  };
+
+  const handleSchoolInputChange = (value: string | undefined) => {
+    setSchoolInput(value);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setRoleFilter(roleInput);
+    setSchoolFilter(schoolInput);
+    setPage(1);
+  };
+
+  // 学校下拉选项：从当前用户列表中收集去重后的 schoolName
+  const schoolOptions = Array.from(
+    new Set(
+      users
+        .map((u) => u.schoolName)
+        .filter((name): name is string => !!name && name.trim().length > 0),
+    ),
+  );
+
   if (user?.role !== UserRole.ADMIN) {
     return (
       <div className="py-12">
@@ -139,7 +189,9 @@ export default function User() {
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-6 rounded-2xl">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">用户管理</h1>
+          <div className="flex justify-start items-center mb-2">
+            <UserFilterBar role={roleInput} onRoleChange={handleRoleInputChange} schoolName={schoolInput} onSchoolChange={handleSchoolInputChange} schoolOptions={schoolOptions} onSearch={handleSearch} />
+          </div>
         </Card>
         <Card className="shadow-sm rounded-2xl">
           <UserListCard users={users} loading={userLoading} page={page} pageSize={pageSize} total={total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onEdit={handleEdit} onView={handleView} />

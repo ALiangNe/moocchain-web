@@ -2,11 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import type { Dayjs } from 'dayjs';
 import { useAuthStore } from '@/stores/authStore';
 import { createCourse, getCourseList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import CourseForm from '@/components/courseMgmt/CourseForm';
 import CourseListCard from '@/components/courseMgmt/CourseListCard';
+import CourseMgmtFilterBar from '@/components/courseMgmt/CourseMgmtFilterBar';
 import { UserRole } from '@/constants/role';
 
 export default function CourseMgmt() {
@@ -18,6 +20,11 @@ export default function CourseMgmt() {
   const [coursePage, setCoursePage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [courseTotal, setCourseTotal] = useState(0);
+  const [teacherName, setTeacherName] = useState<string>('');
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  // 临时输入状态，用于存储输入框和日期选择器的值，点击查询按钮后才同步到实际筛选条件
+  const [teacherNameInput, setTeacherNameInput] = useState<string>('');
+  const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
 
@@ -37,12 +44,33 @@ export default function CourseMgmt() {
       setCourseLoading(true);
     });
 
+    // 管理员可以查看所有课程，教师只能查看自己的课程
+    const baseParams = user.role === UserRole.ADMIN
+      ? { page: coursePage, pageSize }
+      : { teacherId: user.userId, page: coursePage, pageSize };
+
+    const params: {
+      teacherId?: number;
+      page: number;
+      pageSize: number;
+      teacherName?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      ...baseParams,
+    };
+
+    if (teacherName.trim()) {
+      params.teacherName = teacherName.trim();
+    }
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      // 管理员可以查看所有课程，教师只能查看自己的课程
-      const params = user.role === UserRole.ADMIN
-        ? { page: coursePage, pageSize }
-        : { teacherId: user.userId, page: coursePage, pageSize };
       result = await getCourseList(params);
     } catch (error) {
       console.error('Load courses error:', error);
@@ -66,7 +94,7 @@ export default function CourseMgmt() {
 
     setCourses(result.data.records);
     setCourseTotal(result.data.total);
-  }, [user, coursePage, pageSize]);
+  }, [user, coursePage, pageSize, teacherName, dateRange]);
 
 
   useEffect(() => {
@@ -81,8 +109,15 @@ export default function CourseMgmt() {
 
   // 创建新课程
   const handleCreateCourse = async (values: Partial<CourseInfo>, coverImage?: File) => {
+    let result;
     try {
-      const result = await createCourse(values, coverImage);
+      result = await createCourse(values, coverImage);
+    } catch (error) {
+      console.error('Create course error:', error);
+      message.error('创建失败，请重试');
+      return;
+    }
+
       if (result.code !== 0) {
         message.error(result.message || '创建失败');
         return;
@@ -90,10 +125,6 @@ export default function CourseMgmt() {
       message.success('课程创建成功');
       setCourseDrawerVisible(false);
       loadCourses();
-    } catch (error) {
-      console.error('Create course error:', error);
-      message.error('创建失败，请重试');
-    }
   };
 
 
@@ -117,12 +148,28 @@ export default function CourseMgmt() {
     navigate(`/courseMgmt/${course.courseId}`);
   };
 
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleTeacherNameInputChange = (value: string) => {
+    setTeacherNameInput(value);
+  };
+
+  const handleDateRangeInputChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRangeInput(dates);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setTeacherName(teacherNameInput);
+    setDateRange(dateRangeInput);
+    setCoursePage(1); // 重置到第一页
+  };
+
   return (
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <div className="flex justify-between items-center">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">资源管理</h1>
+            <CourseMgmtFilterBar teacherName={teacherNameInput} onTeacherNameChange={handleTeacherNameInputChange} dateRange={dateRangeInput} onDateRangeChange={handleDateRangeInputChange} onSearch={handleSearch} />
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setCourseDrawerVisible(true)} className="rounded-lg">创建课程</Button>
         </div>
         </Card>

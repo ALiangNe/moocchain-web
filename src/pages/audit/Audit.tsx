@@ -11,6 +11,7 @@ import CourseAuditDetail from '@/components/audit/CourseAuditDetail';
 import AuditApproveModal from '@/components/audit/AuditApplyModal';
 import AuditBarChart from '@/components/audit/AuditBarChart';
 import AuditLineChart from '@/components/audit/AuditLineChart';
+import AuditFilterBar, { type AuditTypeOption, type AuditStatusOption } from '@/components/audit/AuditFilterBar';
 
 export default function Audit() {
   const [loading, setLoading] = useState(false);
@@ -38,11 +39,21 @@ export default function Audit() {
   const resourceRequestIdRef = useRef(0);
   const courseRequestIdRef = useRef(0);
 
+  // 筛选条件
+  const [auditTypeFilter, setAuditTypeFilter] = useState<AuditTypeOption | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<AuditStatusOption | undefined>(undefined);
+  // 临时输入状态
+  const [auditTypeInput, setAuditTypeInput] = useState<AuditTypeOption | undefined>(undefined);
+  const [statusInput, setStatusInput] = useState<AuditStatusOption | undefined>(undefined);
+
   // 加载教师认证审核数据列表
   const loadData = useCallback(async () => {
-    if (loadingRef.current) {
+    if (auditTypeFilter && auditTypeFilter !== 'teacher') {
+      setData({ records: [], total: 0 });
       return;
     }
+
+    if (loadingRef.current) return;
 
     const currentPage = page;
     const currentPageSize = pageSize;
@@ -57,10 +68,18 @@ export default function Audit() {
       setLoading(true);
     });
 
+    // 教师认证审核：auditType=0(用户身份) + targetType=0(用户)
+    const params = {
+      auditType: 0,
+      targetType: 0,
+      page: currentPage,
+      pageSize: currentPageSize,
+      ...(statusFilter !== undefined ? { auditStatus: statusFilter } : {}),
+    };
+
     let result;
     try {
-      // 教师认证审核：auditType=0(用户身份) + targetType=0(用户)
-      result = await getAuditRecordList({ auditType: 0, targetType: 0, page: currentPage, pageSize: currentPageSize });
+      result = await getAuditRecordList(params);
     } catch (error) {
       console.error('Load audit records error:', error);
       if (requestIdRef.current === currentRequestId) {
@@ -71,9 +90,7 @@ export default function Audit() {
       return;
     }
 
-    if (requestIdRef.current !== currentRequestId) {
-      return;
-    }
+    if (requestIdRef.current !== currentRequestId) return;
 
     setLoading(false);
     loadingRef.current = false;
@@ -84,10 +101,15 @@ export default function Audit() {
     }
 
     setData(result.data);
-  }, [page, pageSize]);
+  }, [page, pageSize, auditTypeFilter, statusFilter]);
 
   // 加载资源合规审核数据列表
   const loadResourceData = useCallback(async () => {
+    if (auditTypeFilter && auditTypeFilter !== 'resource') {
+      setResourceData({ records: [], total: 0 });
+      return;
+    }
+
     if (resourceLoadingRef.current) return;
 
     const currentPage = resourcePage;
@@ -103,10 +125,18 @@ export default function Audit() {
       setResourceLoading(true);
     });
 
+    // 资源合规审核：auditType=1(资源内容) + targetType=1(资源)
+    const params = {
+      auditType: 1,
+      targetType: 1,
+      page: currentPage,
+      pageSize: currentPageSize,
+      ...(statusFilter !== undefined ? { auditStatus: statusFilter } : {}),
+    };
+
     let result;
     try {
-      // 资源合规审核：auditType=1(资源内容) + targetType=1(资源)
-      result = await getAuditRecordList({ auditType: 1, targetType: 1, page: currentPage, pageSize: currentPageSize });
+      result = await getAuditRecordList(params);
     } catch (error) {
       console.error('Load resource audit records error:', error);
       if (resourceRequestIdRef.current === currentRequestId) {
@@ -128,10 +158,15 @@ export default function Audit() {
     }
 
     setResourceData(result.data);
-  }, [resourcePage, pageSize]);
+  }, [resourcePage, pageSize, auditTypeFilter, statusFilter]);
 
   // 加载课程审核数据列表
   const loadCourseData = useCallback(async () => {
+    if (auditTypeFilter && auditTypeFilter !== 'course') {
+      setCourseData({ records: [], total: 0 });
+      return;
+    }
+
     if (courseLoadingRef.current) return;
 
     const currentPage = coursePage;
@@ -147,10 +182,18 @@ export default function Audit() {
       setCourseLoading(true);
     });
 
+    // 课程审核：auditType=2(课程内容) + targetType=2(课程)
+    const params = {
+      auditType: 2,
+      targetType: 2,
+      page: currentPage,
+      pageSize: currentPageSize,
+      ...(statusFilter !== undefined ? { auditStatus: statusFilter } : {}),
+    };
+
     let result;
     try {
-      // 课程审核：auditType=2(课程内容) + targetType=2(课程)
-      result = await getAuditRecordList({ auditType: 2, targetType: 2, page: currentPage, pageSize: currentPageSize });
+      result = await getAuditRecordList(params);
     } catch (error) {
       console.error('Load course audit records error:', error);
       if (courseRequestIdRef.current === currentRequestId) {
@@ -172,7 +215,29 @@ export default function Audit() {
     }
 
     setCourseData(result.data);
-  }, [coursePage, pageSize]);
+  }, [coursePage, pageSize, auditTypeFilter, statusFilter]);
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleAuditTypeInputChange = (value: AuditTypeOption | undefined) => {
+    setAuditTypeInput(value);
+  };
+
+  const handleStatusInputChange = (value: AuditStatusOption | undefined) => {
+    setStatusInput(value);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setAuditTypeFilter(auditTypeInput);
+    setStatusFilter(statusInput);
+    setPage(1);
+    setResourcePage(1);
+    setCoursePage(1);
+  };
+
+  const showTeacherAudit = auditTypeFilter === undefined || auditTypeFilter === 'teacher';
+  const showResourceAudit = auditTypeFilter === undefined || auditTypeFilter === 'resource';
+  const showCourseAudit = auditTypeFilter === undefined || auditTypeFilter === 'course';
+
 
   // 查看教师认证审核详情
   const handleViewDetail = (record: AuditRecordInfo) => {
@@ -339,7 +404,9 @@ export default function Audit() {
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">审核管理</h1>
+          <div className="flex justify-start items-center">
+            <AuditFilterBar auditType={auditTypeInput} onAuditTypeChange={handleAuditTypeInputChange} status={statusInput} onStatusChange={handleStatusInputChange} onSearch={handleSearch} />
+          </div>
         </Card>
 
         {/* 审核状态统计图表 */}
@@ -348,27 +415,33 @@ export default function Audit() {
             <AuditBarChart teacherRecords={data.records} resourceRecords={resourceData.records} courseRecords={courseData.records} />
           </Card>
           <Card className="shadow-sm rounded-2xl">
-            <AuditLineChart teacherRecords={data.records} resourceRecords={resourceData.records} courseRecords={courseData.records} />
+            <AuditLineChart teacherRecords={data.records} resourceRecords={resourceData.records} courseRecords={courseData.records} externalStatus={statusFilter} />
           </Card>
         </div>
 
         {/* 教师认证审核 */}
-        <Card className="shadow-sm mb-8 rounded-2xl">
-          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">教师认证审核</h2>
-              <AuditRecordTable data={data.records} loading={loading} page={page} pageSize={pageSize} total={data.total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onViewDetail={handleViewDetail} />
-            </Card>
+        {showTeacherAudit && (
+          <Card className="shadow-sm mb-8 rounded-2xl">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">教师认证审核</h2>
+            <AuditRecordTable data={data.records} loading={loading} page={page} pageSize={pageSize} total={data.total} onPageChange={(p, s) => { setPage(p); setPageSize(s); }} onViewDetail={handleViewDetail} />
+          </Card>
+        )}
 
         {/* 资源合规审核 */}
-        <Card className="shadow-sm mb-8 rounded-2xl">
-          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">资源合规审核</h2>
-              <ResourceAuditTable data={resourceData.records} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceData.total} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onViewDetail={handleViewResourceDetail} />
-            </Card>
+        {showResourceAudit && (
+          <Card className="shadow-sm mb-8 rounded-2xl">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">资源合规审核</h2>
+            <ResourceAuditTable data={resourceData.records} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceData.total} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onViewDetail={handleViewResourceDetail} />
+          </Card>
+        )}
 
         {/* 课程合规审核 */}
-            <Card className="shadow-sm rounded-2xl">
-          <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">课程合规审核</h2>
-              <CourseAuditTable data={courseData.records} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseData.total} onPageChange={(p, s) => { setCoursePage(p); setPageSize(s); }} onViewDetail={handleViewCourseDetail} />
-            </Card>
+        {showCourseAudit && (
+          <Card className="shadow-sm rounded-2xl">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">课程合规审核</h2>
+            <CourseAuditTable data={courseData.records} loading={courseLoading} page={coursePage} pageSize={pageSize} total={courseData.total} onPageChange={(p, s) => { setCoursePage(p); setPageSize(s); }} onViewDetail={handleViewCourseDetail} />
+          </Card>
+        )}
 
         <Drawer title="审核详情" open={detailVisible} onClose={() => setDetailVisible(false)} width={800} placement="right">
           {selectedRecord && (

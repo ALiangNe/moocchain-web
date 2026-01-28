@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spin, Empty, message, Pagination, Card } from 'antd';
+import type { Dayjs } from 'dayjs';
 import { getCertificateList } from '@/api/baseApi';
 import { useAuthStore } from '@/stores/authStore';
-import CertificateListCard from '@/components/courseCertificate/CertificateListCard';
+import CertificateListCard from '@/components/courseCertificate/CourseCertificateListCard';
+import CourseCertificateFilterBar from '@/components/courseCertificate/CourseCertificateFilterBar';
 import type { CertificateInfo } from '@/types/certificateType';
 
 export default function CourseCertificate() {
@@ -14,6 +16,11 @@ export default function CourseCertificate() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [loading, setLoading] = useState(false);
+  const [teacherName, setTeacherName] = useState<string>('');
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  // 临时输入状态，用于存储输入框和日期选择器的值，点击查询按钮后才同步到实际筛选条件
+  const [teacherNameInput, setTeacherNameInput] = useState<string>('');
+  const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
 
@@ -33,11 +40,27 @@ export default function CourseCertificate() {
       setLoading(true);
     });
 
-    const params = {
+    const params: {
+      studentId: number;
+      page: number;
+      pageSize: number;
+      teacherName?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {
       studentId: user.userId,
       page,
       pageSize,
     };
+
+    if (teacherName.trim()) {
+      params.teacherName = teacherName.trim();
+    }
+
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
 
     let response;
     try {
@@ -65,7 +88,7 @@ export default function CourseCertificate() {
     }
 
     message.error(response.message || '获取证书列表失败');
-  }, [user, page, pageSize]);
+  }, [user, page, pageSize, teacherName, dateRange]);
 
   const handleCertificateClick = (certificate: CertificateInfo) => {
     if (!certificate.certificateId) return;
@@ -76,6 +99,22 @@ export default function CourseCertificate() {
   const handlePageChange = (newPage: number, newPageSize: number) => {
     setPage(newPage);
     setPageSize(newPageSize);
+  };
+
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleTeacherNameInputChange = (value: string) => {
+    setTeacherNameInput(value);
+  };
+
+  const handleDateRangeInputChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRangeInput(dates);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setTeacherName(teacherNameInput);
+    setDateRange(dateRangeInput);
+    setPage(1); // 重置到第一页
   };
 
   useEffect(() => {
@@ -102,7 +141,9 @@ export default function CourseCertificate() {
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">我的证书</h1>
+          <div className="flex justify-start items-center">
+            <CourseCertificateFilterBar teacherName={teacherNameInput} onTeacherNameChange={handleTeacherNameInputChange} dateRange={dateRangeInput} onDateRangeChange={handleDateRangeInputChange} onSearch={handleSearch} />
+          </div>
         </Card>
 
         <Card className="shadow-sm rounded-2xl" bodyStyle={{ padding: 0 }}>

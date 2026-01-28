@@ -98,12 +98,15 @@ export function buildGetAuditRecordListQuery(params: { targetId?: number; target
 /**
  * 构建获取课程列表的 GET 请求查询参数
  */
-export function buildGetCourseListQuery(params: { teacherId?: number; status?: number; schoolName?: string; schoolNames?: string[]; page?: number; pageSize?: number }): string {
+export function buildGetCourseListQuery(params: { teacherId?: number; status?: number; schoolName?: string; schoolNames?: string[]; teacherName?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     teacherId: params.teacherId,
     status: params.status,
     schoolName: params.schoolName,
     schoolNames: params.schoolNames && params.schoolNames.length > 0 ? params.schoolNames.join(',') : undefined,
+    teacherName: params.teacherName,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -138,8 +141,11 @@ export function buildGetLearningRecordListQuery(params: { studentId?: number; re
 /**
  * 构建获取学习历史课程列表的 GET 请求查询参数
  */
-export function buildGetLearningHistoryListQuery(params: { page?: number; pageSize?: number }): string {
+export function buildGetLearningHistoryListQuery(params: { teacherName?: string; resourceType?: number; isCompleted?: number; page?: number; pageSize?: number }): string {
   return buildQueryParams({
+    teacherName: params.teacherName,
+    resourceType: params.resourceType,
+    isCompleted: params.isCompleted,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -148,10 +154,12 @@ export function buildGetLearningHistoryListQuery(params: { page?: number; pageSi
 /**
  * 构建获取证书模板列表的 GET 请求查询参数
  */
-export function buildGetCertificateTemplateListQuery(params: { createdBy?: number; isActive?: number; page?: number; pageSize?: number }): string {
+export function buildGetCertificateTemplateListQuery(params: { createdBy?: number; isActive?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     createdBy: params.createdBy,
     isActive: params.isActive,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -173,11 +181,14 @@ export function buildGetResourceCertificateConfigListQuery(params: { courseId?: 
 /**
  * 构建获取证书列表的查询参数
  */
-export function buildGetCertificateListQuery(params: { studentId?: number; teacherId?: number; courseId?: number; page?: number; pageSize?: number }): string {
+export function buildGetCertificateListQuery(params: { studentId?: number; teacherId?: number; courseId?: number; teacherName?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     studentId: params.studentId,
     teacherId: params.teacherId,
     courseId: params.courseId,
+    teacherName: params.teacherName,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -186,10 +197,12 @@ export function buildGetCertificateListQuery(params: { studentId?: number; teach
 /**
  * 构建获取代币规则列表的 GET 请求查询参数
  */
-export function buildGetTokenRuleListQuery(params: { rewardType?: number; isEnabled?: number; page?: number; pageSize?: number }): string {
+export function buildGetTokenRuleListQuery(params: { rewardType?: number; isEnabled?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     rewardType: params.rewardType,
     isEnabled: params.isEnabled,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -198,13 +211,15 @@ export function buildGetTokenRuleListQuery(params: { rewardType?: number; isEnab
 /**
  * 构建获取代币交易记录列表的 GET 请求查询参数
  */
-export function buildGetTokenTransactionListQuery(params: { userId?: number; transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): string {
+export function buildGetTokenTransactionListQuery(params: { userId?: number; transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     userId: params.userId,
     transactionType: params.transactionType,
     rewardType: params.rewardType,
     consumeType: params.consumeType,
     relatedId: params.relatedId,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });

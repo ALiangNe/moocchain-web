@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Drawer, message } from 'antd';
+import type { Dayjs } from 'dayjs';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { createTokenRule, updateTokenRule, getTokenRuleList } from '@/api/baseApi';
@@ -7,6 +8,7 @@ import type { TokenRuleInfo } from '@/types/tokenRuleType';
 import TokenRuleForm from '@/components/tokenRule/TokenRuleForm';
 import TokenRuleListCard from '@/components/tokenRule/TokenRuleListCard';
 import TokenRuleDetail from '@/components/tokenRule/TokenRuleDetail';
+import TokenRuleFilterBar, { type TokenRuleEnabledFilter } from '@/components/tokenRule/TokenRuleFilterBar';
 import { UserRole } from '@/constants/role';
 
 export default function TokenRule() {
@@ -21,6 +23,13 @@ export default function TokenRule() {
   const [total, setTotal] = useState(0);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
+
+  // 筛选条件（真正用于请求的）
+  const [isEnabledFilter, setIsEnabledFilter] = useState<TokenRuleEnabledFilter>(undefined);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  // 临时输入状态，点击查询按钮后才同步到筛选条件
+  const [isEnabledInput, setIsEnabledInput] = useState<TokenRuleEnabledFilter>(undefined);
+  const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
 
   // 加载规则列表数据
   const loadRules = useCallback(async () => {
@@ -40,7 +49,21 @@ export default function TokenRule() {
 
     let result;
     try {
-      result = await getTokenRuleList({ page, pageSize });
+      const params: {
+        page: number;
+        pageSize: number;
+        isEnabled?: number;
+        startDate?: string;
+        endDate?: string;
+      } = { page, pageSize };
+
+      if (isEnabledFilter !== undefined) params.isEnabled = isEnabledFilter;
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+        params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+      }
+
+      result = await getTokenRuleList(params);
     } catch (error) {
       console.error('Load rules error:', error);
       if (requestIdRef.current === currentRequestId) {
@@ -63,7 +86,7 @@ export default function TokenRule() {
 
     setRules(result.data.records);
     setTotal(result.data.total);
-  }, [user, page, pageSize]);
+  }, [user, page, pageSize, isEnabledFilter, dateRange]);
 
   useEffect(() => {
     const effectRequestId = requestIdRef.current;
@@ -150,6 +173,22 @@ export default function TokenRule() {
     setCurrentRule(undefined);
   };
 
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleIsEnabledInputChange = (value: TokenRuleEnabledFilter) => {
+    setIsEnabledInput(value);
+  };
+
+  const handleDateRangeInputChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRangeInput(dates);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setIsEnabledFilter(isEnabledInput);
+    setDateRange(dateRangeInput);
+    setPage(1);
+  };
+
   if (user?.role !== UserRole.ADMIN) {
     return (
       <div className="py-12">
@@ -170,7 +209,7 @@ export default function TokenRule() {
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
           <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold text-[#1d1d1f]">代币规则管理</h1>
+            <TokenRuleFilterBar isEnabled={isEnabledInput} onIsEnabledChange={handleIsEnabledInputChange} dateRange={dateRangeInput} onDateRangeChange={handleDateRangeInputChange} onSearch={handleSearch} />
             <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate} className="rounded-lg">创建规则</Button>
           </div>
         </Card>

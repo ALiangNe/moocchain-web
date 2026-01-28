@@ -164,7 +164,7 @@ export default function TeacherApply() {
         </Card>
 
         <Card className="shadow-sm mb-6 rounded-2xl">
-          <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">当前身份</h2>
+          <h2 className="text-lg font-semibold mb-4 text-[#1d1d1f]">基本信息</h2>
           <div className="flex items-center gap-4">
             <Tag color="default" className="text-base px-4 py-2 bg-gray-100 text-gray-700 border-gray-200 rounded-lg">{user.username}</Tag>
             <Tag color="default" className="text-base px-4 py-2 bg-gray-100 text-gray-700 border-gray-200 rounded-lg">

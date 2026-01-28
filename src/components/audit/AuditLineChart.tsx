@@ -9,6 +9,8 @@ interface AuditLineChartProps {
   teacherRecords: AuditRecordInfo[];
   resourceRecords: AuditRecordInfo[];
   courseRecords: AuditRecordInfo[];
+  /** 外部筛选的状态（例如 Audit 页面下拉框选择），用于同步折线图内部状态切换 */
+  externalStatus?: AuditStatusValue;
 }
 
 const STATUS_TEXT: Record<AuditStatusValue, string> = {
@@ -35,8 +37,26 @@ const toDateKey = (dateString?: string | null | Date) => {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD
 };
 
-export default function AuditLineChart({ teacherRecords, resourceRecords, courseRecords }: AuditLineChartProps) {
-  const [currentStatus, setCurrentStatus] = useState<AuditStatusValue>(0);
+export default function AuditLineChart({ teacherRecords, resourceRecords, courseRecords, externalStatus }: AuditLineChartProps) {
+  // 用户在图表内部（Segmented）选择的状态；当外部传入 externalStatus 时，图表状态由外部控制
+  const [preferredStatus, setPreferredStatus] = useState<AuditStatusValue | undefined>(undefined);
+
+  // 统计每个状态是否有数据（用于在未指定 externalStatus 时自动选中“有数据”的状态，避免出现柱状图有数据但折线图为空的体验）
+  const statusTotals = useMemo(() => {
+    const countStatus = (records: AuditRecordInfo[], status: AuditStatusValue) => records.filter((r) => r.auditStatus === status).length;
+    const all = [...teacherRecords, ...resourceRecords, ...courseRecords];
+    return {
+      0: countStatus(all, 0),
+      1: countStatus(all, 1),
+      2: countStatus(all, 2),
+    } as Record<AuditStatusValue, number>;
+  }, [teacherRecords, resourceRecords, courseRecords]);
+
+  const autoStatus = useMemo<AuditStatusValue>(() => {
+    return (STATUS_OPTIONS.find((opt) => statusTotals[opt.value] > 0)?.value) ?? 0;
+  }, [statusTotals]);
+
+  const effectiveStatus: AuditStatusValue = externalStatus ?? preferredStatus ?? autoStatus;
 
   const chartData = useMemo(() => {
     const allRecords = [...teacherRecords, ...resourceRecords, ...courseRecords];
@@ -68,16 +88,16 @@ export default function AuditLineChart({ teacherRecords, resourceRecords, course
       return map;
     };
 
-    const teacherMap = countByDate(teacherRecords, currentStatus);
-    const resourceMap = countByDate(resourceRecords, currentStatus);
-    const courseMap = countByDate(courseRecords, currentStatus);
+    const teacherMap = countByDate(teacherRecords, effectiveStatus);
+    const resourceMap = countByDate(resourceRecords, effectiveStatus);
+    const courseMap = countByDate(courseRecords, effectiveStatus);
 
     const teacher = dates.map((d) => teacherMap[d] || 0);
     const resource = dates.map((d) => resourceMap[d] || 0);
     const course = dates.map((d) => courseMap[d] || 0);
 
     return { dates, teacher, resource, course };
-  }, [teacherRecords, resourceRecords, courseRecords, currentStatus]);
+  }, [teacherRecords, resourceRecords, courseRecords, effectiveStatus]);
 
   const totalCount = chartData.teacher.reduce((a, b) => a + b, 0)
     + chartData.resource.reduce((a, b) => a + b, 0)
@@ -95,7 +115,7 @@ export default function AuditLineChart({ teacherRecords, resourceRecords, course
     color: SERIES_COLORS,
     title: {
       text: '审核状态趋势',
-      subtext: STATUS_TEXT[currentStatus] || '',
+      subtext: STATUS_TEXT[effectiveStatus] || '',
       left: 'center',
       top: '5%',
     },
@@ -157,8 +177,12 @@ export default function AuditLineChart({ teacherRecords, resourceRecords, course
       <div className="absolute left-4 top-4 z-10">
         <Segmented
           options={STATUS_OPTIONS}
-          value={currentStatus}
-          onChange={(val) => setCurrentStatus(val as AuditStatusValue)}
+          value={effectiveStatus}
+          onChange={(val) => {
+            if (externalStatus !== undefined) return;
+            setPreferredStatus(val as AuditStatusValue);
+          }}
+          disabled={externalStatus !== undefined}
           size="middle"
         />
       </div>

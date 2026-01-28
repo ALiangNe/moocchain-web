@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Button, Dropdown, message, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { DownOutlined, LogoutOutlined, UserOutlined, SafetyCertificateOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { DownOutlined, LogoutOutlined, UserOutlined, SafetyCertificateOutlined, AppstoreOutlined, DollarCircleOutlined } from '@ant-design/icons';
 import { UserRole, RoleName, type UserRoleType } from '@/constants/role';
 import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/api/authApi';
@@ -102,7 +102,7 @@ export default function Header() {
                 </Link>
               ))}
               {user.role === UserRole.ADMIN && (
-                <Dropdown menu={{ items: platformManagementItems, selectedKeys: isPlatformManagementActive ? [location.pathname] : [] }} placement="bottomLeft" overlayStyle={{ width: 140 }}>
+                <Dropdown menu={{ items: platformManagementItems, selectedKeys: isPlatformManagementActive ? [location.pathname] : [] }} placement="bottomLeft" overlayStyle={{ width: 110 }} >
                   <span className={`text-lg font-medium cursor-pointer transition-colors duration-200 ${isPlatformManagementActive ? 'text-[#007aff] border-b-2 border-[#007aff] pb-1 hover:text-[#007aff]' : 'text-[#1d1d1f] hover:text-[#007aff]'}`}>
                     平台管理 <AppstoreOutlined className="ml-1" />
                   </span>
@@ -115,14 +115,23 @@ export default function Header() {
         {/* 右侧用户信息或登录/注册按钮 */}
         <div className="flex items-center gap-3 flex-shrink-0">
           {user ? (
-            <Dropdown menu={{ items: userMenuItems, selectedKeys }} placement="bottomRight" overlayStyle={{ width: 140 }}>
-              <Button type="text" className="text-[#1d1d1f] hover:text-[#007aff] focus:outline-none focus:shadow-none flex items-center gap-2">
-                <span className="text-base">{user.username}</span>
-                <span className="text-[#6e6e73] text-base">({user.role != null && user.role in RoleName ? RoleName[user.role as UserRoleType] : '未知角色'})</span>
-                <Avatar src={getAvatarUrl(user.avatar)} icon={<UserOutlined />} size={40} className="flex-shrink-0" />
-                <DownOutlined className="text-sm" />
-              </Button>
-            </Dropdown>
+            <>
+              {/* 区块链账户信息（只显示代币余额，取整数，可点击跳转到个人资料） */}
+              <div className="flex items-center cursor-pointer" onClick={() => navigate('/profile')} >
+                <DollarCircleOutlined className="text-base text-[#1d1d1f] mr-1" />
+                <span className="text-base text-[#1d1d1f] max-w-[220px] truncate">
+                  {user.tokenBalance != null ? Math.floor(Number(user.tokenBalance)) : 0} 代币
+                </span>
+              </div>
+              <Dropdown menu={{ items: userMenuItems, selectedKeys }} placement="bottomRight" overlayStyle={{ width: 140 }}>
+                <Button type="text" className="text-[#1d1d1f] hover:text-[#007aff] focus:outline-none focus:shadow-none flex items-center gap-2">
+                  <span className="text-base">{user.username}</span>
+                  <span className="text-[#6e6e73] text-base">({user.role != null && user.role in RoleName ? RoleName[user.role as UserRoleType] : '未知角色'})</span>
+                  <Avatar src={getAvatarUrl(user.avatar)} icon={<UserOutlined />} size={40} className="flex-shrink-0" />
+                  <DownOutlined className="text-sm" />
+                </Button>
+              </Dropdown>
+            </>
           ) : (
             <>
               <Link to="/login" className="no-underline">

@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { getCourseList } from '@/api/baseApi';
 import type { CourseInfo } from '@/types/courseType';
 import CourseListCard from '@/components/courseLearn/CourseListCard';
+import CourseLearnFilterBar from '@/components/courseLearn/CourseLearnFilterBar';
+import type { Dayjs } from 'dayjs';
 
 export default function CourseLearn() {
   const navigate = useNavigate();
@@ -12,8 +14,18 @@ export default function CourseLearn() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [total, setTotal] = useState(0);
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([]);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
+
+  // 筛选条件（真正用于请求的）
+  const [teacherName, setTeacherName] = useState('');
+  const [schoolName, setSchoolName] = useState<string | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  // 临时输入状态，点击查询按钮后才同步到筛选条件
+  const [teacherNameInput, setTeacherNameInput] = useState('');
+  const [schoolNameInput, setSchoolNameInput] = useState<string | undefined>(undefined);
+  const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
 
   // 加载已发布的课程列表
   const loadPublishedCourses = useCallback(async () => {
@@ -30,10 +42,30 @@ export default function CourseLearn() {
       setLoading(true);
     });
 
+    const params: {
+      status: number;
+      page: number;
+      pageSize: number;
+      teacherName?: string;
+      schoolName?: string;
+      startDate?: string;
+      endDate?: string;
+    } = { status: 2, page, pageSize };
+
+    if (teacherName.trim()) {
+      params.teacherName = teacherName.trim();
+    }
+    if (schoolName) {
+      params.schoolName = schoolName;
+    }
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
     let result;
     try {
-      // 只获取状态为2（已发布）的课程
-      result = await getCourseList({ status: 2, page, pageSize });
+      result = await getCourseList(params);
     } catch (error) {
       console.error('Load courses error:', error);
       if (requestIdRef.current === currentRequestId) {
@@ -56,7 +88,11 @@ export default function CourseLearn() {
 
     setCourses(result.data.records);
     setTotal(result.data.total);
-  }, [page, pageSize]);
+    const nextSchools = Array.from(new Set(result.data.records.map((c) => c.teacher?.schoolName).filter(Boolean))) as string[];
+    if (nextSchools.length > 0) {
+      setSchoolOptions((prev) => Array.from(new Set([...prev, ...nextSchools])));
+    }
+  }, [page, pageSize, teacherName, schoolName, dateRange]);
 
   useEffect(() => {
     const effectRequestId = requestIdRef.current;
@@ -75,11 +111,34 @@ export default function CourseLearn() {
     }
   };
 
+  // 处理筛选输入变化（只更新临时状态，不触发查询）
+  const handleTeacherNameInputChange = (value: string) => {
+    setTeacherNameInput(value);
+  };
+
+  const handleSchoolNameInputChange = (value: string | undefined) => {
+    setSchoolNameInput(value);
+  };
+
+  const handleDateRangeInputChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRangeInput(dates);
+  };
+
+  // 点击查询按钮，将临时状态同步到实际筛选条件并触发查询
+  const handleSearch = () => {
+    setTeacherName(teacherNameInput);
+    setSchoolName(schoolNameInput);
+    setDateRange(dateRangeInput);
+    setPage(1);
+  };
+
   return (
     <div className="py-12">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-sm mb-8 rounded-2xl">
-          <h1 className="text-lg font-semibold text-[#1d1d1f]">课程学习</h1>
+          <div className="flex justify-start items-center">
+            <CourseLearnFilterBar teacherName={teacherNameInput} onTeacherNameChange={handleTeacherNameInputChange} schoolName={schoolNameInput} onSchoolNameChange={handleSchoolNameInputChange} schoolOptions={schoolOptions} dateRange={dateRangeInput} onDateRangeChange={handleDateRangeInputChange} onSearch={handleSearch} />
+          </div>
         </Card>
 
         <Card className="shadow-sm rounded-2xl">

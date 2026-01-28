@@ -4,7 +4,8 @@ import { Card, Spin, message, Button, Image } from 'antd';
 import { ArrowLeftOutlined, DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { getCertificate } from '@/api/baseApi';
 import type { CertificateInfo } from '@/types/certificateType';
-import CertificateDetail from '@/components/courseCertificate/CertificateDetail';
+import CertificateDetail from '@/components/courseCertificate/CourseCertificateDetail';
+import { downloadFile } from '@/utils/download';
 
 export default function CourseCertificateId() {
   const { certificateId } = useParams<{ certificateId: string }>();
@@ -12,6 +13,7 @@ export default function CourseCertificateId() {
   const [certificate, setCertificate] = useState<CertificateInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const hasLoadedRef = useRef(false);
 
   const loadCertificate = useCallback(async () => {
@@ -57,14 +59,39 @@ export default function CourseCertificateId() {
     setPreviewVisible(true);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!certificate?.ipfsHash) {
       message.warning('证书文件不存在');
       return;
     }
 
+    if (downloading) return;
+
+    const downloadMsgKey = 'certificate-download';
+    // 顶部提示：准备下载
+    message.loading({ content: '准备下载...', key: downloadMsgKey, duration: 0 });
+
     const downloadUrl = `https://gateway.pinata.cloud/ipfs/${certificate.ipfsHash}`;
-    window.open(downloadUrl, '_blank');
+    const filename = `certificate-${certificateId ?? 'unknown'}.jpg`;
+    setDownloading(true);
+    let result: Awaited<ReturnType<typeof downloadFile>> | undefined;
+    try {
+      result = await downloadFile(downloadUrl, { filename });
+    } catch (error) {
+      console.error('Download certificate error:', error);
+      message.error('下载失败，请稍后重试');
+      message.destroy(downloadMsgKey);
+    } finally {
+      setDownloading(false);
+    }
+    if (result?.method === 'browser') {
+      message.info({
+        content: '已尝试使用浏览器直接下载（若仍打开预览页，说明网关未开启附件下载）',
+        key: downloadMsgKey,
+      });
+    } else if (result) {
+      message.success({ content: '开始下载', key: downloadMsgKey });
+    }
   };
 
   if (loading) {
@@ -95,14 +122,14 @@ export default function CourseCertificateId() {
               <h1 className="text-lg font-semibold text-[#1d1d1f]">证书详情</h1>
             </div>
             <div className="flex gap-3">
-              <Button icon={<EyeOutlined />} onClick={handlePreview} className="rounded-lg">预览证书</Button>
+              <Button type="primary" icon={<EyeOutlined />} onClick={handlePreview} className="rounded-lg">预览证书</Button>
               <Button type="primary" icon={<DownloadOutlined />} onClick={handleDownload} className="rounded-lg">下载证书</Button>
             </div>
           </div>
         </Card>
         <CertificateDetail certificate={certificate} />
         {previewUrl && (
-          <Image src={previewUrl} alt="证书图片" style={{ display: 'none' }} preview={{ visible: previewVisible, onVisibleChange: (visible) => setPreviewVisible(visible), }} />
+          <Image src={previewUrl} alt="证书图片" style={{ display: 'none' }} preview={{ visible: previewVisible, onVisibleChange: (visible) => setPreviewVisible(visible) }} />
         )}
       </div>
     </div>

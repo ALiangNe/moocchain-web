@@ -3,12 +3,12 @@ import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { formatDate } from '@/utils/formatTime';
 import type { CertificateInfo } from '@/types/certificateType';
 
-interface CertificateListCardProps {
+interface CourseCertificateListCardProps {
   certificate: CertificateInfo;
   onClick?: () => void;
 }
 
-export default function CertificateListCard({ certificate, onClick }: CertificateListCardProps) {
+export default function CertificateListCard({ certificate, onClick }: CourseCertificateListCardProps) {
   return (
     <Card hoverable className="cursor-pointer border border-gray-200 transition-all hover:shadow-md overflow-hidden" onClick={onClick} bodyStyle={{ padding: 0 }}>
       <div className="flex flex-col">

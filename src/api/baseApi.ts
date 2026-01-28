@@ -108,20 +108,23 @@ export async function uploadCertificate(file: File): Promise<ResponseType<UserIn
 
 // Course API
 export async function createCourse(data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
-  const formData = buildFormData(data, coverImage ? { coverImage } : undefined, ['coverImage']);
+  // TODO: 暂时忽略
+  const formData = buildFormData(data as any, coverImage ? { coverImage } : undefined, ['coverImage']);
   const response = await fetchWithAuth(`${API_BASE_URL}/createCourse`, {
     method: 'POST',
     body: formData,
   }); return response.json();
 }
+
 export async function updateCourse(courseId: number, data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
-  const formData = buildFormData(data, coverImage ? { coverImage } : undefined, ['coverImage']);
+  // TODO: 暂时忽略
+  const formData = buildFormData(data as any, coverImage ? { coverImage } : undefined, ['coverImage']);
   const response = await fetchWithAuth(`${API_BASE_URL}/updateCourse/${courseId}`, {
     method: 'PUT',
     body: formData,
   }); return response.json();
 }
-export async function getCourseList(params: { teacherId?: number; status?: number; schoolName?: string; schoolNames?: string[]; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CourseInfo[]; total: number }>> {
+export async function getCourseList(params: { teacherId?: number; status?: number; schoolName?: string; schoolNames?: string[]; teacherName?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CourseInfo[]; total: number }>> {
   const queryString = buildGetCourseListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getCourseList?${queryString}`, {
     method: 'GET',
@@ -158,19 +161,18 @@ export async function getResource(resourceId: number): Promise<ResponseType<Reso
     method: 'GET',
   }); return response.json();
 }
-export async function claimResourceUploadReward(data: { resourceId: number; walletAddress: string }): Promise<ResponseType<TokenTransactionInfo>> {
+export async function claimResourceUploadReward(data: { resourceId: number; walletAddress: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/claimResourceUploadReward`, {
     method: 'POST',
     body: JSON.stringify(data),
   }); return response.json();
 }
-export async function buyResource(data: { resourceId: number; transactionHash: string; walletAddress: string }): Promise<ResponseType<TokenTransactionInfo>> {
+export async function buyResource(data: { resourceId: number; transactionHash: string; walletAddress: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/buyResource`, {
     method: 'POST',
     body: JSON.stringify(data),
   }); return response.json();
 }
-
 
 // LearningRecord API
 export async function completeLearningRecord(resourceId: number): Promise<ResponseType<LearningRecordInfo>> {
@@ -208,13 +210,13 @@ export async function getLearningRecord(recordId: number): Promise<ResponseType<
     method: 'GET',
   }); return response.json();
 }
-export async function getLearningHistoryList(params: { page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceInfo[]; total: number }>> {
+export async function getLearningHistoryList(params: { teacherName?: string; resourceType?: number; isCompleted?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceInfo[]; total: number }>> {
   const queryString = buildGetLearningHistoryListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getLearningHistoryList?${queryString}`, {
     method: 'GET'
   }); return response.json();
 }
-export async function claimLearningReward(data: { resourceId: number; rewardType: number; walletAddress: string }): Promise<ResponseType<TokenTransactionInfo>> {
+export async function claimLearningReward(data: { resourceId: number; rewardType: number; walletAddress: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/claimLearningReward`, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -234,7 +236,7 @@ export async function updateCertificateTemplate(templateId: number, data: Partia
     body: JSON.stringify(data),
   }); return response.json();
 }
-export async function getCertificateTemplateList(params: { createdBy?: number; isActive?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateTemplateInfo[]; total: number }>> {
+export async function getCertificateTemplateList(params: { createdBy?: number; isActive?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateTemplateInfo[]; total: number }>> {
   const queryString = buildGetCertificateTemplateListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateTemplateList?${queryString}`, {
     method: 'GET',
@@ -278,7 +280,7 @@ export async function createCertificate(data: { courseId: number }): Promise<Res
     body: JSON.stringify(data),
   }); return response.json();
 }
-export async function getCertificateList(params: { studentId?: number; teacherId?: number; courseId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateInfo[]; total: number }>> {
+export async function getCertificateList(params: { studentId?: number; teacherId?: number; courseId?: number; teacherName?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateInfo[]; total: number }>> {
   const queryString = buildGetCertificateListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateList?${queryString}`, {
     method: 'GET',
@@ -315,7 +317,7 @@ export async function updateTokenRule(ruleId: number, data: Partial<TokenRuleInf
     body: JSON.stringify(data),
   }); return response.json();
 }
-export async function getTokenRuleList(params: { rewardType?: number; isEnabled?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenRuleInfo[]; total: number }>> {
+export async function getTokenRuleList(params: { rewardType?: number; isEnabled?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenRuleInfo[]; total: number }>> {
   const queryString = buildGetTokenRuleListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getTokenRuleList?${queryString}`, {
     method: 'GET',
@@ -328,7 +330,7 @@ export async function getTokenRule(ruleId: number): Promise<ResponseType<TokenRu
 }
 
 // TokenTransaction API
-export async function getTokenTransactionList(params: { userId?: number; transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenTransactionInfo[]; total: number }>> {
+export async function getTokenTransactionList(params: { userId?: number; transactionType?: number; rewardType?: number; consumeType?: number; relatedId?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: TokenTransactionInfo[]; total: number }>> {
   const queryString = buildGetTokenTransactionListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getTokenTransactionList?${queryString}`, {
     method: 'GET',

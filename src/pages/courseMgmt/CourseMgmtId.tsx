@@ -448,6 +448,9 @@ export default function CourseMgmtId() {
       file: values.file,
     });
 
+    // 顶部提示：资源上传到 IPFS
+    message.loading('资源正上传至 IPFS 去中心化网络...');
+
     let result;
     try {
       result = await createResource(formData);
@@ -469,6 +472,7 @@ export default function CourseMgmtId() {
       return;
     }
 
+    message.success('资源上传成功');
     message.loading({ content: '正在铸造 NFT...', key: 'mint', duration: 0 });
 
     const createdAt = Math.floor(Date.now() / 1000);
@@ -484,6 +488,7 @@ export default function CourseMgmtId() {
     }
 
     message.destroy('mint');
+    message.destroy('upload-resource');
 
     let updateResult;
     try {

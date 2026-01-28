@@ -10,6 +10,7 @@ import ResourceForm from '@/components/courseMgmt/ResourceForm';
 import { useAuthStore } from '@/stores/authStore';
 import { UserRole } from '@/constants/role';
 import { ensureWalletConnected } from '@/utils/wallet';
+import { downloadFile } from '@/utils/download';
 
 export default function CourseMgmtResourceId() {
   const { resourceId } = useParams<{ resourceId: string }>();
@@ -24,9 +25,12 @@ export default function CourseMgmtResourceId() {
   const [claimingReward, setClaimingReward] = useState(false);
   const [hasClaimedUploadReward, setHasClaimedUploadReward] = useState(false);
   const [checkingRewardStatus, setCheckingRewardStatus] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const loadingRef = useRef(false);
   const requestIdRef = useRef(0);
   const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   // 加载资源审核记录（用于 status 显示“审核未通过，请重新提交申请”）
   const loadAuditRecord = useCallback(async (rid: number) => {
@@ -169,10 +173,34 @@ export default function CourseMgmtResourceId() {
   };
 
   // 处理资源文件下载
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    if (downloading) return;
     const fileUrl = getResourceFileUrl(resource?.ipfsHash);
-    if (fileUrl) {
-      window.open(fileUrl, '_blank');
+    if (!fileUrl) return;
+
+    const downloadMsgKey = 'resource-mgmt-download';
+    message.loading({ content: '准备下载...', key: downloadMsgKey, duration: 0 });
+
+    const filename = resource?.title || `resource-${resourceId ?? 'unknown'}`;
+    let result: Awaited<ReturnType<typeof downloadFile>> | undefined;
+    setDownloading(true);
+    try {
+      result = await downloadFile(fileUrl, { filename });
+    } catch (error) {
+      console.error('Download resource error:', error);
+      message.error('下载失败，请稍后重试');
+      message.destroy(downloadMsgKey);
+    } finally {
+      setDownloading(false);
+    }
+    if (!result) return;
+    if (result.method === 'browser') {
+      message.info({
+        content: '已尝试使用浏览器直接下载（若仍打开预览页，说明网关未开启附件下载）',
+        key: downloadMsgKey,
+      });
+    } else {
+      message.success({ content: '开始下载', key: downloadMsgKey });
     }
   };
 
@@ -307,6 +335,11 @@ export default function CourseMgmtResourceId() {
     if (result.code !== 0) {
       message.error(result.message || '领取奖励失败');
       return;
+    }
+
+    // 如果后端返回了最新的用户信息，则更新全局用户状态，及时刷新 Header 中的代币余额
+    if (result.data && result.data.user) {
+      setAuth(accessToken, result.data.user);
     }
 
     message.success(`成功领取 ${rewardAmount} ${rule.tokenName} 代币奖励`);
