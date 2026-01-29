@@ -77,14 +77,14 @@ export default function RegisterForm({ onFinish, loading = false }: RegisterForm
         </div>
       </Form.Item>
 
-      <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }, { min: 8, message: '密码至少8个字符' }]}>
+      <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }, { min: 6, message: '密码至少6个字符' }]}>
         <div className="space-y-1">
           <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
             <LockOutlined className="w-4 h-4" />
             创建密码
           </label>
           <div className="relative">
-            <Input type={showPassword ? 'text' : 'password'} placeholder="至少8个字符" className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 pr-12 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
+            <Input type={showPassword ? 'text' : 'password'} placeholder="至少6个字符" className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 pr-12 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
               {showPassword ? (
                 <EyeOutlined className="w-5 h-5" />

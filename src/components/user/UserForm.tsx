@@ -44,7 +44,7 @@ export default function UserForm({ initialValues, onSubmit, onCancel, loading }:
       <Form.Item name="email" label="邮箱" rules={[{ type: 'email', message: '邮箱格式不正确' }]}><Input placeholder="请输入邮箱" className="rounded-lg" /></Form.Item>
       <Form.Item name="phone" label="手机号" rules={[{ pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确' }]}><Input placeholder="请输入手机号" className="rounded-lg" /></Form.Item>
       <Form.Item name="schoolName" label="学校"><Input placeholder="请输入学校名称" className="rounded-lg" /></Form.Item>
-      <Form.Item name="password" label="密码" rules={[{ min: 6, message: '密码至少6位' }]}><Input.Password placeholder="不修改请留空" className="rounded-lg" /></Form.Item>
+      <Form.Item name="password" label="密码" rules={[{ min: 1, message: '密码至少6位' }]}><Input.Password placeholder="不修改请留空" className="rounded-lg" /></Form.Item>
       <Form.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>
         <Select placeholder="请选择角色" className="rounded-lg">
           <Select.Option value={UserRole.ADMIN}>管理员</Select.Option>
