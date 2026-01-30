@@ -11,6 +11,7 @@ import type { TokenRuleInfo } from '@/types/tokenRuleType';
 import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
 import { fetchWithAuth } from '@/api/authApi';
 import { buildGetAuditRecordListQuery, buildGetCourseListQuery, buildGetResourceListQuery, buildGetLearningRecordListQuery, buildGetLearningHistoryListQuery, buildGetCertificateTemplateListQuery, buildGetResourceCertificateConfigListQuery, buildGetCertificateListQuery, buildGetTokenRuleListQuery, buildGetTokenTransactionListQuery, buildGetUserListQuery, buildFormData } from '@/utils/buildApiParams';
+import type { TypedDataDomain, TypedDataField } from 'ethers';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -161,7 +162,14 @@ export async function getResource(resourceId: number): Promise<ResponseType<Reso
     method: 'GET',
   }); return response.json();
 }
-export async function claimResourceUploadReward(data: { resourceId: number; walletAddress: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
+export async function claimResourceUploadRewardSign(data: { resourceId: number; walletAddress: string; chainId: number }): Promise<ResponseType<{ domain: TypedDataDomain; types: Record<string, TypedDataField[]>; message: { userId: number; walletAddress: string; resourceId: number; rewardType: number; amount: string; nonce: string; deadline: number } }>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/claimResourceUploadRewardSign`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+
+export async function claimResourceUploadReward(data: { resourceId: number; walletAddress: string; signature: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/claimResourceUploadReward`, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -216,7 +224,14 @@ export async function getLearningHistoryList(params: { teacherName?: string; res
     method: 'GET'
   }); return response.json();
 }
-export async function claimLearningReward(data: { resourceId: number; rewardType: number; walletAddress: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
+export async function claimLearningRewardSign(data: { resourceId: number; rewardType: number; walletAddress: string; chainId: number }): Promise<ResponseType<{ domain: TypedDataDomain; types: Record<string, TypedDataField[]>; message: { userId: number; walletAddress: string; resourceId: number; rewardType: number; amount: string; nonce: string; deadline: number } }>> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/claimLearningRewardSign`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }); return response.json();
+}
+
+export async function claimLearningReward(data: { resourceId: number; rewardType: number; walletAddress: string; signature: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/claimLearningReward`, {
     method: 'POST',
     body: JSON.stringify(data),

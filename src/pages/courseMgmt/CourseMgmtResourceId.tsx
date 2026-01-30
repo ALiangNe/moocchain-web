@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Spin, message, Drawer, Tooltip } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, ReloadOutlined, GiftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResource, updateResource, reapplyResourceAudit, claimResourceUploadReward, getTokenRuleList, getTokenTransactionList, getAuditRecordList } from '@/api/baseApi';
+import { getResource, updateResource, reapplyResourceAudit, claimResourceUploadRewardSign, claimResourceUploadReward, getTokenRuleList, getTokenTransactionList, getAuditRecordList } from '@/api/baseApi';
 import type { ResourceInfo } from '@/types/resourceType';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
 import ResourceDetail from '@/components/courseMgmt/ResourceDetail';
@@ -11,6 +11,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { UserRole } from '@/constants/role';
 import { ensureWalletConnected } from '@/utils/wallet';
 import { downloadFile } from '@/utils/download';
+import type { TypedDataDomain, TypedDataField } from 'ethers';
 
 export default function CourseMgmtResourceId() {
   const { resourceId } = useParams<{ resourceId: string }>();
@@ -307,19 +308,61 @@ export default function CourseMgmtResourceId() {
       return;
     }
 
-    // 连接钱包
+    // 连接钱包（用于签名弹窗）
     const wallet = await ensureWalletConnected();
     if (!wallet) return;
 
     setClaimingReward(true);
     message.loading({ content: '正在领取奖励...', key: 'claim', duration: 0 });
 
-    // 调用后端 API，后端会使用管理员私钥代为 mint
+    // 1) 向后端获取 EIP-712 sign（domain/types/message）
+    let signResult;
+    try {
+      const network = await wallet.provider.getNetwork();
+      signResult = await claimResourceUploadRewardSign({
+        resourceId: resource.resourceId,
+        walletAddress: wallet.address,
+        chainId: Number(network.chainId),
+      });
+    } catch (error) {
+      console.error('Get claim challenge error:', error);
+      message.destroy('claim');
+      setClaimingReward(false);
+      message.error('获取签名挑战失败，请重试');
+      return;
+    }
+
+    if (signResult.code !== 0 || !signResult.data) {
+      message.destroy('claim');
+      setClaimingReward(false);
+      message.error(signResult.message || '获取签名挑战失败');
+      return;
+    }
+
+    // 2) 弹出 MetaMask 进行 EIP-712 签名（用户确认）
+    const { domain, types, message: typedMessage } = signResult.data as {
+      domain: TypedDataDomain;
+      types: Record<string, TypedDataField[]>;
+      message: { userId: number; walletAddress: string; resourceId: number; rewardType: number; amount: string; nonce: string; deadline: number };
+    };
+    let signature: string;
+    try {
+      signature = await wallet.signer.signTypedData(domain, types, typedMessage);
+    } catch (error) {
+      console.error('Sign typed data error:', error);
+      message.destroy('claim');
+      setClaimingReward(false);
+      message.error('签名失败或已取消');
+      return;
+    }
+
+    // 3) 提交签名给后端，后端验签通过后再使用管理员私钥代为 mint
     let result;
     try {
       result = await claimResourceUploadReward({
         resourceId: resource.resourceId,
         walletAddress: wallet.address,
+        signature,
       });
     } catch (error) {
       console.error('Claim reward error:', error);
