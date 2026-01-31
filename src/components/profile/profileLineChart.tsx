@@ -34,6 +34,13 @@ export default function ProfileLineChart({ transactions, loading = false }: Prof
       firstDate.getMonth() === lastDate.getMonth() &&
       firstDate.getDate() === lastDate.getDate();
 
+    // 判断是否是今天
+    const today = new Date();
+    const isToday = isSameDay &&
+      firstDate.getFullYear() === today.getFullYear() &&
+      firstDate.getMonth() === today.getMonth() &&
+      firstDate.getDate() === today.getDate();
+
     const dates: string[] = [];
     const balances: number[] = [];
     const tooltipLabels: string[] = [];
@@ -46,11 +53,11 @@ export default function ProfileLineChart({ transactions, loading = false }: Prof
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
 
-      if (isSameDay) {
-        // 同一天，x 轴仍然只显示时分：14:30
+      if (isSameDay && isToday) {
+        // 同一天且是今天，x 轴显示时分：14:30
         dates.push(`${hours}:${minutes}`);
       } else {
-        // 跨天，x 轴显示日期：2月20日
+        // 跨天或不是今天，x 轴显示日期：2月20日
         dates.push(`${month}月${day}日`);
       }
 

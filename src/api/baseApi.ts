@@ -116,7 +116,6 @@ export async function createCourse(data: Partial<CourseInfo>, coverImage?: File)
     body: formData,
   }); return response.json();
 }
-
 export async function updateCourse(courseId: number, data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
   // TODO: 暂时忽略
   const formData = buildFormData(data as any, coverImage ? { coverImage } : undefined, ['coverImage']);
@@ -168,7 +167,6 @@ export async function claimResourceUploadRewardSign(data: { resourceId: number; 
     body: JSON.stringify(data),
   }); return response.json();
 }
-
 export async function claimResourceUploadReward(data: { resourceId: number; walletAddress: string; signature: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/claimResourceUploadReward`, {
     method: 'POST',
@@ -230,7 +228,6 @@ export async function claimLearningRewardSign(data: { resourceId: number; reward
     body: JSON.stringify(data),
   }); return response.json();
 }
-
 export async function claimLearningReward(data: { resourceId: number; rewardType: number; walletAddress: string; signature: string }): Promise<ResponseType<{ transaction: TokenTransactionInfo; user: UserInfo | null }>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/claimLearningReward`, {
     method: 'POST',
@@ -306,7 +303,6 @@ export async function getCertificate(certificateId: number): Promise<ResponseTyp
     method: 'GET',
   }); return response.json();
 }
-
 export async function updateCertificateNft(certificateId: number, data: { certificateNftId?: string; transactionHash?: string }): Promise<ResponseType<CertificateInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/updateCertificateNft/${certificateId}`, {
     method: 'PUT',

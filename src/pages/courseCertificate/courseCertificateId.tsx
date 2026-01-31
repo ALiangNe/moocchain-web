@@ -6,6 +6,7 @@ import { getCertificate } from '@/api/baseApi';
 import type { CertificateInfo } from '@/types/certificateType';
 import CertificateDetail from '@/components/courseCertificate/CourseCertificateDetail';
 import { downloadFile } from '@/utils/download';
+import { generateCertificateWithQrCode } from '@/utils/certificateWithQR';
 
 export default function CourseCertificateId() {
   const { certificateId } = useParams<{ certificateId: string }>();
@@ -68,29 +69,43 @@ export default function CourseCertificateId() {
     if (downloading) return;
 
     const downloadMsgKey = 'certificate-download';
-    // 顶部提示：准备下载
-    message.loading({ content: '准备下载...', key: downloadMsgKey, duration: 0 });
-
     const downloadUrl = `https://gateway.pinata.cloud/ipfs/${certificate.ipfsHash}`;
-    const filename = `certificate-${certificateId ?? 'unknown'}.jpg`;
+    const filename = `certificate-${certificateId ?? 'unknown'}.png`;
     setDownloading(true);
-    let result: Awaited<ReturnType<typeof downloadFile>> | undefined;
+
     try {
-      result = await downloadFile(downloadUrl, { filename });
+      // 如果有交易哈希，生成带二维码的证书
+      if (certificate.transactionHash) {
+        message.loading({ content: '正在生成带二维码的证书...', key: downloadMsgKey, duration: 0 });
+        const blob = await generateCertificateWithQrCode(downloadUrl, certificate.transactionHash);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        message.success({ content: '证书下载成功', key: downloadMsgKey });
+      } else {
+        // 没有交易哈希，直接下载原图
+        message.loading({ content: '准备下载...', key: downloadMsgKey, duration: 0 });
+        const result = await downloadFile(downloadUrl, { filename });
+        if (result?.method === 'browser') {
+          message.info({
+            content: '已尝试使用浏览器直接下载（若仍打开预览页，说明网关未开启附件下载）',
+            key: downloadMsgKey,
+          });
+        } else if (result) {
+          message.success({ content: '开始下载', key: downloadMsgKey });
+        }
+      }
     } catch (error) {
       console.error('Download certificate error:', error);
       message.error('下载失败，请稍后重试');
       message.destroy(downloadMsgKey);
     } finally {
       setDownloading(false);
-    }
-    if (result?.method === 'browser') {
-      message.info({
-        content: '已尝试使用浏览器直接下载（若仍打开预览页，说明网关未开启附件下载）',
-        key: downloadMsgKey,
-      });
-    } else if (result) {
-      message.success({ content: '开始下载', key: downloadMsgKey });
     }
   };
 

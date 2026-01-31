@@ -28,13 +28,13 @@
     {
       "key": "platformName",
       "type": "text",
-      "defaultValue": "MOOCChain",
+      "defaultValue": "MOOC Chain",
       "position": {
-        "x": 526,
-        "y": 100
+        "x": 510,
+        "y": 150
       },
       "style": {
-        "fontSize": 36,
+        "fontSize": 42,
         "fontWeight": "bold",
         "color": "#007AFF",
         "align": "left",
@@ -46,11 +46,11 @@
       "type": "image",
       "label": "Logo图标",
       "position": {
-        "x": 489,
-        "y": 100
+        "x": 470,
+        "y": 150
       },
-      "width": 50,
-      "height": 50,
+      "width": 60,
+      "height": 60,
       "src": "src/assets/image/moocchain-icon.png"
     },
     {
@@ -59,7 +59,7 @@
       "label": "教师学校",
       "position": {
         "x": 600,
-        "y": 200
+        "y": 270
       },
       "style": {
         "fontSize": 64,
@@ -75,7 +75,7 @@
       "defaultValue": "课程证书",
       "position": {
         "x": 600,
-        "y": 320
+        "y": 390
       },
       "style": {
         "fontSize": 44,
@@ -91,7 +91,7 @@
       "shape": "line",
       "position": {
         "x": 600,
-        "y": 380
+        "y": 450
       },
       "style": {
         "color": "#E0E0E0",
@@ -104,14 +104,15 @@
       "defaultValue": "结业证明 · 学习认证 · 学术认可",
       "position": {
         "x": 600,
-        "y": 410
+        "y": 495
       },
       "style": {
-        "fontSize": 16,
+        "fontSize": 36,
         "fontWeight": "normal",
         "color": "#000000",
         "align": "center",
-        "fontFamily": "Arial"
+        "fontFamily": "KaiTi",
+        "fontStyle": "italic"
       }
     },
     {
@@ -120,7 +121,7 @@
       "shape": "line",
       "position": {
         "x": 600,
-        "y": 440
+        "y": 510
       },
       "style": {
         "color": "#E0E0E0",
@@ -133,10 +134,10 @@
       "label": "学员姓名",
       "position": {
         "x": 600,
-        "y": 520
+        "y": 670
       },
       "style": {
-        "fontSize": 56,
+        "fontSize": 64,
         "fontWeight": "bold",
         "color": "#000000",
         "align": "center",
@@ -146,19 +147,19 @@
     {
       "key": "certificateText",
       "type": "text",
-      "defaultValue": "兹证明：<在此完成> 课程\n已顺利完成在线学习并通过所有考核要求\n特发此证，以兹证明。",
+      "defaultValue": "顺利完成<课程名字>课程考核\n特发此证，以兹证明",
       "position": {
         "x": 600,
-        "y": 600
+        "y": 750
       },
       "style": {
-        "fontSize": 26,
+        "fontSize": 32,
         "fontWeight": "normal",
         "color": "#000000",
         "align": "center",
         "fontFamily": "Arial",
         "maxWidth": 900,
-        "lineHeight": 44
+        "lineHeight": 62
       }
     },
     {
@@ -167,14 +168,15 @@
       "label": "颁发者",
       "position": {
         "x": 200,
-        "y": 850
+        "y": 1000
       },
       "style": {
-        "fontSize": 26,
+        "fontSize": 42,
         "fontWeight": "normal",
         "color": "#000000",
         "align": "left",
-        "fontFamily": "Arial"
+        "fontFamily": "KaiTi",
+        "fontStyle": "italic"
       }
     },
     {
@@ -184,9 +186,9 @@
       "badgeType": "certified",
       "position": {
         "x": 300,
-        "y": 1200
+        "y": 1310
       },
-      "size": 90,
+      "size": 120,
       "style": {
         "color": "#007AFF"
       }
@@ -198,9 +200,9 @@
       "badgeType": "graduation",
       "position": {
         "x": 600,
-        "y": 1200
+        "y": 1310
       },
-      "size": 90,
+      "size": 120,
       "style": {
         "color": "#1a1a1a"
       }
@@ -212,9 +214,9 @@
       "badgeType": "official",
       "position": {
         "x": 900,
-        "y": 1200
+        "y": 1310
       },
-      "size": 90,
+      "size": 120,
       "style": {
         "color": "#28a745"
       }
@@ -226,14 +228,15 @@
       "format": "YYYY年MM月DD日",
       "position": {
         "x": 1000,
-        "y": 850
+        "y": 1000
       },
       "style": {
-        "fontSize": 26,
+        "fontSize": 42,
         "fontWeight": "normal",
         "color": "#000000",
         "align": "right",
-        "fontFamily": "Arial"
+        "fontFamily": "KaiTi",
+        "fontStyle": "italic"
       }
     }
   ]
