@@ -5,7 +5,7 @@ import { register } from '@/api/baseApi';
 import type { ResponseType } from '@/types/responseType';
 import type { UserInfo } from '@/types/userType';
 import icon from '@/assets/images/moocchain-icon.png';
-import exploreBg from '@/assets/images/explore-bg-02.jpg';
+import exploreBg from '@/assets/images/explore-bg-04.jpg';
 import RegisterForm from '@/components/register/RegisterForm';
 
 export default function Register() {
@@ -57,7 +57,7 @@ export default function Register() {
           </div>
 
           {/* Footer */}
-          <footer className="text-center text-sm pb-6 px-6 border-t border-slate-100/70 pt-6">
+          <footer className="text-center text-sm pb-4 px-6 pt-2">
             <p className="text-slate-500">
               已有账户？{' '}
               <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors no-underline">

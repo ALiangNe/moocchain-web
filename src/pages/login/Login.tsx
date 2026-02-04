@@ -6,7 +6,7 @@ import type { UserInfo } from '@/types/userType';
 import type { ResponseType } from '@/types/responseType';
 import { login } from '@/api/baseApi';
 import icon from '@/assets/images/moocchain-icon.png';
-import exploreBg from '@/assets/images/explore-bg-02.jpg';
+import exploreBg from '@/assets/images/explore-bg-04.jpg';
 import LoginForm from '@/components/login/LoginForm';
 
 export default function Login() {
@@ -58,7 +58,7 @@ export default function Login() {
           </div>
 
           {/* Footer */}
-          <footer className="text-center text-sm pb-6 px-6 border-t border-slate-100/70 pt-6">
+          <footer className="text-center text-sm pb-4 px-6 pt-2">
             <p className="text-slate-500">
               还没有账户？{' '}
               <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors no-underline">
