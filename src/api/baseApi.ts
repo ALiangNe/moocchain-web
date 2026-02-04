@@ -109,16 +109,16 @@ export async function uploadCertificate(file: File): Promise<ResponseType<UserIn
 
 // Course API
 export async function createCourse(data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
-  // TODO: 暂时忽略
-  const formData = buildFormData(data as any, coverImage ? { coverImage } : undefined, ['coverImage']);
+  const courseData = data as Record<string, string | number | boolean | Date | undefined | null>;
+  const formData = buildFormData(courseData, coverImage ? { coverImage } : undefined, ['coverImage']);
   const response = await fetchWithAuth(`${API_BASE_URL}/createCourse`, {
     method: 'POST',
     body: formData,
   }); return response.json();
 }
 export async function updateCourse(courseId: number, data: Partial<CourseInfo>, coverImage?: File): Promise<ResponseType<CourseInfo>> {
-  // TODO: 暂时忽略
-  const formData = buildFormData(data as any, coverImage ? { coverImage } : undefined, ['coverImage']);
+  const courseData = data as Record<string, string | number | boolean | Date | undefined | null>;
+  const formData = buildFormData(courseData, coverImage ? { coverImage } : undefined, ['coverImage']);
   const response = await fetchWithAuth(`${API_BASE_URL}/updateCourse/${courseId}`, {
     method: 'PUT',
     body: formData,

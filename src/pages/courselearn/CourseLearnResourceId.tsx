@@ -23,7 +23,7 @@ export default function CourseLearnResourceId() {
   const [resource, setResource] = useState<ResourceInfo | null>(null);
   const [learningRecord, setLearningRecord] = useState<LearningRecordInfo | null>(null);
   const [loading, setLoading] = useState(false);
-  const [learningRecordLoading, setLearningRecordLoading] = useState(false);
+  const [learningRecordLoading, setLearningRecordLoading] = useState(true);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewListRefreshKey, setReviewListRefreshKey] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -39,9 +39,9 @@ export default function CourseLearnResourceId() {
   const requestIdRef = useRef(0);
   const reportTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastReportedTimeRef = useRef<number>(0);
+  const watchedUntilRef = useRef<number>(0);
   const mediaDurationRef = useRef<number>(0);
   const currentMediaTimeRef = useRef<number>(0);
-  const progressUpdateTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 加载学习记录和评价列表（合并为一次 API 调用）
   const loadLearningData = useCallback(async () => {
@@ -65,25 +65,34 @@ export default function CourseLearnResourceId() {
     setLearningRecordLoading(false);
     setReviewsLoading(false);
 
-    if (result.code === 0 && result.data) {
-      const allRecords = result.data.records;
-
-      // 分离数据：①当前用户的学习记录
-      if (user?.userId) {
-        const userRecord = allRecords.find((record) => record.studentId === user.userId);
-        setLearningRecord(userRecord || null);
-      } else {
-        setLearningRecord(null);
-      }
-
-      // 分离数据：②所有人的评价列表（过滤出有评价且可见的记录）
-      const filteredReviews = allRecords.filter((record) => record.review && record.isVisible === 1);
-      setAllReviews(filteredReviews);
-      setReviewsTotal(filteredReviews.length);
-
-      // 重置到第一页（当前页数据由 useMemo 派生，不在 effect 内 setState）
-      setReviewsPage(1);
+    if (result.code !== 0 || !result.data) {
+      return;
     }
+
+    const allRecords = result.data.records;
+
+    // 分离数据：①当前用户的学习记录
+    if (!user?.userId) {
+      setLearningRecord(null);
+    } else {
+      const userRecord = allRecords.find((record) => record.studentId === user.userId) || null;
+      setLearningRecord(userRecord);
+
+      const hasLearningTime = userRecord && typeof userRecord.learningTime === 'number';
+      if (hasLearningTime) {
+        const safeLearningTime = Math.max(0, userRecord.learningTime || 0);
+        watchedUntilRef.current = safeLearningTime;
+        lastReportedTimeRef.current = safeLearningTime;
+      }
+    }
+
+    // 分离数据：②所有人的评价列表（过滤出有评价且可见的记录）
+    const filteredReviews = allRecords.filter((record) => record.review && record.isVisible === 1);
+    setAllReviews(filteredReviews);
+    setReviewsTotal(filteredReviews.length);
+
+    // 重置到第一页（当前页数据由 useMemo 派生，不在 effect 内 setState）
+    setReviewsPage(1);
   }, [resourceId, user]);
 
   const pagedReviews = useMemo(() => {
@@ -233,8 +242,10 @@ export default function CourseLearnResourceId() {
     if (downloading) return;
 
     const resourceType = resource.resourceType || 0;
-    // 文档（1）或其他（0）类型，下载时完成学习
-    if (resourceType === 0 || resourceType === 1) {
+    // 非文档（1）或其他（0）类型，直接跳过「完成学习」逻辑
+    if (resourceType !== 0 && resourceType !== 1) {
+      // 继续执行后续下载逻辑
+    } else {
       let result;
       try {
         result = await completeLearningRecord(Number(resourceId));
@@ -244,12 +255,13 @@ export default function CourseLearnResourceId() {
         return;
       }
 
-      if (result.code === 0 && result.data) {
-        setLearningRecord(result.data);
-        message.success('学习记录已更新');
-      } else {
+      if (result.code !== 0 || !result.data) {
         message.error(result.message || '更新学习记录失败');
+        return;
       }
+
+      setLearningRecord(result.data);
+      message.success('学习记录已更新');
     }
 
     // 直接下载文件（避免跳转到 IPFS 预览页）
@@ -283,45 +295,11 @@ export default function CourseLearnResourceId() {
     }
   };
 
-  // 更新学习进度（视频/音频）- 使用防抖，避免频繁更新
-  const handleProgressUpdate = useCallback((currentTime: number, duration: number) => {
-    if (!resourceId || duration === 0) return;
-
-    // 清除之前的定时器
-    if (progressUpdateTimerRef.current) {
-      clearTimeout(progressUpdateTimerRef.current);
-    }
-
-    // 防抖：3秒后更新进度
-    progressUpdateTimerRef.current = setTimeout(async () => {
-      const progress = Math.min(100, Math.round((currentTime / duration) * 100));
-
-      // 只有当进度有显著变化时才更新（避免频繁请求）
-      if (learningRecord && Math.abs((learningRecord.progress || 0) - progress) < 5) {
-        return;
-      }
-
-      let result;
-      try {
-        result = await updateLearningProgress(Number(resourceId), progress);
-      } catch (error) {
-        console.error('Update learning progress error:', error);
-        return;
-      }
-
-      if (result.code === 0 && result.data) {
-        setLearningRecord(result.data);
-      }
-    }, 3000);
-  }, [resourceId, learningRecord]);
-
   // 处理视频/音频播放时间更新
   const handleTimeUpdate = useCallback((currentTime: number, duration: number) => {
     mediaDurationRef.current = duration;
     currentMediaTimeRef.current = currentTime;
-    // 同时更新进度
-    handleProgressUpdate(currentTime, duration);
-  }, [handleProgressUpdate]);
+  }, []);
 
   // 上报学习时间增量（视频/音频）
   const reportTimeIncrement = useCallback(async (timeIncrement: number) => {
@@ -341,25 +319,47 @@ export default function CourseLearnResourceId() {
     }
   }, [resourceId]);
 
-  // 定期上报学习时间（10-15秒周期）
+  // 定期上报学习时间并同步学习进度（10-15秒周期）
   useEffect(() => {
     if (!resource || !resourceId) return;
+    // 学习记录还在加载时，不启动定时器，避免在不知道历史学习时长的情况下就开始累计
+    if (learningRecordLoading) return;
+
     const resourceType = resource.resourceType || 0;
     // 只有视频（3）和音频（2）需要上报时间
     if (resourceType !== 2 && resourceType !== 3) return;
 
-    // 初始化上次上报时间
-    if (learningRecord?.learningTime) {
-      lastReportedTimeRef.current = learningRecord.learningTime;
-    }
-
-    // 每12秒检查一次，如果播放时间有增加，则上报
+    // 每12秒检查一次，如果播放时间有增加，则上报，并根据当前播放进度更新进度字段
     reportTimeIntervalRef.current = setInterval(() => {
       const currentTime = currentMediaTimeRef.current;
-      const timeIncrement = currentTime - lastReportedTimeRef.current;
+      const watchedUntil = watchedUntilRef.current;
+
+      // 如果当前播放位置还在「已经累计过的时间」以内，说明是在回看，不累计学习时长
+      if (currentTime <= watchedUntil + 0.1) {
+        lastReportedTimeRef.current = currentTime;
+        return;
+      }
+
+      // 只对「超过 watchedUntil 之后」的新区域计时
+      const baseTime = Math.max(lastReportedTimeRef.current, watchedUntil);
+      const timeIncrement = currentTime - baseTime;
+
+      // 如果 timeIncrement <= 0，说明处于暂停或刚拖动到更早的位置，重置基准时间后跳过本次
+      if (timeIncrement <= 0) {
+        lastReportedTimeRef.current = currentTime;
+        return;
+      }
+
+      // 如果 timeIncrement 过大（>20），通常是用户拖动进度条到更后面的位置
+      // 这部分不计入连续学习时长，但需要重置基准时间，避免之后一直无法上报
+      if (timeIncrement > 20) {
+        lastReportedTimeRef.current = currentTime;
+        return;
+      }
 
       // 上报有效的学习时间增量（5-20秒范围内）
       if (timeIncrement >= 5 && timeIncrement <= 20) {
+        // 1）先上报学习时长
         reportTimeIncrement(timeIncrement);
       }
     }, 12000);
@@ -369,7 +369,54 @@ export default function CourseLearnResourceId() {
         clearInterval(reportTimeIntervalRef.current);
       }
     };
-  }, [resource, resourceId, learningRecord, reportTimeIncrement]);
+  }, [resource, resourceId, reportTimeIncrement, learningRecordLoading]);
+
+  // 根据累计学习时长同步学习进度（防止快进导致进度突然跳到 80%）
+  useEffect(() => {
+    if (!resource || !resourceId) return;
+    const resourceType = resource.resourceType || 0;
+    // 只有视频（3）和音频（2）需要进度同步
+    if (resourceType !== 2 && resourceType !== 3) return;
+
+    if (!learningRecord || !learningRecord.learningTime) return;
+
+    const duration = mediaDurationRef.current;
+    if (!duration || duration <= 0) return;
+
+    // 根据数据库里已有的累计学习时长，初始化「已经有效观看到的最远时间」
+    const watchedUntil = Math.min(learningRecord.learningTime, duration);
+    watchedUntilRef.current = watchedUntil;
+    // 同时把上次上报基准时间对齐到该位置，避免重新从 0 开始累计
+    if (lastReportedTimeRef.current < watchedUntil) {
+      lastReportedTimeRef.current = watchedUntil;
+    }
+
+    // 使用「累计有效学习时长 / 总时长」计算进度，避免拖动进度条直接跳到 80%
+    const targetProgress = Math.min(
+      100,
+      Math.round((learningRecord.learningTime / duration) * 100)
+    );
+
+    const currentProgress = learningRecord.progress ?? 0;
+    // 差异太小时不更新，避免频繁请求
+    if (Math.abs(targetProgress - currentProgress) < 1) {
+      return;
+    }
+
+    (async () => {
+      let result;
+      try {
+        result = await updateLearningProgress(Number(resourceId), targetProgress);
+      } catch (error) {
+        console.error('Update learning progress error:', error);
+        return;
+      }
+
+      if (result.code === 0 && result.data) {
+        setLearningRecord(result.data);
+      }
+    })();
+  }, [resource, resourceId, learningRecord, learningRecord?.learningTime]);
 
   // 处理视频/音频播放完成
   const handleMediaComplete = useCallback(async () => {
@@ -476,10 +523,21 @@ export default function CourseLearnResourceId() {
     setClaimingLearningReward(true);
     message.loading({ content: '正在领取奖励...', key: 'claim', duration: 0 });
 
-    // 1) 向后端获取 EIP-712 sign（domain/types/message）
+    // 1) 获取当前网络信息
+    let network;
+    try {
+      network = await wallet.provider.getNetwork();
+    } catch (error) {
+      console.error('Get network error:', error);
+      message.destroy('claim');
+      setClaimingLearningReward(false);
+      message.error('获取网络信息失败，请重试');
+      return;
+    }
+
+    // 2) 向后端获取 EIP-712 sign（domain/types/message）
     let signResult;
     try {
-      const network = await wallet.provider.getNetwork();
       signResult = await claimLearningRewardSign({
         resourceId: Number(resourceId),
         rewardType: 0,
@@ -501,7 +559,7 @@ export default function CourseLearnResourceId() {
       return;
     }
 
-    // 2) 弹出 MetaMask 进行 EIP-712 签名（用户确认）
+    // 3) 弹出 MetaMask 进行 EIP-712 签名（用户确认）
     const { domain, types, message: typedMessage } = signResult.data as {
       domain: TypedDataDomain;
       types: Record<string, TypedDataField[]>;
@@ -518,7 +576,7 @@ export default function CourseLearnResourceId() {
       return;
     }
 
-    // 3) 提交签名给后端，后端验签通过后再使用管理员私钥代为 mint
+    // 4) 提交签名给后端，后端验签通过后再使用管理员私钥代为 mint
     let result;
     try {
       result = await claimLearningReward({

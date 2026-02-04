@@ -18,6 +18,8 @@ export default function ResourcePlayer({ resource, fileUrl, onDownload, onTimeUp
   const [currentTime, setCurrentTime] = useState<number>(0);
   const reportIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastReportTimeRef = useRef<number>(0);
+  // 记录用户实际观看到的最远时间，用于禁止快进但允许回看
+  const maxWatchedTimeRef = useRef<number>(0);
 
   const resourceType = resource.resourceType || 0;
 
@@ -30,11 +32,19 @@ export default function ResourcePlayer({ resource, fileUrl, onDownload, onTimeUp
 
     const handleLoadedMetadata = () => {
       setDuration(mediaElement.duration);
+      // 每次加载新媒体时重置时间相关状态
+      setCurrentTime(0);
+      lastReportTimeRef.current = 0;
+      maxWatchedTimeRef.current = 0;
     };
 
     const handleTimeUpdate = () => {
       const current = mediaElement.currentTime;
       setCurrentTime(current);
+      // 记录用户实际观看到的最远时间（只增加不减少）
+      if (current > maxWatchedTimeRef.current) {
+        maxWatchedTimeRef.current = current;
+      }
       if (onTimeUpdate) {
         onTimeUpdate(current, mediaElement.duration);
       }
@@ -46,14 +56,27 @@ export default function ResourcePlayer({ resource, fileUrl, onDownload, onTimeUp
       }
     };
 
+    // 禁止快进但允许回放：当用户拖动进度条到超过已观看的最大时间时，将播放位置拉回
+    const handleSeeking = () => {
+      const current = mediaElement.currentTime;
+      // 允许回看（拖到已看过的时间以内）
+      if (current <= maxWatchedTimeRef.current + 0.1) {
+        return;
+      }
+      // 禁止快进：拉回到已观看的最远位置
+      mediaElement.currentTime = maxWatchedTimeRef.current;
+    };
+
     mediaElement.addEventListener('loadedmetadata', handleLoadedMetadata);
     mediaElement.addEventListener('timeupdate', handleTimeUpdate);
     mediaElement.addEventListener('ended', handleEnded);
+    mediaElement.addEventListener('seeking', handleSeeking);
 
     return () => {
       mediaElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
       mediaElement.removeEventListener('timeupdate', handleTimeUpdate);
       mediaElement.removeEventListener('ended', handleEnded);
+      mediaElement.removeEventListener('seeking', handleSeeking);
     };
   }, [resourceType, onTimeUpdate, onComplete]);
 
