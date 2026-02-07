@@ -23,7 +23,7 @@ export default function Audit() {
   const [page, setPage] = useState(1);
   const [resourcePage, setResourcePage] = useState(1);
   const [coursePage, setCoursePage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(50);
   const [selectedRecord, setSelectedRecord] = useState<AuditRecordInfo | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [approveVisible, setApproveVisible] = useState(false);
