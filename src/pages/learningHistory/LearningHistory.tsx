@@ -18,7 +18,6 @@ export default function LearningHistory() {
   const [teacherName, setTeacherName] = useState<string>('');
   const [resourceType, setResourceType] = useState<number | undefined>(undefined);
   const [isCompleted, setIsCompleted] = useState<number | undefined>(undefined);
-  // 临时输入状态，用于存储输入框和下拉框的值，点击查询按钮后才同步到实际筛选条件
   const [teacherNameInput, setTeacherNameInput] = useState<string>('');
   const [resourceTypeInput, setResourceTypeInput] = useState<number | undefined>(undefined);
   const [isCompletedInput, setIsCompletedInput] = useState<number | undefined>(undefined);

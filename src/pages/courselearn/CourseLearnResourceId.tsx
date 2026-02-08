@@ -30,7 +30,7 @@ export default function CourseLearnResourceId() {
   const [reviewsTotal, setReviewsTotal] = useState(0);
   const [reviewsPage, setReviewsPage] = useState(1);
   const [reviewsPageSize, setReviewsPageSize] = useState(10);
-  const [allReviews, setAllReviews] = useState<LearningRecordInfo[]>([]); // 存储所有评价，用于分页
+  const [allReviews, setAllReviews] = useState<LearningRecordInfo[]>([]);
   const [claimingLearningReward, setClaimingLearningReward] = useState(false);
   const [hasClaimedLearningReward, setHasClaimedLearningReward] = useState(false);
   const [checkingRewardStatus, setCheckingRewardStatus] = useState(false);

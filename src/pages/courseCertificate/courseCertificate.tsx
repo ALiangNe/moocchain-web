@@ -18,7 +18,6 @@ export default function CourseCertificate() {
   const [loading, setLoading] = useState(false);
   const [teacherName, setTeacherName] = useState<string>('');
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
-  // 临时输入状态，用于存储输入框和日期选择器的值，点击查询按钮后才同步到实际筛选条件
   const [teacherNameInput, setTeacherNameInput] = useState<string>('');
   const [dateRangeInput, setDateRangeInput] = useState<[Dayjs | null, Dayjs | null] | null>(null);
   const loadingRef = useRef(false);
