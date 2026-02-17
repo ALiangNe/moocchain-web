@@ -1,4 +1,4 @@
-import exploreBg from '@/assets/images/explore-bg-04.jpg';
+﻿import exploreBg from '@/assets/images/explore-bg-04.jpg';
 
 export default function Explore() {
   return (
@@ -9,7 +9,7 @@ export default function Explore() {
         </h1>
 
         <p className="text-lg md:text-xl text-slate-700 mb-10 leading-relaxed drop-shadow-[0_2px_6px_rgba(255,255,255,0.6)]">
-          基于区块链的高校 MOOC 平台
+          基于区块链的高校 MOOC 平台设计与实现
         </p>
       </div>
     </div>
