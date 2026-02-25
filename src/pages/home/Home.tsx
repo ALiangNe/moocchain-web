@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const navigate = useNavigate();
+  // ====== 名师课程 / 最新课程数据状态 ======
   const [featuredCourses, setFeaturedCourses] = useState<CourseInfo[]>([]);
   const [featuredLoading, setFeaturedLoading] = useState(false);
   const loadingRef = useRef(false);
@@ -19,6 +20,7 @@ export default function Home() {
   const latestRequestIdRef = useRef(0);
 
   useEffect(() => {
+    // 加载名师名课（按更新时间排序，且只保留前 8 门）
     const loadFeaturedCourses = async () => {
       if (loadingRef.current) return;
 
@@ -42,6 +44,7 @@ export default function Home() {
 
       let result;
       try {
+        // 名师名课：限定学校列表
         result = await getCourseList({
           status: 2,
           schoolNames: ['清华大学', '北京大学', '复旦大学'],
@@ -86,6 +89,7 @@ export default function Home() {
       loadingRef.current = false;
     };
 
+    // 使用 requestId + queueMicrotask 避免竞态和闪烁 loading
     const effectRequestId = requestIdRef.current;
     queueMicrotask(() => {
       loadFeaturedCourses();
@@ -96,6 +100,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // 加载「最新课程」列表（不限制学校）
     const loadLatestCourses = async () => {
       if (latestLoadingRef.current) return;
 
@@ -119,6 +124,7 @@ export default function Home() {
 
       let result;
       try {
+        // 最新课程：只根据状态过滤
         result = await getCourseList({
           status: 2,
           page: 1,
@@ -162,6 +168,7 @@ export default function Home() {
       latestLoadingRef.current = false;
     };
 
+    // 同样通过 requestId 控制请求结果只更新最新一次
     const effectRequestId = latestRequestIdRef.current;
     queueMicrotask(() => {
       loadLatestCourses();
@@ -174,9 +181,10 @@ export default function Home() {
   return (
     <div className="py-10 md:py-12 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 md:space-y-10">
+        {/* 顶部 Banner：负责整页的主视觉和主行动按钮 */}
         <HomeBanner onBannerClick={() => navigate('/courseLearn')} />
 
-        {/* 名师名课模块 */}
+        {/* 名师名课模块：展示来自头部高校的精选课程 */}
         <Card className="shadow-sm rounded-2xl border border-slate-100" headStyle={{ borderBottom: 'none', paddingBottom: 0 }} bodyStyle={{ paddingTop: 12 }}
           title={
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
@@ -194,7 +202,7 @@ export default function Home() {
           <EliteCourses01 courses={featuredCourses} loading={featuredLoading} onCourseClick={(course) => { if (course.courseId) navigate(`/courseLearn/${course.courseId}`); }} />
         </Card>
 
-        {/* 最新课程模块 */}
+        {/* 最新课程模块：展示平台最新发布的课程 */}
         <Card className="shadow-sm rounded-2xl border border-slate-100" headStyle={{ borderBottom: 'none', paddingBottom: 0 }} bodyStyle={{ paddingTop: 12 }}
           title={
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
