@@ -42,7 +42,8 @@ export default function Login() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center antialiased py-12 px-4 relative" style={{ backgroundImage: `url(${exploreBg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div className="w-full max-w-md mx-auto">
+      <div className="absolute inset-0 bg-white/65" aria-hidden="true" />
+      <div className="relative z-10 w-full max-w-md mx-auto">
         <div className="relative bg-white/70 rounded-2xl lg:rounded-3xl shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] overflow-hidden flex flex-col border border-slate-100/70">
           <div className="px-6 pt-8 pb-8 flex-1 flex flex-col gap-6">
             {/* Header */}
