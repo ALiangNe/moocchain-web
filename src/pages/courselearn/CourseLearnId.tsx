@@ -156,7 +156,7 @@ export default function CourseLearnId() {
 
   // 计算课程平均评分（基于资源评分结果）
   const calculateCourseRatings = useCallback(async (resourceIds: number[]) => {
-    const { ratedRecords, requestId } = await calculateResourceRatings(resourceIds);
+    const { ratedRecords, requestId } = await calculateResourceRatings(resourceIds); // 获取到所有资源的平均分
     const commitAverage = (value: number | null) => {
       if (ratingRequestIdRef.current === requestId) {
         queueMicrotask(() => setAverageRating(value));
@@ -466,9 +466,12 @@ export default function CourseLearnId() {
     setClaimingCertificate(true);
 
     // 第一步：调用后端创建证书，生成图片并上传 IPFS
+    const completedAtSec = Math.floor(Date.now() / 1000);
+    const completedAt = new Date(completedAtSec * 1000).toISOString();
+
     let createResp;
     try {
-      createResp = await createCertificate({ courseId: Number(courseId) });
+      createResp = await createCertificate({ courseId: Number(courseId), completedAt });
     } catch (error) {
       console.error('Claim certificate error:', error);
       message.error('证书领取失败，请稍后重试');
@@ -499,11 +502,14 @@ export default function CourseLearnId() {
       return;
     }
 
-    const createdAt = Math.floor(Date.now() / 1000);
-
     let mintResult;
     try {
-      mintResult = await mintCertificateNft({ signer: wallet.signer, ownerAddress: wallet.address, ipfsHash: certificate.ipfsHash, createdAt });
+      mintResult = await mintCertificateNft({
+        signer: wallet.signer,
+        ownerAddress: wallet.address,
+        ipfsHash: certificate.ipfsHash,
+        completedAt: completedAtSec,
+      });
     } catch (error) {
       console.error('Mint certificate nft error:', error);
       setClaimingCertificate(false);
@@ -541,7 +547,9 @@ export default function CourseLearnId() {
 
   // 处理资源点击，跳转到资源详情页
   const handleResourceClick = (resource: ResourceInfo) => {
+    // 价格大于 0 视为付费资源
     const isPaid = resource.price && Number(resource.price) > 0;
+    // 当前资源 ID 是否存在于“已购买资源集合”中
     const isPurchased = resource.resourceId && purchasedResourceIds.has(resource.resourceId);
     
     if (isPaid && !isPurchased) {
@@ -684,7 +692,8 @@ export default function CourseLearnId() {
                   }
                 >
                   <span>
-                    <Button type="primary" icon={<TrophyOutlined />} loading={claimingCertificate || checkingCertificateStatus || checkingCertificateConfig} onClick={handleClaimCertificate} className="rounded-lg" disabled={hasClaimedCertificate || hasCertificateConfig === false}  >
+                    <Button type="primary" icon={<TrophyOutlined />} loading={claimingCertificate || checkingCertificateStatus || checkingCertificateConfig} 
+                    onClick={handleClaimCertificate} className="rounded-lg" disabled={hasClaimedCertificate || hasCertificateConfig === false}  >
                 领取课程证书
               </Button>
                   </span>
@@ -700,7 +709,8 @@ export default function CourseLearnId() {
           <h2 className="text-lg font-semibold text-[#1d1d1f]">资源列表</h2>
         </Card>
         <Card className="shadow-sm rounded-2xl">
-          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} purchasedResourceIds={purchasedResourceIds} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} onItemClick={handleResourceClick} onPurchaseClick={handlePurchaseResource} />
+          <ResourceList data={resources} loading={resourceLoading} page={resourcePage} pageSize={pageSize} total={resourceTotal} resourceRatings={resourceRatings} purchasedResourceIds={purchasedResourceIds} onPageChange={(p, s) => { setResourcePage(p); setPageSize(s); }} 
+          onItemClick={handleResourceClick} onPurchaseClick={handlePurchaseResource} />
         </Card>
       </div>
     </div>

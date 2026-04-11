@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from 'antd';
 import type { Dayjs } from 'dayjs';
-import { getCertificateList, getTokenTransactionList } from '@/api/baseApi';
+import { getCertificateList, getLearningRecordList, getResourceList, getTokenTransactionList } from '@/api/baseApi';
 import type { CertificateInfo } from '@/types/certificateType';
 import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
+import type { LearningRecordInfo } from '@/types/learningRecordType';
+import type { ResourceInfo } from '@/types/resourceType';
 import RewardRecordList from '@/components/blockchainRecord/RewardRecordList';
 import CertificateRecordList from '@/components/blockchainRecord/CertificateRecordList';
 import PurchaseRecordList from '@/components/blockchainRecord/PurchaseRecordList';
+import LearningRecordChainList from '@/components/blockchainRecord/LearningRecordChainList';
+import ResourceUploadChainList from '@/components/blockchainRecord/ResourceUploadChainList';
 import BlockchainRecordBarChart from '@/components/blockchainRecord/BlockchainRecordBarChart';
 import BlockchainRecordPieChart from '@/components/blockchainRecord/BlockchainRecordPieChart';
 import BlockchainRecordFilterBar, { type BlockchainRecordType } from '@/components/blockchainRecord/BlockchainRecordFilterBar';
@@ -62,6 +66,24 @@ export default function BlockchainRecord() {
   const purchaseLoadingRef = useRef(false);
   const purchaseRequestIdRef = useRef(0);
 
+  // 学习记录上链数据
+  const [learningRecordChainRecords, setLearningRecordChainRecords] = useState<LearningRecordInfo[]>([]);
+  const [learningRecordChainLoading, setLearningRecordChainLoading] = useState(false);
+  const [learningRecordChainPage, setLearningRecordChainPage] = useState(1);
+  const [learningRecordChainPageSize, setLearningRecordChainPageSize] = useState(10);
+  const [learningRecordChainTotal, setLearningRecordChainTotal] = useState(0);
+  const learningRecordChainLoadingRef = useRef(false);
+  const learningRecordChainRequestIdRef = useRef(0);
+
+  // 资源上传上链数据
+  const [resourceUploadChainRecords, setResourceUploadChainRecords] = useState<ResourceInfo[]>([]);
+  const [resourceUploadChainLoading, setResourceUploadChainLoading] = useState(false);
+  const [resourceUploadChainPage, setResourceUploadChainPage] = useState(1);
+  const [resourceUploadChainPageSize, setResourceUploadChainPageSize] = useState(10);
+  const [resourceUploadChainTotal, setResourceUploadChainTotal] = useState(0);
+  const resourceUploadChainLoadingRef = useRef(false);
+  const resourceUploadChainRequestIdRef = useRef(0);
+
   // 筛选条件
   const [recordType, setRecordType] = useState<BlockchainRecordType | undefined>(undefined);
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
@@ -73,14 +95,19 @@ export default function BlockchainRecord() {
     { value: 'certificate', label: '铸造证书' },
     { value: 'uploadReward', label: '上传奖励' },
     { value: 'learningReward', label: '学习奖励' },
+    { value: 'learningRecord', label: '学习记录' },
+    { value: 'resourceUpload', label: '资源上传' },
     { value: 'purchase', label: '资源消费' },
   ] : isTeacher ? [
     { value: 'certificate', label: '铸造证书' },
     { value: 'uploadReward', label: '上传奖励' },
+    { value: 'learningRecord', label: '学习记录' },
+    { value: 'resourceUpload', label: '资源上传' },
     { value: 'purchase', label: '资源消费' },
   ] : [
     { value: 'certificate', label: '铸造证书' },
     { value: 'learningReward', label: '学习奖励' },
+    { value: 'learningRecord', label: '学习记录' },
     { value: 'purchase', label: '资源消费' },
   ];
 
@@ -409,6 +436,124 @@ export default function BlockchainRecord() {
     setPurchaseTotal(result.data.total);
   }, [purchasePage, purchasePageSize, dateRange, recordType]);
 
+  // 加载学习记录上链数据
+  const loadLearningRecordChainRecords = useCallback(async () => {
+    if (recordType !== undefined && recordType !== 'learningRecord') {
+      setLearningRecordChainRecords([]);
+      setLearningRecordChainTotal(0);
+      setLearningRecordChainLoading(false);
+      learningRecordChainLoadingRef.current = false;
+      return;
+    }
+    if (learningRecordChainLoadingRef.current) return;
+
+    const currentRequestId = ++learningRecordChainRequestIdRef.current;
+    learningRecordChainLoadingRef.current = true;
+    queueMicrotask(() => {
+      if (learningRecordChainRequestIdRef.current !== currentRequestId) {
+        learningRecordChainLoadingRef.current = false;
+        return;
+      }
+      setLearningRecordChainLoading(true);
+    });
+
+    const params: {
+      studentId?: number;
+      hasTransactionHash: number;
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      hasTransactionHash: 1,
+      page: learningRecordChainPage,
+      pageSize: learningRecordChainPageSize,
+    };
+    if (!isAdmin && user?.userId) params.studentId = user.userId;
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    let result;
+    try {
+      result = await getLearningRecordList(params);
+    } catch (error) {
+      console.error('Load learning record chain records error:', error);
+      if (learningRecordChainRequestIdRef.current === currentRequestId) {
+        setLearningRecordChainLoading(false);
+        learningRecordChainLoadingRef.current = false;
+      }
+      return;
+    }
+    if (learningRecordChainRequestIdRef.current !== currentRequestId) return;
+
+    setLearningRecordChainLoading(false);
+    learningRecordChainLoadingRef.current = false;
+    if (result.code !== 0 || !result.data) return;
+    setLearningRecordChainRecords(result.data.records);
+    setLearningRecordChainTotal(result.data.total);
+  }, [recordType, learningRecordChainPage, learningRecordChainPageSize, dateRange, isAdmin, user]);
+
+  // 加载资源上传上链数据
+  const loadResourceUploadChainRecords = useCallback(async () => {
+    if (recordType !== undefined && recordType !== 'resourceUpload') {
+      setResourceUploadChainRecords([]);
+      setResourceUploadChainTotal(0);
+      setResourceUploadChainLoading(false);
+      resourceUploadChainLoadingRef.current = false;
+      return;
+    }
+    if (resourceUploadChainLoadingRef.current) return;
+
+    const currentRequestId = ++resourceUploadChainRequestIdRef.current;
+    resourceUploadChainLoadingRef.current = true;
+    queueMicrotask(() => {
+      if (resourceUploadChainRequestIdRef.current !== currentRequestId) {
+        resourceUploadChainLoadingRef.current = false;
+        return;
+      }
+      setResourceUploadChainLoading(true);
+    });
+
+    const params: {
+      ownerId?: number;
+      hasTransactionHash: number;
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    } = {
+      hasTransactionHash: 1,
+      page: resourceUploadChainPage,
+      pageSize: resourceUploadChainPageSize,
+    };
+    if (isTeacher && user?.userId) params.ownerId = user.userId;
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      params.startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      params.endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    let result;
+    try {
+      result = await getResourceList(params);
+    } catch (error) {
+      console.error('Load resource upload chain records error:', error);
+      if (resourceUploadChainRequestIdRef.current === currentRequestId) {
+        setResourceUploadChainLoading(false);
+        resourceUploadChainLoadingRef.current = false;
+      }
+      return;
+    }
+    if (resourceUploadChainRequestIdRef.current !== currentRequestId) return;
+
+    setResourceUploadChainLoading(false);
+    resourceUploadChainLoadingRef.current = false;
+    if (result.code !== 0 || !result.data) return;
+    setResourceUploadChainRecords(result.data.records);
+    setResourceUploadChainTotal(result.data.total);
+  }, [recordType, resourceUploadChainPage, resourceUploadChainPageSize, dateRange, isTeacher, user]);
+
   useEffect(() => {
     if (!isAdmin && (isStudent || isTeacher)) {
       const effectRequestId = rewardRequestIdRef.current;
@@ -465,6 +610,26 @@ export default function BlockchainRecord() {
     };
   }, [loadPurchaseRecords]);
 
+  useEffect(() => {
+    const effectRequestId = learningRecordChainRequestIdRef.current;
+    queueMicrotask(() => {
+      loadLearningRecordChainRecords();
+    });
+    return () => {
+      learningRecordChainRequestIdRef.current = effectRequestId + 1;
+    };
+  }, [loadLearningRecordChainRecords]);
+
+  useEffect(() => {
+    const effectRequestId = resourceUploadChainRequestIdRef.current;
+    queueMicrotask(() => {
+      loadResourceUploadChainRecords();
+    });
+    return () => {
+      resourceUploadChainRequestIdRef.current = effectRequestId + 1;
+    };
+  }, [loadResourceUploadChainRecords]);
+
   const handleRewardPageChange = (p: number, s: number) => {
     setRewardPage(p);
     setRewardPageSize(s);
@@ -490,6 +655,16 @@ export default function BlockchainRecord() {
     setPurchasePageSize(s);
   };
 
+  const handleLearningRecordChainPageChange = (p: number, s: number) => {
+    setLearningRecordChainPage(p);
+    setLearningRecordChainPageSize(s);
+  };
+
+  const handleResourceUploadChainPageChange = (p: number, s: number) => {
+    setResourceUploadChainPage(p);
+    setResourceUploadChainPageSize(s);
+  };
+
   // 处理筛选输入变化（只更新临时状态，不触发查询）
   const handleRecordTypeInputChange = (value: BlockchainRecordType | undefined) => {
     setRecordTypeInput(value);
@@ -509,6 +684,8 @@ export default function BlockchainRecord() {
     setLearningRewardPage(1);
     setCertificatePage(1);
     setPurchasePage(1);
+    setLearningRecordChainPage(1);
+    setResourceUploadChainPage(1);
   };
 
   const showCertificates = recordType === undefined || recordType === 'certificate';
@@ -516,6 +693,8 @@ export default function BlockchainRecord() {
   const showTeacherOrStudentReward = !isAdmin && (recordType === undefined || recordType === (isTeacher ? 'uploadReward' : 'learningReward'));
   const showAdminUploadReward = isAdmin && (recordType === undefined || recordType === 'uploadReward');
   const showAdminLearningReward = isAdmin && (recordType === undefined || recordType === 'learningReward');
+  const showLearningRecordChain = recordType === undefined || recordType === 'learningRecord';
+  const showResourceUploadChain = (isAdmin || isTeacher) && (recordType === undefined || recordType === 'resourceUpload');
 
   return (
     <div className="py-12">
@@ -527,10 +706,10 @@ export default function BlockchainRecord() {
         </Card>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card className="shadow-sm rounded-2xl">
-            <BlockchainRecordBarChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} purchaseRecords={purchaseRecords} />
+            <BlockchainRecordBarChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} learningRecordChainRecords={learningRecordChainRecords} resourceUploadChainRecords={resourceUploadChainRecords} purchaseRecords={purchaseRecords} />
           </Card>
           <Card className="shadow-sm rounded-2xl">
-            <BlockchainRecordPieChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} purchaseRecords={purchaseRecords} />
+            <BlockchainRecordPieChart userRole={user?.role} certificateRecords={certificateRecords} rewardRecords={rewardRecords} uploadRewardRecords={isAdmin ? uploadRewardRecords : undefined} learningRewardRecords={isAdmin ? learningRewardRecords : undefined} learningRecordChainRecords={learningRecordChainRecords} resourceUploadChainRecords={resourceUploadChainRecords} purchaseRecords={purchaseRecords} />
           </Card>
         </div>
 
@@ -580,6 +759,22 @@ export default function BlockchainRecord() {
           <Card className="shadow-sm rounded-2xl">
             <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">购买资源消费记录</h2>
             <PurchaseRecordList data={purchaseRecords} loading={purchaseLoading} page={purchasePage} pageSize={purchasePageSize} total={purchaseTotal} onPageChange={handlePurchasePageChange} />
+          </Card>
+        )}
+
+        {/* 学习记录上链数据 */}
+        {showLearningRecordChain && (
+          <Card className="shadow-sm rounded-2xl mt-8">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">资源学习完成记录</h2>
+            <LearningRecordChainList data={learningRecordChainRecords} loading={learningRecordChainLoading} page={learningRecordChainPage} pageSize={learningRecordChainPageSize} total={learningRecordChainTotal} onPageChange={handleLearningRecordChainPageChange} />
+          </Card>
+        )}
+
+        {/* 教师/管理员：资源上传上链记录 */}
+        {showResourceUploadChain && (
+          <Card className="shadow-sm rounded-2xl mt-8">
+            <h2 className="text-base font-semibold text-[#1d1d1f] mb-4">资源上传上链记录</h2>
+            <ResourceUploadChainList data={resourceUploadChainRecords} loading={resourceUploadChainLoading} page={resourceUploadChainPage} pageSize={resourceUploadChainPageSize} total={resourceUploadChainTotal} onPageChange={handleResourceUploadChainPageChange} />
           </Card>
         )}
       </div>

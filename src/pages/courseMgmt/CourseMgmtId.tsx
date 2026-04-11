@@ -101,7 +101,7 @@ export default function CourseMgmtId() {
     setRejectedResourceIds(rejected);
   }, []);
 
-  // 加载审核记录
+  // 加载课程审核记录
   const loadAuditRecord = useCallback(async (courseId: number) => {
     setAuditLoading(true);
 
@@ -190,6 +190,7 @@ export default function CourseMgmtId() {
     }
   }, [courseId, loadAuditRecord]);
 
+  // 加载证书模板
   const loadCertificateTemplates = useCallback(async () => {
     let result;
     try {
@@ -206,6 +207,7 @@ export default function CourseMgmtId() {
     setTemplates(result.data.records || []);
   }, []);
 
+  // 加载当前课程证书配置数据
   const loadCourseCertificateConfig = useCallback(async () => {
     if (!courseId) return;
     let result;
@@ -223,11 +225,13 @@ export default function CourseMgmtId() {
     setCourseCertificateConfig(result.data.records[0]);
   }, [courseId]);
 
+  // 
   const handleOpenCertificateDrawer = async () => {
     setCertificateDrawerVisible(true);
     await Promise.all([loadCertificateTemplates(), loadCourseCertificateConfig()]);
   };
 
+  // 提交当前课程证书配置数据
   const handleSubmitCourseCertificateConfig = async (values: Partial<ResourceCertificateConfigInfo>) => {
     if (!courseId) return;
     setCertificateLoading(true);
@@ -438,6 +442,10 @@ export default function CourseMgmtId() {
     const wallet = await ensureWalletConnected();
     if (!wallet) return;
 
+    // Use one unified timestamp for DB insert and on-chain minting.
+    const completedAtSec = Math.floor(Date.now() / 1000);
+    const completedAt = new Date(completedAtSec * 1000).toISOString();
+
     const formData = buildCreateResourceFormData({
       courseId: Number(resourceCourseId),
       title: values.title || '',
@@ -445,6 +453,7 @@ export default function CourseMgmtId() {
       resourceType: values.resourceType,
       price: values.price,
       accessScope: values.accessScope,
+      completedAt,
       file: values.file,
     });
 
@@ -475,11 +484,17 @@ export default function CourseMgmtId() {
     message.success('资源上传成功');
     message.loading({ content: '正在铸造 NFT...', key: 'mint', duration: 0 });
 
-    const createdAt = Math.floor(Date.now() / 1000);
-
     let tokenId: string;
+    let transactionHash: string;
     try {
-      tokenId = await mintResourceNft({ signer: wallet.signer, ownerAddress: wallet.address, ipfsHash, createdAt });
+      const mintResult = await mintResourceNft({
+        signer: wallet.signer,
+        ownerAddress: wallet.address,
+        ipfsHash,
+        completedAt: completedAtSec,
+      });
+      tokenId = mintResult.tokenId;
+      transactionHash = mintResult.transactionHash;
     } catch (error) {
       console.error('Mint NFT error:', error);
       message.destroy('mint');
@@ -490,9 +505,10 @@ export default function CourseMgmtId() {
     message.destroy('mint');
     message.destroy('upload-resource');
 
+    // 写入上链hash
     let updateResult;
     try {
-      updateResult = await updateResource(resourceId, { resourceNftId: tokenId });
+      updateResult = await updateResource(resourceId, { resourceNftId: tokenId, transactionHash });
     } catch (error) {
       console.error('Update resource nftId error:', error);
       message.error('铸造成功，但写入数据库失败，请重试');
@@ -693,6 +709,7 @@ export default function CourseMgmtId() {
                 )}
                 <Button type="primary" icon={<SafetyCertificateOutlined />} onClick={handleOpenCertificateDrawer} className="rounded-lg">
                   设置课程证书
+                  {/* 打开编辑课程的抽屉 */}
                 </Button>
                 <Button type="primary" icon={<EditOutlined />} onClick={() => setCourseEditVisible(true)} className="rounded-lg">
                   编辑课程

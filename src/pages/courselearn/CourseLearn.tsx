@@ -94,6 +94,7 @@ export default function CourseLearn() {
     }
   }, [page, pageSize, teacherName, schoolName, dateRange]);
 
+  // 首次渲染页面触发
   useEffect(() => {
     const effectRequestId = requestIdRef.current;
     queueMicrotask(() => {

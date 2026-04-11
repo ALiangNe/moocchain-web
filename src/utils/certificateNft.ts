@@ -9,17 +9,25 @@ function getAbi() {
   return (CertificateNFTArtifact as CertificateNftArtifact).abi;
 }
 
-export function buildCertificateContentHash(params: { ipfsHash: string; ownerAddress: string; createdAt: number }): string {
+export interface CertificateChainData {
+  tokenId: number;
+  owner: string;
+  contentHash: string;
+  ipfsHash: string;
+  createdAt: number;
+}
+
+export function buildCertificateContentHash(params: { ipfsHash: string; ownerAddress: string; completedAt: number }): string {
   return ethers.solidityPackedKeccak256(
     ['string', 'address', 'uint256'],
-    [params.ipfsHash, params.ownerAddress, params.createdAt]
+    [params.ipfsHash, params.ownerAddress, params.completedAt]
   );
 }
 
-export async function mintCertificateNft(params: { signer: ethers.Signer; ownerAddress: string; ipfsHash: string; createdAt: number }): Promise<{ tokenId: string; transactionHash: string }> {
+export async function mintCertificateNft(params: { signer: ethers.Signer; ownerAddress: string; ipfsHash: string; completedAt: number }): Promise<{ tokenId: string; transactionHash: string }> {
   const abi = getAbi();
   const contract = new ethers.Contract(CERTIFICATE_NFT_ADDRESS, abi, params.signer);
-  const contentHash = buildCertificateContentHash({ ipfsHash: params.ipfsHash, ownerAddress: params.ownerAddress, createdAt: params.createdAt });
+  const contentHash = buildCertificateContentHash({ ipfsHash: params.ipfsHash, ownerAddress: params.ownerAddress, completedAt: params.completedAt });
 
   let tx;
   try {
@@ -54,4 +62,32 @@ export async function mintCertificateNft(params: { signer: ethers.Signer; ownerA
   }
 
   throw new Error('Mint succeeded but tokenId not found in logs');
+}
+
+export async function getCertificateChainDataByTxHash(params: {
+  provider: ethers.Provider;
+  txHash: string;
+}): Promise<CertificateChainData | null> {
+  const receipt = await params.provider.getTransactionReceipt(params.txHash);
+  if (!receipt) return null;
+  const iface = new ethers.Interface(getAbi());
+  const targetAddress = CERTIFICATE_NFT_ADDRESS.toLowerCase();
+
+  for (const log of receipt.logs) {
+    if (log.address.toLowerCase() !== targetAddress) continue;
+    try {
+      const parsed = iface.parseLog({ topics: [...log.topics], data: log.data });
+      if (!parsed || parsed.name !== 'CertificateMinted') continue;
+      return {
+        tokenId: Number(parsed.args?.tokenId ?? 0),
+        owner: String(parsed.args?.owner),
+        contentHash: String(parsed.args?.contentHash),
+        ipfsHash: String(parsed.args?.ipfsHash),
+        createdAt: Number(parsed.args?.createdAt ?? 0),
+      };
+    } catch {
+      // 忽略非本合约事件
+    }
+  }
+  return null;
 }

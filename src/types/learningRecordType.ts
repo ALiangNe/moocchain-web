@@ -6,6 +6,7 @@ export interface LearningRecordInfo {
   recordId?: number;          // 学习记录ID，自增
   studentId?: number;         // 学生用户ID，外键
   resourceId?: number;        // 教育资源ID，外键
+  transactionHash?: string;   // 学习完成上链交易哈希
   progress?: number;         // 学习进度（0-100，完成百分比）
   learningTime?: number;      // 学习时长（秒）
   review?: string;            // 学习评价内容

@@ -205,6 +205,10 @@ export default function CourseMgmtResourceId() {
     }
   };
 
+  const handleHashClick = useCallback((hash: string) => {
+    navigate(`/hashVerify/${encodeURIComponent(hash)}?source=resource`);
+  }, [navigate]);
+
   // 处理资源编辑提交
   const handleEditSubmit = async (values: Partial<ResourceInfo>) => {
     if (!resourceId || !resource) return;
@@ -439,7 +443,7 @@ export default function CourseMgmtResourceId() {
           </div>
         </Card>
 
-        <ResourceDetail resource={resource} onDownload={handleDownload} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} />
+        <ResourceDetail resource={resource} onDownload={handleDownload} latestAuditRecord={latestAuditRecord} auditLoading={auditLoading} onHashClick={handleHashClick} />
 
         <Drawer title="编辑资源" open={editVisible} onClose={() => setEditVisible(false)} width={700} placement="right">
           {resource && (

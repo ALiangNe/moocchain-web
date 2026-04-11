@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { CertificateInfo } from '@/types/certificateType';
 import type { TokenTransactionInfo } from '@/types/tokenTransactionType';
+import type { LearningRecordInfo } from '@/types/learningRecordType';
+import type { ResourceInfo } from '@/types/resourceType';
 import { UserRole } from '@/constants/role';
 
 interface BlockchainRecordPieChartProps {
@@ -10,6 +12,8 @@ interface BlockchainRecordPieChartProps {
   rewardRecords: TokenTransactionInfo[]; // 学生：学习完成奖励，教师：上传资源奖励
   uploadRewardRecords?: TokenTransactionInfo[]; // 管理员：上传资源奖励
   learningRewardRecords?: TokenTransactionInfo[]; // 管理员：学习完成奖励
+  learningRecordChainRecords: LearningRecordInfo[]; // 学习记录上链
+  resourceUploadChainRecords: ResourceInfo[]; // 资源上传上链
   purchaseRecords: TokenTransactionInfo[];
 }
 
@@ -19,6 +23,8 @@ export default function BlockchainRecordPieChart({
   rewardRecords,
   uploadRewardRecords,
   learningRewardRecords,
+  learningRecordChainRecords,
+  resourceUploadChainRecords,
   purchaseRecords,
 }: BlockchainRecordPieChartProps) {
   const statistics = useMemo(() => {
@@ -33,6 +39,7 @@ export default function BlockchainRecordPieChart({
       data = [
         { name: '铸造证书', value: certificateRecords.length },
         { name: '学习完成奖励', value: rewardRecords.length },
+        { name: '学习记录上链', value: learningRecordChainRecords.length },
         { name: '购买资源', value: purchaseRecords.length },
       ];
     } else if (isTeacher) {
@@ -40,6 +47,8 @@ export default function BlockchainRecordPieChart({
       data = [
         { name: '铸造证书', value: certificateRecords.length },
         { name: '上传资源奖励', value: rewardRecords.length },
+        { name: '资源上传上链', value: resourceUploadChainRecords.length },
+        { name: '学习记录上链', value: learningRecordChainRecords.length },
         { name: '购买资源', value: purchaseRecords.length },
       ];
     } else if (isAdmin) {
@@ -48,16 +57,18 @@ export default function BlockchainRecordPieChart({
         { name: '铸造证书', value: certificateRecords.length },
         { name: '学习完成奖励', value: learningRewardRecords?.length || 0 },
         { name: '上传资源奖励', value: uploadRewardRecords?.length || 0 },
+        { name: '资源上传上链', value: resourceUploadChainRecords.length },
+        { name: '学习记录上链', value: learningRecordChainRecords.length },
         { name: '购买资源', value: purchaseRecords.length },
       ];
     }
 
     // 只显示有数据的类型
     return data.filter((item) => item.value > 0);
-  }, [userRole, certificateRecords, rewardRecords, uploadRewardRecords, learningRewardRecords, purchaseRecords]);
+  }, [userRole, certificateRecords, rewardRecords, uploadRewardRecords, learningRewardRecords, learningRecordChainRecords, resourceUploadChainRecords, purchaseRecords]);
 
   const option = useMemo(() => ({
-    color: ['#FF9800', '#4CAF50', '#2196F3', '#9C27B0'], // 橙色、绿色、蓝色、紫色
+    color: ['#FF9800', '#4CAF50', '#2196F3', '#9C27B0', '#F44336', '#00BCD4'], // 橙、绿、蓝、紫、红、青（避免重复）
     title: {
       text: '上链记录占比',
       subtext: '区块链记录',

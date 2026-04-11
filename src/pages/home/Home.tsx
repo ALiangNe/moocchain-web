@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const navigate = useNavigate();
-  // ====== 名师课程 / 最新课程数据状态 ======
   const [featuredCourses, setFeaturedCourses] = useState<CourseInfo[]>([]);
   const [featuredLoading, setFeaturedLoading] = useState(false);
   const loadingRef = useRef(false);
@@ -20,7 +19,6 @@ export default function Home() {
   const latestRequestIdRef = useRef(0);
 
   useEffect(() => {
-    // 加载名师名课（按更新时间排序，且只保留前 8 门）
     const loadFeaturedCourses = async () => {
       if (loadingRef.current) return;
 
@@ -44,7 +42,6 @@ export default function Home() {
 
       let result;
       try {
-        // 名师名课：限定学校列表
         result = await getCourseList({
           status: 2,
           schoolNames: ['清华大学', '北京大学', '复旦大学'],
@@ -89,7 +86,6 @@ export default function Home() {
       loadingRef.current = false;
     };
 
-    // 使用 requestId + queueMicrotask 避免竞态和闪烁 loading
     const effectRequestId = requestIdRef.current;
     queueMicrotask(() => {
       loadFeaturedCourses();
@@ -100,7 +96,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // 加载「最新课程」列表（不限制学校）
     const loadLatestCourses = async () => {
       if (latestLoadingRef.current) return;
 
@@ -124,7 +119,6 @@ export default function Home() {
 
       let result;
       try {
-        // 最新课程：只根据状态过滤
         result = await getCourseList({
           status: 2,
           page: 1,
@@ -168,7 +162,6 @@ export default function Home() {
       latestLoadingRef.current = false;
     };
 
-    // 同样通过 requestId 控制请求结果只更新最新一次
     const effectRequestId = latestRequestIdRef.current;
     queueMicrotask(() => {
       loadLatestCourses();
@@ -179,49 +172,22 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="py-10 md:py-12 bg-gradient-to-b from-white via-slate-50 to-white">
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 md:space-y-10">
-        {/* 顶部 Banner：负责整页的主视觉和主行动按钮 */}
+    <div className="py-12">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <HomeBanner onBannerClick={() => navigate('/courseLearn')} />
-
-        {/* 名师名课模块：展示来自头部高校的精选课程 */}
-        <Card className="shadow-sm rounded-2xl border border-slate-100" headStyle={{ borderBottom: 'none', paddingBottom: 0 }} bodyStyle={{ paddingTop: 12 }}
-          title={
-            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
-              <div>
-                <h2 className="text-lg md:text-xl font-semibold text-[#1d1d1f]">
-                  名师指路，名校同行
-                </h2>
-                <p className="mt-1 text-xs md:text-sm text-slate-500">
-                  精选清华、北大、复旦等高校优质课程，为你的学习做一次“高手标注”。
-                </p>
-              </div>
-            </div>
-          }
-        >
+        <Card className="shadow-sm mb-4 rounded-2xl">
+          <h2 className="text-lg font-semibold text-[#1d1d1f]">名师指路，名校同行！</h2>
+        </Card>
+        <Card className="shadow-sm mb-8 rounded-2xl">
           <EliteCourses01 courses={featuredCourses} loading={featuredLoading} onCourseClick={(course) => { if (course.courseId) navigate(`/courseLearn/${course.courseId}`); }} />
         </Card>
-
-        {/* 最新课程模块：展示平台最新发布的课程 */}
-        <Card className="shadow-sm rounded-2xl border border-slate-100" headStyle={{ borderBottom: 'none', paddingBottom: 0 }} bodyStyle={{ paddingTop: 12 }}
-          title={
-            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
-              <div>
-                <h2 className="text-lg md:text-xl font-semibold text-[#1d1d1f]">
-                  新课集结，即刻开启
-                </h2>
-                <p className="mt-1 text-xs md:text-sm text-slate-500">
-                  实时呈现最新上架课程，第一时间捕捉你感兴趣的内容。
-                </p>
-              </div>
-            </div>
-          }
-        >
+        <Card className="shadow-sm mb-4 rounded-2xl">
+          <h2 className="text-lg font-semibold text-[#1d1d1f]">新课集结，即刻开启！</h2>
+        </Card>
+        <Card className="shadow-sm mb-8 rounded-2xl">
           <EliteCourses02 courses={latestCourses} loading={latestLoading} onCourseClick={(course) => { if (course.courseId) navigate(`/courseLearn/${course.courseId}`); }} />
         </Card>
       </div>
     </div>
   );
 }
-
-

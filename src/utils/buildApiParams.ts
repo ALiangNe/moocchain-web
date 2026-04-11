@@ -44,7 +44,7 @@ export function buildFormData(
 /**
  * 构建创建资源的 POST 请求 FormData 参数
  */
-export function buildCreateResourceFormData(params: { courseId: number; title: string; description?: string; resourceType?: number; price?: number; accessScope?: number; file: File }): FormData {
+export function buildCreateResourceFormData(params: { courseId: number; title: string; description?: string; resourceType?: number; price?: number; accessScope?: number; completedAt?: string; file: File }): FormData {
   return buildFormData(
     {
       courseId: params.courseId,
@@ -53,6 +53,7 @@ export function buildCreateResourceFormData(params: { courseId: number; title: s
       resourceType: params.resourceType,
       price: params.price,
       accessScope: params.accessScope,
+      completedAt: params.completedAt,
     },
     { file: params.file }
   );
@@ -115,12 +116,16 @@ export function buildGetCourseListQuery(params: { teacherId?: number; status?: n
 /**
  * 构建获取资源列表的 GET 请求查询参数
  */
-export function buildGetResourceListQuery(params: { courseId?: number; ownerId?: number; resourceType?: number; status?: number; page?: number; pageSize?: number }): string {
+export function buildGetResourceListQuery(params: { courseId?: number; ownerId?: number; resourceType?: number; status?: number; transactionHash?: string; hasTransactionHash?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     courseId: params.courseId,
     ownerId: params.ownerId,
     resourceType: params.resourceType,
     status: params.status,
+    transactionHash: params.transactionHash,
+    hasTransactionHash: params.hasTransactionHash,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -129,10 +134,14 @@ export function buildGetResourceListQuery(params: { courseId?: number; ownerId?:
 /**
  * 构建获取学习记录列表的 GET 请求查询参数
  */
-export function buildGetLearningRecordListQuery(params: { studentId?: number; resourceId?: number; page?: number; pageSize?: number }): string {
+export function buildGetLearningRecordListQuery(params: { studentId?: number; resourceId?: number; transactionHash?: string; hasTransactionHash?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     studentId: params.studentId,
     resourceId: params.resourceId,
+    transactionHash: params.transactionHash,
+    hasTransactionHash: params.hasTransactionHash,
+    startDate: params.startDate,
+    endDate: params.endDate,
     page: params.page,
     pageSize: params.pageSize,
   });
@@ -181,12 +190,13 @@ export function buildGetResourceCertificateConfigListQuery(params: { courseId?: 
 /**
  * 构建获取证书列表的查询参数
  */
-export function buildGetCertificateListQuery(params: { studentId?: number; teacherId?: number; courseId?: number; teacherName?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
+export function buildGetCertificateListQuery(params: { studentId?: number; teacherId?: number; courseId?: number; teacherName?: string; transactionHash?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): string {
   return buildQueryParams({
     studentId: params.studentId,
     teacherId: params.teacherId,
     courseId: params.courseId,
     teacherName: params.teacherName,
+    transactionHash: params.transactionHash,
     startDate: params.startDate,
     endDate: params.endDate,
     page: params.page,

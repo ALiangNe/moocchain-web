@@ -109,6 +109,10 @@ export default function CourseCertificateId() {
     }
   };
 
+  const handleHashClick = useCallback((hash: string) => {
+    navigate(`/hashVerify/${encodeURIComponent(hash)}?source=certificate`);
+  }, [navigate]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]"><Spin size="large" /></div>
@@ -142,7 +146,7 @@ export default function CourseCertificateId() {
             </div>
           </div>
         </Card>
-        <CertificateDetail certificate={certificate} />
+        <CertificateDetail certificate={certificate} onHashClick={handleHashClick} />
         {previewUrl && (
           <Image src={previewUrl} alt="证书图片" style={{ display: 'none' }} preview={{ visible: previewVisible, onVisibleChange: (visible) => setPreviewVisible(visible) }} />
         )}

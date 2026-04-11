@@ -1,4 +1,5 @@
-import { Card, Tag, Pagination, Spin, Rate, Button, Tooltip } from 'antd';
+import { Card, Tag, Pagination, Spin, Rate, Button, Tooltip, Descriptions } from 'antd';
+import { CheckCircleFilled } from '@ant-design/icons';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDate } from '@/utils/formatTime';
 
@@ -118,5 +119,41 @@ export default function ResourceList({ data, loading, page, pageSize, total, onP
         <Pagination current={page} pageSize={pageSize} total={total} onChange={(p, s) => onPageChange(p, s)} showSizeChanger showTotal={(total) => `共 ${total} 条数据`} locale={{ items_per_page: '条/页' }} />
       </div>
     </>
+  );
+}
+
+export function OnchainInfo({ loading, transactionHash, onHashClick }: { loading: boolean; transactionHash?: string; onHashClick?: (hash: string) => void }) {
+  return (
+    <Card className="shadow-sm rounded-2xl">
+      <Descriptions title="上链信息" bordered column={2} labelStyle={{ width: '10%' }} contentStyle={{ width: '40%' }}>
+        <Descriptions.Item label="上链哈希">
+          {loading ? (
+            '加载中...'
+          ) : transactionHash ? (
+            <button
+              type="button"
+              className="text-[#1677ff] hover:underline break-all text-left"
+              onClick={() => onHashClick?.(transactionHash)}
+            >
+              {transactionHash}
+            </button>
+          ) : (
+            '-'
+          )}
+        </Descriptions.Item>
+        <Descriptions.Item label="是否上链">
+          {loading ? (
+            '加载中...'
+          ) : transactionHash ? (
+            <span className="inline-flex items-center gap-2 text-green-600">
+              <CheckCircleFilled />
+              已上链
+            </span>
+          ) : (
+            <span className="text-[#6e6e73]">未上链</span>
+          )}
+        </Descriptions.Item>
+      </Descriptions>
+    </Card>
   );
 }

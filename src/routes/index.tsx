@@ -21,6 +21,7 @@ import CourseCertificate from '@/pages/courseCertificate/CourseCertificate';
 import CourseCertificateId from '@/pages/courseCertificate/CourseCertificateId';
 import TokenRule from '@/pages/tokenRule/TokenRule';
 import BlockchainRecord from '@/pages/blockchainRecord/BlockchainRecord';
+import HashVerifyId from '@/pages/hashVerify/HashVerifyId';
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: '/certificateTemplate', element: <CertificateTemplate /> },
       { path: '/tokenRule', element: <TokenRule /> },
       { path: '/blockchainRecord', element: <BlockchainRecord /> },
+      { path: '/hashVerify/:hash', element: <HashVerifyId /> },
       { path: '*', element: <NotFound /> },
     ],
   },

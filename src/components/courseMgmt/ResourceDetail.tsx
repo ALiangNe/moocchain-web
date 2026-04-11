@@ -1,5 +1,5 @@
 import { Card, Button, Descriptions, Tag, Tooltip } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, CheckCircleFilled } from '@ant-design/icons';
 import type { ResourceInfo } from '@/types/resourceType';
 import { formatDateTime } from '@/utils/formatTime';
 import type { AuditRecordInfo } from '@/types/auditRecordType';
@@ -9,9 +9,10 @@ interface ResourceDetailProps {
   onDownload?: () => void;
   latestAuditRecord?: AuditRecordInfo | null;
   auditLoading?: boolean;
+  onHashClick?: (hash: string) => void;
 }
 
-export default function ResourceDetail({ resource, onDownload, latestAuditRecord = null, auditLoading = false }: ResourceDetailProps) {
+export default function ResourceDetail({ resource, onDownload, latestAuditRecord = null, auditLoading = false, onHashClick }: ResourceDetailProps) {
   // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
@@ -64,23 +65,14 @@ export default function ResourceDetail({ resource, onDownload, latestAuditRecord
     return { text: '-', color: 'default' as const };
   };
 
-  // 获取访问范围名称
-  const getAccessScopeName = (scope?: number) => {
-    const scopeMap: Record<number, string> = {
-      0: '公开',
-      1: '校内',
-      2: '付费',
-    };
-    return scopeMap[scope || 0] || '公开';
-  };
-
   const fileUrl = getResourceFileUrl(resource.ipfsHash);
   const resourceType = resource.resourceType || 0;
+  const txHash = resource.transactionHash;
 
   return (
     <>
       <Card className="shadow-sm mb-6 rounded-2xl">
-        <Descriptions title="资源信息" bordered column={2} labelStyle={{ width: '12.5%' }} contentStyle={{ width: '37.5%' }}>
+        <Descriptions title="资源信息" bordered column={2} labelStyle={{ width: '8%' }} contentStyle={{ width: '42%' }}>
           <Descriptions.Item label="资源标题">{resource.title}</Descriptions.Item>
           <Descriptions.Item label="资源描述">
             {resource.description ? (
@@ -91,7 +83,6 @@ export default function ResourceDetail({ resource, onDownload, latestAuditRecord
               '-'
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="访问范围">{getAccessScopeName(resource.accessScope)}</Descriptions.Item>
           <Descriptions.Item label="价格">{resource.price === 0 ? '免费' : `${resource.price} 代币`}</Descriptions.Item>
           <Descriptions.Item label="资源类型">
             <Tag color={getResourceTypeColor(resourceType)}>{getResourceTypeName(resourceType)}</Tag>
@@ -100,17 +91,38 @@ export default function ResourceDetail({ resource, onDownload, latestAuditRecord
             {auditLoading ? '加载中...' : <Tag color={getStatusMeta().color}>{getStatusMeta().text}</Tag>}
           </Descriptions.Item>
           <Descriptions.Item label="上传时间">{resource.createdAt ? formatDateTime(resource.createdAt) : '-'}</Descriptions.Item>
+          <Descriptions.Item label="上传者">{resource.owner?.realName || resource.owner?.username || '-'}</Descriptions.Item>
+          <Descriptions.Item label="学校">{resource.owner?.schoolName || '-'}</Descriptions.Item>
         </Descriptions>
       </Card>
 
-      {resource.owner && (
         <Card className="shadow-sm mb-6 rounded-2xl">
-          <Descriptions title="上传者信息" bordered column={2} labelStyle={{ width: '12.5%' }} contentStyle={{ width: '37.5%' }}>
-            <Descriptions.Item label="姓名">{resource.owner.realName || resource.owner.username || '-'}</Descriptions.Item>
-            <Descriptions.Item label="学校">{resource.owner.schoolName || '-'}</Descriptions.Item>
+        <Descriptions title="上链信息" bordered column={2} labelStyle={{ width: '8%' }} contentStyle={{ width: '42%' }}>
+          <Descriptions.Item label="上链哈希">
+            {txHash ? (
+              <button
+                type="button"
+                className="text-[#1677ff] hover:underline break-all text-left"
+                onClick={() => onHashClick?.(txHash)}
+              >
+                {txHash}
+              </button>
+            ) : (
+              '-'
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label="是否上链">
+            {resource.transactionHash ? (
+              <span className="inline-flex items-center gap-2 text-green-600">
+                <CheckCircleFilled />
+                已上链
+              </span>
+            ) : (
+              <span className="text-[#6e6e73]">未上链</span>
+            )}
+          </Descriptions.Item>
           </Descriptions>
         </Card>
-      )}
 
       {fileUrl && (
         <div className="mb-6">

@@ -4,10 +4,12 @@ import { formatDateTime } from '@/utils/formatTime';
 
 interface CourseCertificateDetailProps {
   certificate: CertificateInfo;
+  onHashClick?: (hash: string) => void;
 }
 
-export default function CertificateDetail({ certificate }: CourseCertificateDetailProps) {
+export default function CertificateDetail({ certificate, onHashClick }: CourseCertificateDetailProps) {
   const imageUrl = certificate.ipfsHash ? `https://gateway.pinata.cloud/ipfs/${certificate.ipfsHash}` : undefined;
+  const txHash = certificate.transactionHash;
 
   return (
     <Card className="shadow-sm mb-6 rounded-2xl">
@@ -29,8 +31,16 @@ export default function CertificateDetail({ certificate }: CourseCertificateDeta
             {certificate.ipfsHash && (
               <Descriptions.Item label="IPFS 哈希">{certificate.ipfsHash}</Descriptions.Item>
             )}
-            {certificate.transactionHash && (
-              <Descriptions.Item label="交易哈希">{certificate.transactionHash}</Descriptions.Item>
+            {txHash && (
+              <Descriptions.Item label="上链哈希">
+                <button
+                  type="button"
+                  className="text-[#1677ff] hover:underline break-all text-left"
+                  onClick={() => onHashClick?.(txHash)}
+                >
+                  {txHash}
+                </button>
+              </Descriptions.Item>
             )}
           </Descriptions>
         </div>

@@ -4,7 +4,7 @@ import type { Dayjs } from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-export type BlockchainRecordType = 'certificate' | 'uploadReward' | 'learningReward' | 'purchase';
+export type BlockchainRecordType = 'certificate' | 'uploadReward' | 'learningReward' | 'learningRecord' | 'resourceUpload' | 'purchase';
 
 export interface BlockchainRecordFilterBarProps {
   recordType: BlockchainRecordType | undefined;

@@ -11,6 +11,7 @@ export interface CertificateInfo {
   learningRecordId?: number;      // 关联的学习记录ID
   ipfsHash?: string;              // 证书IPFS存储哈希值
   transactionHash?: string;       // 区块链交易哈希
+  completedAt?: string;           // 数据生成时间（用于上链哈希一致性）
   createdAt: string;              // 创建时间（前端通常用字符串）
   // 完整的用户信息对象
   student?: UserInfo | null;      // 学生完整信息

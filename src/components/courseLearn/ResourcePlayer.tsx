@@ -46,6 +46,7 @@ export default function ResourcePlayer({ resource, fileUrl, onDownload, onTimeUp
         maxWatchedTimeRef.current = current;
       }
       if (onTimeUpdate) {
+        // 当前播放的时间，总的时长，传递给父组件
         onTimeUpdate(current, mediaElement.duration);
       }
     };

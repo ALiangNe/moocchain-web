@@ -150,7 +150,7 @@ export async function updateResource(resourceId: number, data: Partial<ResourceI
     body: JSON.stringify(data),
   }); return response.json();
 }
-export async function getResourceList(params: { courseId?: number; ownerId?: number; resourceType?: number; status?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceInfo[]; total: number }>> {
+export async function getResourceList(params: { courseId?: number; ownerId?: number; resourceType?: number; status?: number; transactionHash?: string; hasTransactionHash?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: ResourceInfo[]; total: number }>> {
   const queryString = buildGetResourceListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getResourceList?${queryString}`, {
     method: 'GET',
@@ -193,10 +193,10 @@ export async function reportLearningTime(resourceId: number, timeIncrement: numb
     body: JSON.stringify({ resourceId, timeIncrement }),
   }); return response.json();
 }
-export async function updateLearningProgress(resourceId: number, progress: number): Promise<ResponseType<LearningRecordInfo>> {
+export async function updateLearningProgress(resourceId: number, progress: number, transactionHash?: string): Promise<ResponseType<LearningRecordInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/updateLearningProgress/${resourceId}`, {
     method: 'PUT',
-    body: JSON.stringify({ progress }),
+    body: JSON.stringify({ progress, transactionHash }),
   }); return response.json();
 }
 export async function submitReview(resourceId: number, review: string, rating: number): Promise<ResponseType<LearningRecordInfo>> {
@@ -205,7 +205,7 @@ export async function submitReview(resourceId: number, review: string, rating: n
     body: JSON.stringify({ resourceId, review, rating }),
   }); return response.json();
 }
-export async function getLearningRecordList(params: { studentId?: number; resourceId?: number; page?: number; pageSize?: number }): Promise<ResponseType<{ records: LearningRecordInfo[]; total: number }>> {
+export async function getLearningRecordList(params: { studentId?: number; resourceId?: number; transactionHash?: string; hasTransactionHash?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: LearningRecordInfo[]; total: number }>> {
   const queryString = buildGetLearningRecordListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getLearningRecordList?${queryString}`, {
     method: 'GET',
@@ -286,13 +286,13 @@ export async function getResourceCertificateConfig(configId: number): Promise<Re
 }
 
 // Certificate API
-export async function createCertificate(data: { courseId: number }): Promise<ResponseType<CertificateInfo>> {
+export async function createCertificate(data: { courseId: number; completedAt?: string }): Promise<ResponseType<CertificateInfo>> {
   const response = await fetchWithAuth(`${API_BASE_URL}/createCertificate`, {
     method: 'POST',
     body: JSON.stringify(data),
   }); return response.json();
 }
-export async function getCertificateList(params: { studentId?: number; teacherId?: number; courseId?: number; teacherName?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateInfo[]; total: number }>> {
+export async function getCertificateList(params: { studentId?: number; teacherId?: number; courseId?: number; teacherName?: string; transactionHash?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number }): Promise<ResponseType<{ records: CertificateInfo[]; total: number }>> {
   const queryString = buildGetCertificateListQuery(params);
   const response = await fetchWithAuth(`${API_BASE_URL}/getCertificateList?${queryString}`, {
     method: 'GET',

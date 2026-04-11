@@ -13,6 +13,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { ensureWalletConnected } from '@/utils/wallet';
 import { downloadFile } from '@/utils/download';
 import type { TypedDataDomain, TypedDataField } from 'ethers';
+import { anchorLearningCompletion, buildLearningCompletionContentHash } from '@/utils/learningRecord';
+import { OnchainInfo } from '@/components/courseLearn/ResourceList';
 
 export default function CourseLearnResourceId() {
   const { resourceId, courseId } = useParams<{ resourceId: string; courseId: string }>();
@@ -42,6 +44,13 @@ export default function CourseLearnResourceId() {
   const watchedUntilRef = useRef<number>(0);
   const mediaDurationRef = useRef<number>(0);
   const currentMediaTimeRef = useRef<number>(0);
+  const anchoredRecordIdsRef = useRef<Set<number>>(new Set());
+  const anchoringRecordIdsRef = useRef<Set<number>>(new Set());
+  const learningRecordRef = useRef<LearningRecordInfo | null>(null);
+
+  useEffect(() => {
+    learningRecordRef.current = learningRecord;
+  }, [learningRecord]);
 
   // 加载学习记录和评价列表（合并为一次 API 调用）
   const loadLearningData = useCallback(async () => {
@@ -71,7 +80,7 @@ export default function CourseLearnResourceId() {
 
     const allRecords = result.data.records;
 
-    // 分离数据：①当前用户的学习记录
+    // 分离数据：1、当前用户的学习记录
     if (!user?.userId) {
       setLearningRecord(null);
     } else {
@@ -86,7 +95,7 @@ export default function CourseLearnResourceId() {
       }
     }
 
-    // 分离数据：②所有人的评价列表（过滤出有评价且可见的记录）
+    // 分离数据：2、所有人的评价列表（过滤出有评价且可见的记录）
     const filteredReviews = allRecords.filter((record) => record.review && record.isVisible === 1);
     setAllReviews(filteredReviews);
     setReviewsTotal(filteredReviews.length);
@@ -224,6 +233,73 @@ export default function CourseLearnResourceId() {
     }
   };
 
+  // 学习记录上链
+  const tryAnchorLearningRecord = useCallback(async (record: LearningRecordInfo) => {
+    if (!record.recordId || !resource?.courseId || !user?.userId) return;
+    if (record.isCompleted !== 1) return;
+    // 如果后端已存入交易哈希，说明已经完成过链上存证（或至少已经成功回写），不再重复上链
+    if (record.transactionHash) return;
+    // completedAt 是参与 keccak256 的字段，必须与后端/校验页一致；为空时不要用本地时间兜底上链
+    if (!record.completedAt) return;
+    // learningTime 也是参与 keccak256 的字段；确保存在稳定数值
+    if (typeof record.learningTime !== 'number') return;
+    if (anchoredRecordIdsRef.current.has(record.recordId)) return;
+    // 避免并发多次触发上链（多个 effect/回调几乎同时调用时会发生竞争）
+    if (anchoringRecordIdsRef.current.has(record.recordId)) return;
+    anchoringRecordIdsRef.current.add(record.recordId);
+
+    const wallet = await ensureWalletConnected();
+    if (!wallet) {
+      message.warning('请连接钱包后再完成链上存证');
+      anchoringRecordIdsRef.current.delete(record.recordId);
+      return;
+    }
+
+    const completedAt = new Date(record.completedAt);
+    const progress = Number(record.progress ?? 100);
+    const contentHash = buildLearningCompletionContentHash(
+      resource.courseId,
+      Number(resourceId),
+      user.userId,
+      progress,
+      record.learningTime,
+      completedAt
+    );
+
+    try {
+      const txHash = await anchorLearningCompletion({
+        signer: wallet.signer,
+        recordId: record.recordId,
+        ownerAddress: wallet.address,
+        contentHash,
+      });
+      if (txHash) {
+        const saveResult = await updateLearningProgress(Number(resourceId), progress, txHash);
+        if (saveResult.code === 0 && saveResult.data) setLearningRecord(saveResult.data);
+      }
+      anchoredRecordIdsRef.current.add(record.recordId);
+      if (txHash) message.success('学习完成已上链');
+    } catch (error) {
+      console.error('Anchor learning completion error:', error);
+      const err = error as { message?: string };
+      message.error(`学习完成上链失败：${err?.message || '请重试'}`);
+      // 失败则允许后续再次尝试（例如用户切换网络/重连钱包后）
+      anchoringRecordIdsRef.current.delete(record.recordId);
+      return;
+    }
+    // 成功（或链上已存在返回 null 并不报错）后，清理进行中标记
+    anchoringRecordIdsRef.current.delete(record.recordId);
+  }, [resource, resourceId, user]);
+
+  // 统一的链上存证触发点：学习记录变为“已完成”时尝试上链一次
+  // shanglian
+  useEffect(() => {
+    if (!learningRecord) return;
+    queueMicrotask(() => {
+      tryAnchorLearningRecord(learningRecord);
+    });
+  }, [learningRecord, tryAnchorLearningRecord]);
+
   // 获取资源文件下载地址
   const getResourceFileUrl = (ipfsHash?: string) => {
     if (!ipfsHash) return undefined;
@@ -304,6 +380,8 @@ export default function CourseLearnResourceId() {
   // 上报学习时间增量（视频/音频）
   const reportTimeIncrement = useCallback(async (timeIncrement: number) => {
     if (!resourceId || timeIncrement < 5 || timeIncrement > 20) return;
+    // 学习完成后停止上报，避免 learningTime 继续增长导致链上校验失败
+    if (learningRecordRef.current?.isCompleted === 1) return;
 
     let result;
     try {
@@ -324,6 +402,8 @@ export default function CourseLearnResourceId() {
     if (!resource || !resourceId) return;
     // 学习记录还在加载时，不启动定时器，避免在不知道历史学习时长的情况下就开始累计
     if (learningRecordLoading) return;
+    // 学习完成后不再启动/继续计时上报
+    if (learningRecord?.isCompleted === 1) return;
 
     const resourceType = resource.resourceType || 0;
     // 只有视频（3）和音频（2）需要上报时间
@@ -369,7 +449,7 @@ export default function CourseLearnResourceId() {
         clearInterval(reportTimeIntervalRef.current);
       }
     };
-  }, [resource, resourceId, reportTimeIncrement, learningRecordLoading]);
+  }, [resource, resourceId, reportTimeIncrement, learningRecordLoading, learningRecord?.isCompleted]);
 
   // 根据累计学习时长同步学习进度（防止快进导致进度突然跳到 80%）
   useEffect(() => {
@@ -378,6 +458,8 @@ export default function CourseLearnResourceId() {
     // 只有视频（3）和音频（2）需要进度同步
     if (resourceType !== 2 && resourceType !== 3) return;
 
+    // 学习完成后不再同步进度，避免 completedAt / learningTime 被后续请求改变
+    if (learningRecord?.isCompleted === 1) return;
     if (!learningRecord || !learningRecord.learningTime) return;
 
     const duration = mediaDurationRef.current;
@@ -479,6 +561,10 @@ export default function CourseLearnResourceId() {
       navigate(-1);
     }
   };
+
+  const handleHashClick = useCallback((hash: string) => {
+    navigate(`/hashVerify/${encodeURIComponent(hash)}?source=learningRecord`);
+  }, [navigate]);
 
   // 领取学习完成奖励
   const handleClaimLearningReward = async () => {
@@ -670,6 +756,8 @@ export default function CourseLearnResourceId() {
               <LearningProgress learningRecord={learningRecord} loading={learningRecordLoading} submitting={submittingReview} onSubmitReview={handleSubmitReview} />
             </div>
           </div>
+
+          <OnchainInfo loading={learningRecordLoading} transactionHash={learningRecord?.transactionHash} onHashClick={handleHashClick} />
 
           {/* 统一的资源播放/预览区域：文档 / 音频 / 视频 */}
           {fileUrl && (resourceType === 1 || isMediaType) && (
